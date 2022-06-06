@@ -21,7 +21,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import './index.css';
 
 const client = new ApolloClient({
-  uri: 'http://docker.for.mac.localhost:17669/irisapi/graphql',
+  uri: process.env.REACT_APP_COACT_GRAPHQL_URI,
   cache: new InMemoryCache()
 });
 
