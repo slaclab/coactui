@@ -1,0 +1,6 @@
+
+resources:
+- code-pvc.yaml
+- deployment.yaml
+- endpoints.yaml
+

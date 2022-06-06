@@ -2,4 +2,10 @@ FROM node:alpine
 
 RUN apk add --no-cache bash curl
 
-CMD "/bin/sh"
+
+WORKDIR /app
+COPY . /app
+
+RUN npm install 
+
+ENTRYPOINT [ "/bin/bash", "-c", "sleep infinity" ]

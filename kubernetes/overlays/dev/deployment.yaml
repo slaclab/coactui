@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coact-ui
+  labels:
+    app: coact-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coact-ui
+  template:
+    metadata:
+      labels:
+        app: coact-ui
+    spec:
+      containers:
+      - name: coact-ui
+        image: slaclab/coact-ui:latest
+        #command: [ "bash", "-c", "sleep infinity" ]
+        command: [ "npm", "start", "--host=0.0.0.0" ]
+        env:
+        - name: GRAPHQL_URI
+          value: graphql
+        volumeMounts:
+        - name: code
+          mountPath: /app/src/
+          subPath: src
+        - name: code
+          mountPath: /app/public/
+          subPath: public
+      volumes:
+      - name: code
+        persistentVolumeClaim:
+          claimName: coact-ui-code
