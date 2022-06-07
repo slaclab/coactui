@@ -57,6 +57,7 @@ export default function TopNavBar( ) {
     <Navbar bg="primary" expand="lg">
       <Container>
         <Navbar.Brand>🚀 Coact</Navbar.Brand>
+	<Navbar.Toggle onClick={function noRefCheck(){}} />
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav variant="pills" activeKey="1">

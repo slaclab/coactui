@@ -19,9 +19,6 @@ query Repos($reposinput: RepoInput){
       }
     }
   }
-  whoami {
-    username
-  }
 }`;
 
 export default function Repo() {
@@ -31,12 +28,11 @@ export default function Repo() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;
 
-  let repodata = data.repos[0], resources = _.get(repodata, "facilityObj.resources", []), logged_in_user=data.whoami["username"];
+  let repodata = data.repos[0], resources = _.get(repodata, "facilityObj.resources", []), facility = repodata.facility;
   return (<div>
     <Navbar bg="light" expand="lg">
       <Container>
-        <Navbar.Brand href="/">{reponame}</Navbar.Brand>
-        <Navbar.Toggle onClick={function noRefCheck(){}} />
+        <Navbar.Brand>{facility} / {reponame}</Navbar.Brand>
         <Navbar.Collapse>
           <Nav className="me-auto" navbar>
           { resources.map((resource) => (
@@ -49,7 +45,6 @@ export default function Repo() {
           <Nav.Item key="users"><Nav.Link as={Link} to={`/repos/${reponame}/users/`}>Users</Nav.Link></Nav.Item>
           <Nav.Item key="groups"><Nav.Link as={Link} to={`/repos/${reponame}/groups/`}>Groups</Nav.Link></Nav.Item>
           </Nav>
-          <Navbar.Text>{logged_in_user}</Navbar.Text>
       </Navbar.Collapse>
       </Container>
     </Navbar>
