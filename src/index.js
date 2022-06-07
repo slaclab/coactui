@@ -29,24 +29,29 @@ const client = new ApolloClient({
 const container = document.getElementById('root');
 const root = createRoot(container);
 
-root.render(
-  <>
-  <TopNavBar/>
-  <ApolloProvider client={client}>
-  <BrowserRouter>
+function App() {
+  return (
+    <BrowserRouter>
+    <TopNavBar/>
     <Routes>
       <Route exact path="/" element={ true ? <Navigate to="repos" /> : <Navigate to="facilities" />  } />
       <Route exact path="repos" element={<Repos />}/>
       <Route exact path="repos/:name" element={<Repo />}>
-        <Route exact path="compute/:resourcename" element={<Compute />} />
-        <Route exact path="storage/:resourcename" element={<Storage />} />
-        <Route exact path="users/" element={<Users />} />
-        <Route exact path="groups/" element={<Groups />} />
+      <Route exact path="compute/:resourcename" element={<Compute />} />
+      <Route exact path="storage/:resourcename" element={<Storage />} />
+      <Route exact path="users/" element={<Users />} />
+      <Route exact path="groups/" element={<Groups />} />
       </Route>
     </Routes>
-  </BrowserRouter>
+    </BrowserRouter>
+  );
+}
+
+
+root.render(
+  <ApolloProvider client={client}>
+    <App/>
   </ApolloProvider>
-  </>
 );
 
 
