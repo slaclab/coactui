@@ -11,6 +11,7 @@ import {
   InMemoryCache,
   ApolloProvider
 } from "@apollo/client";
+import TopNavBar from "./nav";
 import Repos from "./tabs/repos";
 import Repo from "./tabs/repo";
 import Compute from "./tabs/compute";
@@ -27,7 +28,11 @@ const client = new ApolloClient({
 
 const container = document.getElementById('root');
 const root = createRoot(container);
-root.render(<ApolloProvider client={client}>
+
+root.render(
+  <>
+  <TopNavBar/>
+  <ApolloProvider client={client}>
   <BrowserRouter>
     <Routes>
       <Route exact path="/" element={ true ? <Navigate to="repos" /> : <Navigate to="facilities" />  } />
@@ -41,4 +46,7 @@ root.render(<ApolloProvider client={client}>
     </Routes>
   </BrowserRouter>
   </ApolloProvider>
+  </>
 );
+
+
