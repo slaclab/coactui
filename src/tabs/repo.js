@@ -35,7 +35,7 @@ export default function Repo() {
   return (<div>
     <Navbar bg="light" expand="lg">
       <Container>
-        <Navbar.Brand href="/">CoAct - {reponame}</Navbar.Brand>
+        <Navbar.Brand href="/">{reponame}</Navbar.Brand>
         <Navbar.Toggle onClick={function noRefCheck(){}} />
         <Navbar.Collapse>
           <Nav className="me-auto" navbar>
