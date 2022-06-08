@@ -2,6 +2,8 @@ import { Nav, Navbar, NavDropdown, Container } from 'react-bootstrap';
 import { useQuery, gql } from "@apollo/client";
 import { NavLink } from "react-router-dom";
 import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPerson, faPersonCircleQuestion } from '@fortawesome/free-solid-svg-icons'
 
 const USER = gql`
 query whoami{
@@ -14,12 +16,17 @@ query whoami{
     //; window.open("https://vouch.slac.stanford.edu/logout")}>Log Out..</NavDropdown.Item>
 function logged_in( props ) {
   return(
+     <>
+     <Nav.Item>
+       <FontAwesomeIcon icon={faPerson} size="2x"/>
+     </Nav.Item>
      <NavDropdown align="end" title={props.logged_in_user} id="nav-dropdown">
-       <NavDropdown.Item href="https://vouch.slac.stanford.edu/logout">Log Out...</NavDropdown.Item>
+       <NavDropdown.Item href="https://vouch.slac.stanford.edu/logout">Log out...</NavDropdown.Item>
        <NavDropdown.Item eventKey="4.2">Impersonate...</NavDropdown.Item>
        <NavDropdown.Divider />
        <NavDropdown.Item eventKey="4.4">My Aliases...</NavDropdown.Item>
      </NavDropdown>
+     </>
   );
 }
 
@@ -33,7 +40,12 @@ class LoginLink extends React.Component {
   }
   render() {
     return (
+      <>
+      <Nav.Item>
+        <FontAwesomeIcon icon={faPersonCircleQuestion} size="2x" />
+      </Nav.Item>
       <Nav.Item><a href="/login" class="nav-link active">Log in...</a></Nav.Item>
+      </>
     );
   }
 }
