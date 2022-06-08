@@ -12,7 +12,9 @@ import {
   ApolloProvider
 } from "@apollo/client";
 import TopNavBar from "./nav";
+import Facilities from "./facilities";
 import Repos from "./tabs/repos";
+import Home from "./home";
 import Repo from "./tabs/repo";
 import Compute from "./tabs/compute";
 import Storage from "./tabs/storage";
@@ -35,7 +37,9 @@ function App() {
     <TopNavBar/>
     <Routes>
       <Route exact path="/" element={ true ? <Navigate to="repos" /> : <Navigate to="facilities" />  } />
+      <Route exact path="facilities" element={<Facilities />}/>
       <Route exact path="repos" element={<Repos />}/>
+      <Route exact path="home" element={<Home />}/>
       <Route exact path="repos/:name" element={<Repo />}>
       <Route exact path="compute/:resourcename" element={<Compute />} />
       <Route exact path="storage/:resourcename" element={<Storage />} />
