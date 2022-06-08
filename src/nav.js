@@ -3,7 +3,7 @@ import { useQuery, gql } from "@apollo/client";
 import { NavLink } from "react-router-dom";
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPerson, faPersonCircleQuestion } from '@fortawesome/free-solid-svg-icons'
+import { faRocket, faPerson, faPersonCircleQuestion } from '@fortawesome/free-solid-svg-icons'
 
 const USER = gql`
 query whoami{
@@ -68,7 +68,7 @@ export default function TopNavBar( ) {
   return (
     <Navbar bg="primary" expand="lg">
       <Container>
-        <Navbar.Brand>🚀 Coact</Navbar.Brand>
+        <Navbar.Brand><FontAwesomeIcon icon={faRocket} size="lg"/> Coact</Navbar.Brand>
 	<Navbar.Toggle onClick={function noRefCheck(){}} />
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
