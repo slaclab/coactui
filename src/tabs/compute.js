@@ -19,23 +19,21 @@ query Repos($reposinput: RepoInput $resourcename: String! $datayear: Int!){
         type
       }
     }
-    allocations(resource: $resourcename year: $datayear) {
+    allocations(resource: $resourcename) {
       resource
       facility
-      year
-      compute
-      storage
-      inodes
+      start
+      end
+      qoses {
+        name
+        slachours
+      }
     }
-    userAllocations(resource: $resourcename year: $datayear) {
+    userAllocations(resource: $resourcename) {
       facility
       resource
       repo
-      year
-      username
-      compute
-      storage
-      inodes
+      username      
     }
     usage(resource: $resourcename year: $datayear) {
       facility
