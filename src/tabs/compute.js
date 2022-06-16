@@ -40,7 +40,7 @@ query Repos($reposinput: RepoInput $resourcename: String! $datayear: Int!){
       resource
       repo
       year
-      totalNerscSecs
+      totalNodeSecs
       totalMachineSecs
       totalRawSecs
       averageChargeFactor
@@ -51,7 +51,7 @@ query Repos($reposinput: RepoInput $resourcename: String! $datayear: Int!){
       repo
       year
       dayOfYear
-      totalNerscSecs
+      totalNodeSecs
       totalMachineSecs
       totalRawSecs
       averageChargeFactor
@@ -62,7 +62,7 @@ query Repos($reposinput: RepoInput $resourcename: String! $datayear: Int!){
       repo
       year
       username
-      totalNerscSecs
+      totalNodeSecs
       totalMachineSecs
       totalRawSecs
       averageChargeFactor
@@ -84,13 +84,13 @@ class User extends React.Component {
   constructor(props) {
     super(props);
     this.computeRemaining = (allocation_percent) => {
-      let allocatedNerscSecs = _.toNumber(allocation_percent)*this.props.repoallocation*3600/100;
-      let remainingNerscSecs = allocatedNerscSecs - _.get(this.props.user, "totalNerscSecs", 0);
-      let remaining = (remainingNerscSecs/allocatedNerscSecs)*100.0;
+      let allocatedNodeSecs = _.toNumber(allocation_percent)*this.props.repoallocation*3600/100;
+      let remainingNodeSecs = allocatedNodeSecs - _.get(this.props.user, "totalNodeSecs", 0);
+      let remaining = (remainingNodeSecs/allocatedNodeSecs)*100.0;
       return {
         "allocation": _.toNumber(allocation_percent),
-        "allocatedNerscSecs": allocatedNerscSecs,
-        "remainingNerscSecs": remainingNerscSecs,
+        "allocatedNodeSecs": allocatedNodeSecs,
+        "remainingNodeSecs": remainingNodeSecs,
         "remaining": remaining
       }
     }
@@ -105,8 +105,8 @@ class User extends React.Component {
     return (<tr data-userid={this.props.user.username}>
       <td>{this.props.user.username}</td>
       <td><input className="percent allocation_input" type="number" defaultValue={this.state.allocation} onBlur={this.handleChange}/><span className="invalid-feedback"></span></td>
-      <td className="allocated"><NodeSecs value={this.state.allocatedNerscSecs}/></td>
-      <td className="allocated"><NodeSecs value={this.props.user.totalNerscSecs}/></td>
+      <td className="allocated"><NodeSecs value={this.state.allocatedNodeSecs}/></td>
+      <td className="allocated"><NodeSecs value={this.props.user.totalNodeSecs}/></td>
       <td className="allocated"><NodeSecs value={this.props.user.totalMachineSecs}/></td>
       <td className="allocated"><NodeSecs value={this.props.user.totalRawSecs}/></td>
       <td><ChargeFactor value={this.props.user.averageChargeFactor}/></td>
@@ -130,7 +130,7 @@ class TopTab extends React.Component {
         </div>
         <div className="row">
           <span className="col-2"><label>NERSC hours charged</label></span>
-          <span className="col-2"><NodeSecs value={this.props.cmpusg.totalNerscSecs}/></span>
+          <span className="col-2"><NodeSecs value={this.props.cmpusg.totalNodeSecs}/></span>
           <span className="col-2"><label>Raw hours used</label></span>
           <span className="col-2"><NodeSecs value={this.props.cmpusg.totalRawSecs}/></span>
           <span className="col-2"><label>ERCAP award</label></span>
@@ -205,19 +205,19 @@ export default function Compute() {
     per_day_usage = _.get(repodata, "perDayUsage", []),
     repo_users = _.get(repodata, "users", []);
   var cmpusg = _.defaults({}, usage, allocations);
-  cmpusg["available_secs"] = cmpusg["compute"]*3600 - cmpusg["totalNerscSecs"];
+  cmpusg["available_secs"] = cmpusg["compute"]*3600 - cmpusg["totalNodeSecs"];
   cmpusg["remaining_percent"] = (cmpusg["available_secs"]/(cmpusg["compute"]*3600))*100.0;
   console.log(cmpusg);
   // Users can come and go.. Collect all the users from the various sources.
   var users = _.fromPairs(_.map(_.union(_.map(per_user_allocations, "username"), _.map(per_user_usage, "username"), repo_users), u=> [u, {"username": u}]));
-  _.each(users, u => { u["allocatedNerscSecs"] = 0; u["remainingNerscSecs"]=0; u["remaining"]=100; })
+  _.each(users, u => { u["allocatedNodeSecs"] = 0; u["remainingNodeSecs"]=0; u["remaining"]=100; })
   _.each(per_user_allocations, function(v,k){ users[v["username"]]["allocation"] = _.cloneDeep(v) });
   _.each(per_user_usage, function(pu){
     let u = users[pu["username"]];
-    _.each(["totalNerscSecs", "totalMachineSecs", "totalRawSecs", "totalNodeSecs", "averageChargeFactor"], function(at) { u[at] = pu[at]; })
-    u["allocatedNerscSecs"] = _.get(u, "allocation.compute", 0)*cmpusg["compute"]*3600/100;
-    u["remainingNerscSecs"] = u["allocatedNerscSecs"] - _.get(u, "totalNerscSecs");
-    u["remaining"] = (u["remainingNerscSecs"]/u["allocatedNerscSecs"])*100.0;
+    _.each(["totalNodeSecs", "totalMachineSecs", "totalRawSecs", "totalNodeSecs", "averageChargeFactor"], function(at) { u[at] = pu[at]; })
+    u["allocatedNodeSecs"] = _.get(u, "allocation.compute", 0)*cmpusg["compute"]*3600/100;
+    u["remainingNodeSecs"] = u["allocatedNodeSecs"] - _.get(u, "totalNodeSecs");
+    u["remaining"] = (u["remainingNodeSecs"]/u["allocatedNodeSecs"])*100.0;
   });
 
   let layout = { showlegend: true, legend: { x: 0.075, xanchor: 'center', y: 0.98, font: { family: 'Optima, Helevetica, Lucida Grande, Lucida Sans, sans-serif', size: 14, color: '#000' } }, autosize: false, width: window.innerWidth, height: 0.4*window.innerHeight, margin: { t: 0, b: 0 } };
@@ -225,7 +225,7 @@ export default function Compute() {
   let daily_usage_by_day = _.keyBy(per_day_usage, "dayOfYear"), avg_allocation = allocations["compute"]/(dayjs().endOf("year").diff(dayjs().startOf('year'), "days")), cuml_daily_usage = 0, today = dayjs();
   for(let i=0, d = dayjs().startOf('year'); d.isBefore(dayjs().endOf("year")); d = d.add(1, "days"), i=i+1) {
     uniform_charge_rate.x.push(d.toDate()); uniform_charge_rate.y.push(i*avg_allocation);
-    if(d.isBefore(today)){ daily_charge_rate.x.push(d.toDate()); cuml_daily_usage = cuml_daily_usage + (_.get(daily_usage_by_day, i+1+".totalNerscSecs", 0))/3600.0; daily_charge_rate.y.push(cuml_daily_usage); }
+    if(d.isBefore(today)){ daily_charge_rate.x.push(d.toDate()); cuml_daily_usage = cuml_daily_usage + (_.get(daily_usage_by_day, i+1+".totalNodeSecs", 0))/3600.0; daily_charge_rate.y.push(cuml_daily_usage); }
   }
   var chartdata = [uniform_charge_rate, daily_charge_rate];
 
