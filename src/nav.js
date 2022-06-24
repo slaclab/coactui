@@ -62,7 +62,7 @@ export default function TopNavBar( ) {
   let logged_in_user = undefined;
   const { loading, error, data } = useQuery(USER);
   if (loading) return <p>Loading...</p>;
-  if ( data !== undefined && data.hasOwnProperty("whoami") ) { 
+  if ( data !== undefined && data.hasOwnProperty("whoami") ) {
     logged_in_user = data["whoami"].username;
   };
   return (
@@ -84,6 +84,11 @@ export default function TopNavBar( ) {
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
+              <Nav.Link as={NavLink} to="/requests">
+					      Requests
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
               <Nav.Link as={NavLink} to="/home">
 					      Home
               </Nav.Link>
@@ -97,4 +102,3 @@ export default function TopNavBar( ) {
     </Navbar>
   );
 }
-
