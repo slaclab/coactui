@@ -10,12 +10,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faMultiply } from '@fortawesome/free-solid-svg-icons'
 
 
-const REPOS = gql`
+const REQUESTS = gql`
 query{
   requests {
     Id
     reqtype
     eppn
+    username
     reponame
     facilityname
   }
@@ -79,12 +80,12 @@ class RequestsTable extends Component {
       <>
       <div className="container-fluid text-center table-responsive">
         <table className="table table-condensed table-striped table-bordered">
-          <thead><tr><th>Type</th><th>EPPN</th><th>Repo</th><th>Facility</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Type</th><th>Username/EPPN</th><th>Repo</th><th>Facility</th><th>Actions</th></tr></thead>
           <tbody>{
                   _.map(this.state.requests, (r) => { return (
                                 <tr key={r.Id} data-id={r.Id}>
-                                  <td>{r.type}</td>
-                                  <td>{r.eppn}</td>
+                                  <td>{r.reqtype}</td>
+                                  <td>{!_.isEmpty(_.get(r, "username")) ? r.username : r.eppn}</td>
                                   <td>{r.reponame}</td>
                                   <td>{r.facilityname}</td>
                                   <td><Approve request={r} removeRequest={this.removeRequest} approve={this.props.approve} reject={this.props.reject} /></td>
@@ -100,7 +101,7 @@ class RequestsTable extends Component {
 }
 
 export default function Requests() {
-  const { loading, error, data } = useQuery(REPOS);
+  const { loading, error, data } = useQuery(REQUESTS);
   const [ approveRequestMutation ] = useMutation(APPROVE_REQUEST_MUTATION);
   const [ rejectRequestMutation ] = useMutation(REJECT_REQUEST_MUTATION);
 
@@ -110,10 +111,10 @@ export default function Requests() {
   console.log(data);
 
   let approve = function(request, callWhenDone) {
-    approveRequestMutation({ variables: { Id: request.Id }, onCompleted: callWhenDone, onError: (error) => { console.log("Error when approving request " + error); } });
+    approveRequestMutation({ variables: { Id: request.Id }, onCompleted: callWhenDone, onError: (error) => { console.log("Error when approving request " + error); }, refetchQueries: [ REQUESTS, 'Requests' ] });
   }
   let reject = function(request, callWhenDone) {
-    rejectRequestMutation({ variables: { Id: request.Id }, onCompleted: callWhenDone, onError: (error) => { console.log("Error when rejecting request " + error); } });
+    rejectRequestMutation({ variables: { Id: request.Id }, onCompleted: callWhenDone, onError: (error) => { console.log("Error when rejecting request " + error); }, refetchQueries: [ REQUESTS, 'Requests' ] });
   }
 
 
