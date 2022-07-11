@@ -22,13 +22,13 @@ const schema = yup.object().shape({
   userName: yup.string().required().min(5, "Usernames must be 5 characters or more").max(15, "Usernames cannot be more than 15 characters"),
 });
 
-function FormExample(props) {
+function UserIdForm(props) {
   return (
     <Formik
       validationSchema={schema}
       onSubmit={values => { console.log("Submitting"); alert(JSON.stringify(values, null, 2)); props.handleSubmit(); }}
       initialValues={{
-        userName: '',
+        userName: props.preferredUserName,
       }}
       validateOnChange={true}
       validateOnBlur={true}
@@ -58,7 +58,7 @@ function FormExample(props) {
               <Form.Control.Feedback type='invalid' tooltip>{errors.userName}</Form.Control.Feedback>
             </Form.Group>
           </Row>
-          <Button type="submit">Submit form</Button>
+          <Button type="submit">Request Account</Button>
         </Form>
       )}
     </Formik>
@@ -88,14 +88,11 @@ class ReqUserAccount extends Component {
           <Modal.Title>Request an SDF account</Modal.Title>
         </Modal.Header>
         <Modal.Body>Request an SDF account for {this.props.eppn}. Please choose a username.
-          <FormExample handleSubmit={this.requestAccount}/>
+          <UserIdForm handleSubmit={this.requestAccount} preferredUserName={this.state.preferredUserName}/>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={this.handleClose}>
             Close
-          </Button>
-          <Button variant="primary" onClick={this.requestAccount}>
-            Request Account
           </Button>
         </Modal.Footer>
       </Modal>
