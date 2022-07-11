@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { NavLink } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Row from "react-bootstrap/Row";
@@ -17,6 +17,7 @@ query{
     reqtype
     eppn
     username
+    preferredUserName
     reponame
     facilityname
   }
@@ -80,14 +81,14 @@ class RequestsTable extends Component {
       <>
       <div className="container-fluid text-center table-responsive">
         <table className="table table-condensed table-striped table-bordered">
-          <thead><tr><th>Type</th><th>Username/EPPN</th><th>Repo</th><th>Facility</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Type</th><th>Username/EPPN</th><th>Repo</th><th>Facility / Preferred User Name</th><th>Actions</th></tr></thead>
           <tbody>{
                   _.map(this.state.requests, (r) => { return (
                                 <tr key={r.Id} data-id={r.Id}>
                                   <td>{r.reqtype}</td>
                                   <td>{!_.isEmpty(_.get(r, "username")) ? r.username : r.eppn}</td>
                                   <td>{r.reponame}</td>
-                                  <td>{r.facilityname}</td>
+                                  <td>{r.reqtype == "UserAccount" ? r.preferredUserName: r.facilityname}</td>
                                   <td><Approve request={r} removeRequest={this.removeRequest} approve={this.props.approve} reject={this.props.reject} /></td>
                                 </tr>
                               )})
@@ -105,16 +106,17 @@ export default function Requests() {
   const [ approveRequestMutation ] = useMutation(APPROVE_REQUEST_MUTATION);
   const [ rejectRequestMutation ] = useMutation(REJECT_REQUEST_MUTATION);
 
+  const [err, setErr] = useState("");
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;
   console.log(data);
 
   let approve = function(request, callWhenDone) {
-    approveRequestMutation({ variables: { Id: request.Id }, onCompleted: callWhenDone, onError: (error) => { console.log("Error when approving request " + error); }, refetchQueries: [ REQUESTS, 'Requests' ] });
+    approveRequestMutation({ variables: { Id: request.Id }, onCompleted: callWhenDone, onError: (error) => { setErr("Error when approving request " + error); }, refetchQueries: [ REQUESTS, 'Requests' ] });
   }
   let reject = function(request, callWhenDone) {
-    rejectRequestMutation({ variables: { Id: request.Id }, onCompleted: callWhenDone, onError: (error) => { console.log("Error when rejecting request " + error); }, refetchQueries: [ REQUESTS, 'Requests' ] });
+    rejectRequestMutation({ variables: { Id: request.Id }, onCompleted: callWhenDone, onError: (error) => { setErr("Error when rejecting request " + error); }, refetchQueries: [ REQUESTS, 'Requests' ] });
   }
 
 
@@ -122,8 +124,9 @@ export default function Requests() {
     <>
     <Container fluid>
      <div className="row no-gutters">
-      Pending requests
+      <h4>Pending requests</h4>
      </div>
+     <div className="alert alert-danger">{err}</div>
      <RequestsTable requests={data.requests} approve={approve} reject={reject}/>
     </Container>
     </>

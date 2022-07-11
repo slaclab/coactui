@@ -26,7 +26,7 @@ function UserIdForm(props) {
   return (
     <Formik
       validationSchema={schema}
-      onSubmit={values => { console.log("Submitting"); alert(JSON.stringify(values, null, 2)); props.handleSubmit(); }}
+      onSubmit={values => { props.handleSubmit(values.userName); }}
       initialValues={{
         userName: props.preferredUserName,
       }}
@@ -43,22 +43,28 @@ function UserIdForm(props) {
         errors,
       }) => (
         <Form noValidate onSubmit={handleSubmit}>
-          <Row className="mb-3">
-            <Form.Group as={Col} md="4" controlId="validationFormik01" className="position-relative">
-              <Form.Label>Preferred username</Form.Label>
-              <Form.Control
-                type="text"
-                name="userName"
-                value={values.userName}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                isValid={touched.userName && !errors.userName}
-                isInvalid={touched.userName && errors.userName}
-              />
-              <Form.Control.Feedback type='invalid' tooltip>{errors.userName}</Form.Control.Feedback>
-            </Form.Group>
-          </Row>
-          <Button type="submit">Request Account</Button>
+          <Modal.Body>Request an SDF account for {props.eppn}. Please choose a username.
+            <Row className="mb-3">
+              <Form.Group as={Col} md="4" controlId="validationFormik01" className="position-relative">
+                <Form.Label>Preferred username</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="userName"
+                  value={values.userName}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  isValid={touched.userName && !errors.userName}
+                  isInvalid={touched.userName && errors.userName}
+                />
+                <Form.Control.Feedback type='invalid' tooltip>{errors.userName}</Form.Control.Feedback>
+              </Form.Group>
+            </Row>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={props.handleClose}>Close</Button>
+            <Button type="submit">Request Account</Button>
+          </Modal.Footer>
+
         </Form>
       )}
     </Formik>
@@ -68,15 +74,9 @@ function UserIdForm(props) {
 class ReqUserAccount extends Component {
   constructor(props) {
     super(props);
-    this.state = { preferredUserName: _.split(this.props.eppn, "@")[0], userNameInvalid: false }
     this.handleClose = () => { this.props.setShow(false); }
-    this.requestAccount = () => {
-      console.log(this.state.preferredUserName);
-      if(_.isEmpty(this.state.preferredUserName)) {
-        this.setState({ userNameInvalid: true });
-        return;
-      }
-      this.props.requestUserAccount(this.state.preferredUserName);
+    this.requestAccount = (preferredUserName) => {
+      this.props.requestUserAccount(preferredUserName);
       this.props.setShow(false);
     }
     this.setPreferredUserid = (event) => { this.setState({ preferredUserName: event.target.value }) }
@@ -87,14 +87,7 @@ class ReqUserAccount extends Component {
         <Modal.Header closeButton>
           <Modal.Title>Request an SDF account</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Request an SDF account for {this.props.eppn}. Please choose a username.
-          <UserIdForm handleSubmit={this.requestAccount} preferredUserName={this.state.preferredUserName}/>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleClose}>
-            Close
-          </Button>
-        </Modal.Footer>
+        <UserIdForm handleSubmit={this.requestAccount} preferredUserName={_.split(this.props.eppn, "@")[0]} handleClose={this.handleClose} eppn={this.props.eppn}/>
       </Modal>
       )
   }
@@ -103,9 +96,9 @@ class ReqUserAccount extends Component {
 export default function NewUser(props) {
   const [ requestUserAccount, { uudata, uuloading, uuerror }] = useMutation(REQUEST_USERACCOUNT_MUTATION);
   const [show, setShow] = useState(false);
-  const requestAccount = () => {
-    console.log("Account requested");
-    requestUserAccount({ variables: { request: { reqtype: "UserAccount", eppn: props.eppn }}});
+  const requestAccount = (preferredUserName) => {
+    console.log("Account requested for eppn " + props.eppn + " and preferred userid " + preferredUserName);
+    requestUserAccount({ variables: { request: { reqtype: "UserAccount", eppn: props.eppn, preferredUserName: preferredUserName }}});
     setShow(false);
   };
   const handleClose = () => setShow(false);
