@@ -15,7 +15,7 @@ import {
   gql
 } from "@apollo/client";
 import TopNavBar from "./nav";
-import Facilities from "./facilities";
+import Facilities from "./tabs/facilities";
 import Repos from "./tabs/repos";
 import Requests from "./tabs/requests";
 import Home from "./home";
