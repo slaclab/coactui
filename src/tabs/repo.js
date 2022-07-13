@@ -13,10 +13,7 @@ query Repos($reposinput: RepoInput){
     facility
     facilityObj {
       name
-      resources {
-        name
-        type
-      }
+      resources
     }
   }
 }`;
@@ -36,9 +33,9 @@ export default function Repo() {
         <Navbar.Collapse>
           <Nav className="me-auto" navbar>
           { resources.map((resource) => (
-            <Nav.Item key={resource.name}>
-              <Nav.Link as={Link} to={`/repos/${reponame}/${resource.type}/${resource.name}`}>
-                {resource.name}
+            <Nav.Item key={resource}>
+              <Nav.Link as={Link} to={`/repos/${reponame}/${resource == "storage" ? "storage" : "compute"}/${resource}`}>
+                {resource}
               </Nav.Link>
             </Nav.Item>
           ))}

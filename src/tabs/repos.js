@@ -9,6 +9,7 @@ import Col from "react-bootstrap/Col";
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
+import { NodeSecs } from "./widgets";
 
 const REPOS = gql`
 query{
@@ -17,6 +18,27 @@ query{
     principal
     facilityObj {
       name
+    }
+    currentAllocations(resource:null) {
+      resource
+      start
+      end
+      qoses {
+        name
+        slachours
+      }
+      volumes {
+        name
+        purpose
+        gigabytes
+        inodes
+      }
+    }
+    usage(resource:null) {
+      resource
+      qos
+      slacsecs
+      avgcf
     }
   }
   whoami {
@@ -33,6 +55,27 @@ mutation repoMembershipRequest($request: SDFRequestInput!){
 }
 `;
 
+class ReposRow extends Component {
+  constructor(props) {
+    super(props);
+    this.totalSlachours = _.sum(_.map(_.get(_.find(_.get(this.props.repo, "currentAllocations", []), ["resource", "compute"]), "qoses"), "slachours"))
+    this.totalGigabytes = _.sum(_.map(_.get(_.find(_.get(this.props.repo, "currentAllocations", []), ["resource", "storage"]), "volumes"), "gigabytes"))
+    this.totalSlacSecsused = _.sum(_.map(_.get(this.props.repo, "usage", []), "slacsecs"));
+  }
+  render() {
+    return (
+      <tr data-name={this.props.repo.name}>
+        <td><NavLink to={`/repos/${this.props.repo.name}`} key={this.props.repo.name}>{this.props.repo.name}</NavLink></td>
+        <td>{this.props.repo.facilityObj.name}</td>
+        <td>{this.props.repo.principal}</td>
+        <td>{this.totalSlachours}</td>
+        <td><NodeSecs value={this.totalSlacSecsused}/></td>
+        <td>{this.totalGigabytes}</td>
+        <td>TBD</td>
+      </tr>)
+  }
+}
+
 
 class ReposTable extends Component {
   constructor(props) {
@@ -45,17 +88,7 @@ class ReposTable extends Component {
         <table className="table table-condensed table-striped table-bordered">
           <thead><tr><th>Name</th><th>Facility</th><th>PI</th><th>Total compute allocation</th><th>Total compute used</th><th>Total storage allocation</th><th>Total storage used</th></tr></thead>
           <tbody>{
-                  _.map(this.props.repos, (r) => { return (
-                                <tr key={r.name} data-name={r.name}>
-                                  <td><NavLink to={`/repos/${r.name}`} key={r.name}>{r.name}</NavLink></td>
-                                  <td>{r.facilityObj.name}</td>
-                                  <td>{r.principal}</td>
-                                  <td>TBD</td>
-                                  <td>TBD</td>
-                                  <td>TBD</td>
-                                  <td>TBD</td>
-                                </tr>
-                              )})
+                  _.map(this.props.repos, (r) => { return (<ReposRow key={r.name} repo={r}/>) })
                     }
             </tbody>
           </table>
@@ -128,6 +161,8 @@ export default function Repos() {
   if (error) return <p>Error :</p>;
 
   let username = _.get(data, "whoami.username");
+
+  console.log(data);
 
   const requestRepoMembership = (reponame) => {
     console.log("Repo membership requested for repo " + reponame);

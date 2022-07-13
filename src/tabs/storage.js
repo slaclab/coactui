@@ -14,24 +14,22 @@ query Repos($reposinput: RepoInput $resourcename: String! $datayear: Int!){
     users
     facilityObj {
       name
-      resources {
-        name
-        type
-      }
+      resources
     }
-    allocations(resource: $resourcename year: $datayear) {
+    currentAllocations(resource: $resourcename) {
       resource
       facility
-      year
-      compute
-      storage
-      inodes
+      volumes {
+        name
+        purpose
+        gigabytes
+        inodes
+      }
     }
-    userAllocations(resource: $resourcename year: $datayear) {
+    userAllocations(resource: $resourcename) {
       username
-      compute
-      storage
-      inodes
+      repo
+      percent
     }
     storageUsage(resource: $resourcename year: $datayear) {
       totalStorage

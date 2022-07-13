@@ -14,12 +14,9 @@ query Repos($reposinput: RepoInput $resourcename: String! $datayear: Int!){
     users
     facilityObj {
       name
-      resources {
-        name
-        type
-      }
+      resources
     }
-    allocations(resource: $resourcename) {
+    currentAllocations(resource: $resourcename) {
       resource
       facility
       start
@@ -33,17 +30,17 @@ query Repos($reposinput: RepoInput $resourcename: String! $datayear: Int!){
       facility
       resource
       repo
-      username      
+      username
+      percent
     }
-    usage(resource: $resourcename year: $datayear) {
+    usage(resource: $resourcename) {
       facility
       resource
       repo
-      year
-      totalNodeSecs
-      totalMachineSecs
-      totalRawSecs
-      averageChargeFactor
+      slacsecs
+      machinesecs
+      rawsecs
+      avgcf
     }
     perDayUsage(resource: $resourcename year: $datayear) {
       facility
@@ -51,21 +48,20 @@ query Repos($reposinput: RepoInput $resourcename: String! $datayear: Int!){
       repo
       year
       dayOfYear
-      totalNodeSecs
-      totalMachineSecs
-      totalRawSecs
-      averageChargeFactor
+      slacsecs
+      machinesecs
+      rawsecs
+      avgcf
     }
     perUserUsage(resource: $resourcename year: $datayear) {
       facility
       resource
       repo
-      year
       username
-      totalNodeSecs
-      totalMachineSecs
-      totalRawSecs
-      averageChargeFactor
+      slacsecs
+      machinesecs
+      rawsecs
+      avgcf
     }
   }
 }
@@ -84,33 +80,33 @@ class User extends React.Component {
   constructor(props) {
     super(props);
     this.computeRemaining = (allocation_percent) => {
-      let allocatedNodeSecs = _.toNumber(allocation_percent)*this.props.repoallocation*3600/100;
-      let remainingNodeSecs = allocatedNodeSecs - _.get(this.props.user, "totalNodeSecs", 0);
-      let remaining = (remainingNodeSecs/allocatedNodeSecs)*100.0;
+      let allocated_slac_secs = _.toNumber(allocation_percent)*this.props.repoallocation*3600/100;
+      let remaining_slac_secs = allocated_slac_secs - _.get(this.props.user, "slacsecs", 0);
+      let remaining_percent = (remaining_slac_secs/allocated_slac_secs)*100.0;
       return {
         "allocation": _.toNumber(allocation_percent),
-        "allocatedNodeSecs": allocatedNodeSecs,
-        "remainingNodeSecs": remainingNodeSecs,
-        "remaining": remaining
+        "allocated_slac_secs": allocated_slac_secs,
+        "remaining_slac_secs": remaining_slac_secs,
+        "remaining_percent": remaining_percent
       }
     }
     this.handleChange = (event) => {
       this.props.onAllocationChange(this.props.user.username, event.target.value);
       this.setState(this.computeRemaining(event.target.value));
     }
-    this.state = this.computeRemaining(_.get(this.props.user, "allocation.compute", 0));
+    this.state = this.computeRemaining(_.get(this.props.user, "allocation.percent", 0));
   }
 
   render() {
     return (<tr data-userid={this.props.user.username}>
       <td>{this.props.user.username}</td>
       <td><input className="percent allocation_input" type="number" defaultValue={this.state.allocation} onBlur={this.handleChange}/><span className="invalid-feedback"></span></td>
-      <td className="allocated"><NodeSecs value={this.state.allocatedNodeSecs}/></td>
-      <td className="allocated"><NodeSecs value={this.props.user.totalNodeSecs}/></td>
-      <td className="allocated"><NodeSecs value={this.props.user.totalMachineSecs}/></td>
-      <td className="allocated"><NodeSecs value={this.props.user.totalRawSecs}/></td>
+      <td className="allocated"><NodeSecs value={this.state.allocated_slac_secs}/></td>
+      <td className="allocated"><NodeSecs value={this.props.user.slacsecs}/></td>
+      <td className="allocated"><NodeSecs value={this.props.user.machinesecs}/></td>
+      <td className="allocated"><NodeSecs value={this.props.user.rawsecs}/></td>
       <td><ChargeFactor value={this.props.user.averageChargeFactor}/></td>
-      <td className="remaining"><Percent value={this.state.remaining}/></td></tr>);
+      <td className="remaining"><Percent value={this.state.remaining_percent}/></td></tr>);
     }
 }
 
@@ -122,31 +118,25 @@ class TopTab extends React.Component {
     return (<div className="toptbl">
         <div className="row">
           <span className="col-2"><label>Current allocation</label></span>
-          <span className="col-2"><NodeSecs value={this.props.cmpusg.compute}/></span>
-          <span className="col-2"><label>Machine hours used</label></span>
-          <span className="col-2"><NodeSecs value={this.props.cmpusg.totalMachineSecs}/></span>
-          <span className="col-2"><label>ERCAP request</label></span>
-          <span className="col-2"><NodeSecs value={this.props.cmpusg.ercap_request}/></span>
-        </div>
-        <div className="row">
-          <span className="col-2"><label>NERSC hours charged</label></span>
-          <span className="col-2"><NodeSecs value={this.props.cmpusg.totalNodeSecs}/></span>
-          <span className="col-2"><label>Raw hours used</label></span>
-          <span className="col-2"><NodeSecs value={this.props.cmpusg.totalRawSecs}/></span>
-          <span className="col-2"><label>ERCAP award</label></span>
-          <span className="col-2"><NodeSecs value={this.props.cmpusg.ercap_award}/></span>
-        </div>
-        <div className="row">
+          <span className="col-2">{this.props.data.current_allocation}</span>
           <span className="col-2"><label>Available hours</label></span>
-          <span className="col-2"><NodeSecs value={this.props.cmpusg.available_secs}/></span>
-          <span className="col-2"><label>Average charge factor</label></span>
-          <span className="col-2"><ChargeFactor value={this.props.cmpusg.averageChargeFactor}/></span>
-          <span className="col-2"><label>Premium Threshold reached</label></span>
-          <span className="col-2">{this.props.cmpusg.premium_threshold_reached}</span>
+          <span className="col-2"><NodeSecs value={this.props.data.available_secs}/></span>
+          <span className="col-2"><label>Raw hours used</label></span>
+          <span className="col-2"><NodeSecs value={this.props.data.raw_secs_charged}/></span>
         </div>
         <div className="row">
+          <span className="col-2"><label>SLAC hours charged</label></span>
+          <span className="col-2"><NodeSecs value={this.props.data.slac_secs_charged}/></span>
           <span className="col-2"><label>Remaining %</label></span>
-          <span className="col-2"><Percent value={this.props.cmpusg.remaining_percent}/></span>
+          <span className="col-2"><Percent value={this.props.data.remaining_percent}/></span>
+          <span className="col-2"><label>Premium reached</label></span>
+          <span className="col-2">TBD</span>
+        </div>
+        <div className="row">
+          <span className="col-2"><label>Average charge factor</label></span>
+          <span className="col-2"><ChargeFactor value={this.props.data.average_charge_factor}/></span>
+          <span className="col-2"><label>Machine hours used</label></span>
+          <span className="col-2"><NodeSecs value={this.props.data.machine_secs_charged}/></span>
         </div>
         </div>
       );
@@ -165,7 +155,7 @@ class BottomTab extends React.Component {
         <div className="table-responsive">
           <table className="table table-condensed table-striped table-bordered">
             <thead><tr><th>UserID</th><th>Allocation (% of repo)</th><th>Allocated NERSC hours</th><th>Charged NERSC hours</th><th>Charged machine hours</th><th>Charged node hours</th><th>Average Charge factor</th><th>Remaining</th></tr></thead>
-            <tbody>{_.map(this.props.users, (user, k) => ( <User key={user.username}  user={user} repoallocation={this.props.cmpusg["compute"]} onAllocationChange={this.props.onAllocationChange}/> ))}</tbody>
+            <tbody>{_.map(this.props.users, (user, k) => ( <User key={user.username}  user={user} repoallocation={this.props.current_allocation} onAllocationChange={this.props.onAllocationChange}/> ))}</tbody>
           </table>
         </div>
       </div>
@@ -180,11 +170,11 @@ class ComputeTab extends React.Component {
 
   render() {
     return (<div className="container-fluid text-center tabcontainer">
-      <TopTab cmpusg={this.props.cmpusg}/>
+      <TopTab data={this.props.toptbldata}/>
       <div className="midchart">
         <Plot data={this.props.chartdata} layout={this.props.layout}/>
       </div>
-      <BottomTab cmpusg={this.props.cmpusg} users={this.props.users} allocations={this.state} onAllocationChange={this.props.onAllocationChange} updateAllocations={this.props.updateAllocations}/>
+      <BottomTab users={this.props.btmtbldata} allocations={this.state} current_allocation={this.props.toptbldata.current_allocation} onAllocationChange={this.props.onAllocationChange} updateAllocations={this.props.updateAllocations}/>
     </div>)
   }
 }
@@ -198,34 +188,42 @@ export default function Compute() {
   if (error) return <p>Error :</p>;
   let repodata = data.repos[0];
   console.log(repodata);
-  let facility = repodata["facility"], allocations = _.get(repodata, "allocations[0]", {}),
+  let facility = repodata["facility"], allocations = _.get(repodata, "currentAllocations[0]", {}),
     usage = _.get(repodata, "usage[0]", {}),
     per_user_allocations = _.get(repodata, "userAllocations", []),
     per_user_usage = _.get(repodata, "perUserUsage", []),
     per_day_usage = _.get(repodata, "perDayUsage", []),
     repo_users = _.get(repodata, "users", []);
-  var cmpusg = _.defaults({}, usage, allocations);
-  cmpusg["available_secs"] = cmpusg["compute"]*3600 - cmpusg["totalNodeSecs"];
-  cmpusg["remaining_percent"] = (cmpusg["available_secs"]/(cmpusg["compute"]*3600))*100.0;
-  console.log(cmpusg);
+  let toptbldata = {
+    current_allocation: _.sum(_.map(_.get(allocations, "qoses", []), "slachours")),
+    current_allocation_secs: _.sum(_.map(_.get(allocations, "qoses", []), "slachours"))*3600,
+    slac_secs_charged: _.get(usage, "slacsecs"),
+    machine_secs_charged: _.get(usage, "machinesecs"),
+    raw_secs_charged: _.get(usage, "rawsecs")
+  }
+  toptbldata.available_secs = toptbldata.current_allocation_secs - toptbldata.slac_secs_charged;
+  toptbldata.remaining_percent = (toptbldata.available_secs/toptbldata.current_allocation_secs)*100.0;
+  toptbldata.average_charge_factor = toptbldata.slac_secs_charged/toptbldata.raw_secs_charged;
+  //console.log(toptbldata);
+
   // Users can come and go.. Collect all the users from the various sources.
-  var users = _.fromPairs(_.map(_.union(_.map(per_user_allocations, "username"), _.map(per_user_usage, "username"), repo_users), u=> [u, {"username": u}]));
-  _.each(users, u => { u["allocatedNodeSecs"] = 0; u["remainingNodeSecs"]=0; u["remaining"]=100; })
+  var users = _.fromPairs(_.map(_.union(_.map(per_user_allocations, "username"), _.map(per_user_usage, "username"), repo_users), u=> [u, {username: u, allocated_slac_secs: 0, remaining_slac_secs: 0, remaining_percent: 100}]));
   _.each(per_user_allocations, function(v,k){ users[v["username"]]["allocation"] = _.cloneDeep(v) });
   _.each(per_user_usage, function(pu){
     let u = users[pu["username"]];
-    _.each(["totalNodeSecs", "totalMachineSecs", "totalRawSecs", "totalNodeSecs", "averageChargeFactor"], function(at) { u[at] = pu[at]; })
-    u["allocatedNodeSecs"] = _.get(u, "allocation.compute", 0)*cmpusg["compute"]*3600/100;
-    u["remainingNodeSecs"] = u["allocatedNodeSecs"] - _.get(u, "totalNodeSecs");
-    u["remaining"] = (u["remainingNodeSecs"]/u["allocatedNodeSecs"])*100.0;
+    _.each(["slacsecs", "machinesecs", "rawsecs", "avgcf"], function(at) { u[at] = pu[at]; })
+    u["allocated_slac_secs"] = _.get(u, "allocation.percent", 0)*toptbldata.current_allocation_secs/100;
+    u["remaining_slac_secs"] = u["allocated_slac_secs"] - _.get(u, "slacsecs");
+    u["remaining_percent"] = (u["remaining_slac_secs"]/u["allocated_slac_secs"])*100.0;
   });
+  // console.log(users);
 
-  let layout = { showlegend: true, legend: { x: 0.075, xanchor: 'center', y: 0.98, font: { family: 'Optima, Helevetica, Lucida Grande, Lucida Sans, sans-serif', size: 14, color: '#000' } }, autosize: false, width: window.innerWidth, height: 0.4*window.innerHeight, margin: { t: 0, b: 0 } };
-  let uniform_charge_rate = { x: [], y: [], type: 'scatter', name: "Uniform Charge Rate" }, daily_charge_rate = { x: [], y: [], type: 'scatter', "name": "NERSC hours charged" };
-  let daily_usage_by_day = _.keyBy(per_day_usage, "dayOfYear"), avg_allocation = allocations["compute"]/(dayjs().endOf("year").diff(dayjs().startOf('year'), "days")), cuml_daily_usage = 0, today = dayjs();
+  let layout = { showlegend: true, legend: { x: 0.075, xanchor: 'center', y: 0.98, font: { family: 'Optima, Helevetica, Lucida Grande, Lucida Sans, sans-serif', size: 14, color: '#000' } }, autosize: false, width: window.innerWidth, height: 0.4*window.innerHeight, margin: { t: 0, b: -0.1 } };
+  let uniform_charge_rate = { x: [], y: [], type: 'scatter', name: "Uniform Charge Rate" }, daily_charge_rate = { x: [], y: [], type: 'scatter', "name": "SLAC hours charged" };
+  let daily_usage_by_day = _.keyBy(per_day_usage, "dayOfYear"), avg_allocation = toptbldata.current_allocation/(dayjs().endOf("year").diff(dayjs().startOf('year'), "days")), cuml_daily_usage = 0, today = dayjs();
   for(let i=0, d = dayjs().startOf('year'); d.isBefore(dayjs().endOf("year")); d = d.add(1, "days"), i=i+1) {
     uniform_charge_rate.x.push(d.toDate()); uniform_charge_rate.y.push(i*avg_allocation);
-    if(d.isBefore(today)){ daily_charge_rate.x.push(d.toDate()); cuml_daily_usage = cuml_daily_usage + (_.get(daily_usage_by_day, i+1+".totalNodeSecs", 0))/3600.0; daily_charge_rate.y.push(cuml_daily_usage); }
+    if(d.isBefore(today)){ daily_charge_rate.x.push(d.toDate()); cuml_daily_usage = cuml_daily_usage + (_.get(daily_usage_by_day, i+1+".slacsecs", 0))/3600.0; daily_charge_rate.y.push(cuml_daily_usage); }
   }
   var chartdata = [uniform_charge_rate, daily_charge_rate];
 
@@ -243,14 +241,13 @@ export default function Compute() {
         facility: facility,
         resource: resourcename,
         repo: reponame,
-        year: datayear,
         username: u["username"],
-        compute: _.get(u, "allocation.compute", 0)
+        percent: _.get(u, "allocation.compute", 0)
       }
     })
     console.log(data);
     updateUserAllocation({ variables: { reposinput: { name: reponame }, data: data } });
   }
 
-  return (<ComputeTab cmpusg={cmpusg} users={users} chartdata={chartdata} layout={layout} onAllocationChange={changeAllocation} updateAllocations={updateAllocations} />);
+  return (<ComputeTab toptbldata={toptbldata} btmtbldata={users} chartdata={chartdata} layout={layout} onAllocationChange={changeAllocation} updateAllocations={updateAllocations} />);
 }
