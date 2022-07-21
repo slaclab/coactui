@@ -1,5 +1,14 @@
 import _ from "lodash";
 import React from "react";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Image from 'react-bootstrap/Image'
+import SLACLogo from '../images/SLAC_primary_red.png';
+import SLACShortLogo from '../images/SLAC_short_white.png';
+import StanfordDOELogo from '../images/Stanford_DOE_black.png';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faRocket, faPerson, faPersonCircleQuestion } from '@fortawesome/free-solid-svg-icons'
+
 
 export function NodeSecs(props) {
   if(_.isNil(props.value)) return "N/A";
@@ -49,4 +58,24 @@ export class SearchAndAdd extends React.Component {
       </div>
     );
   }
+}
+
+export function NoNavHeader() { // Use for pages that do have a navbar on top.
+  return (
+     <div className="nonavheader">
+        <a href="https://www.slac.stanford.edu" className="nslogo"><Image height={"50vh"} src={SLACShortLogo}/></a>
+        <FontAwesomeIcon className="napplogo align-middle" icon={faRocket} size="lg"/> <span className="nsppname align-middle">Coact</span>
+     </div>
+  )
+}
+
+export function Footer() {
+  return (
+     <div className="footer">
+      <Row>
+        <Col><a href="https://www.slac.stanford.edu"><Image height={"50vh"} src={SLACLogo}/></a></Col>
+        <Col><Image height={"50vh"} src={StanfordDOELogo} className="partner"/></Col>
+      </Row>
+     </div>
+  )
 }

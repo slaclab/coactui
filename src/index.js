@@ -14,6 +14,10 @@ import {
   useQuery,
   gql
 } from "@apollo/client";
+import Col from "react-bootstrap/Col";
+import Container from 'react-bootstrap/Container';
+import Image from 'react-bootstrap/Image'
+import Row from "react-bootstrap/Row";
 import TopNavBar from "./nav";
 import Facilities from "./tabs/facilities";
 import Repos from "./tabs/repos";
@@ -25,8 +29,9 @@ import Compute from "./tabs/compute";
 import Storage from "./tabs/storage";
 import Users from "./tabs/users";
 import Groups from "./tabs/groups";
-import 'bootstrap/dist/css/bootstrap.css';
 import './index.css';
+import { Footer } from "./tabs/widgets";
+
 
 const client = new ApolloClient({
   uri: process.env.REACT_APP_COACT_GRAPHQL_URI,
@@ -45,7 +50,6 @@ query {
   }
 }
 `;
-
 
 function App() {
   const { loading, error, data } = useQuery(HOMEDETAILS, { errorPolicy: 'all'} );
@@ -69,22 +73,27 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-    <TopNavBar/>
-    <Routes>
-      <Route exact path="/" element={ <Navigate to="repos" /> } />
-      <Route exact path="facilities" element={<Facilities />}/>
-      <Route exact path="repos" element={<Repos />}/>
-      <Route exact path="home" element={<Home />}/>
-      <Route exact path="requests" element={<Requests />}/>
-      <Route exact path="repos/:name" element={<Repo />}>
-      <Route exact path="compute/:resourcename" element={<Compute />} />
-      <Route exact path="storage/:resourcename" element={<Storage />} />
-      <Route exact path="users/" element={<Users />} />
-      <Route exact path="groups/" element={<Groups />} />
-      </Route>
-    </Routes>
-    </BrowserRouter>
+    <div id="mainContainer">
+      <div className="header">
+        <BrowserRouter>
+        <TopNavBar/>
+        <Routes>
+          <Route exact path="/" element={ <Navigate to="repos" /> } />
+          <Route exact path="facilities" element={<Facilities />}/>
+          <Route exact path="repos" element={<Repos />}/>
+          <Route exact path="home" element={<Home />}/>
+          <Route exact path="requests" element={<Requests />}/>
+          <Route exact path="repos/:name" element={<Repo />}>
+          <Route exact path="compute/:resourcename" element={<Compute />} />
+          <Route exact path="storage/:resourcename" element={<Storage />} />
+          <Route exact path="users/" element={<Users />} />
+          <Route exact path="groups/" element={<Groups />} />
+          </Route>
+        </Routes>
+        </BrowserRouter>
+      </div>
+      <Footer/>
+    </div>
   );
 }
 

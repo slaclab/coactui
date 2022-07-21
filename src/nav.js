@@ -66,7 +66,7 @@ export default function TopNavBar( ) {
     logged_in_user = data["whoami"].username;
   };
   return (
-    <Navbar bg="primary" expand="lg">
+    <Navbar bg="primary" variant="dark" expand="lg">
       <Container>
         <Navbar.Brand><FontAwesomeIcon icon={faRocket} size="lg"/> Coact</Navbar.Brand>
 	<Navbar.Toggle onClick={function noRefCheck(){}} />

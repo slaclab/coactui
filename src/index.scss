@@ -1,0 +1,155 @@
+$cardinal: rgb(140,21,21);
+$digitalred: rgb(177,4,14);
+$digitalredlight: rgb(229,8,8);
+
+$white: rgb(255,255,255);
+$stanfordblack: rgb(46,45,41);
+$coolgrey: rgb(83,86,90);
+$trueblack: rgb(0,0,0);
+$black10: rgb(234,234,234);
+
+$lagunita: rgb(0,124,146);
+$paloverde: rgb(39,153,137);
+$bay: rgb(111,162,135);
+$lime: rgb(139,199,81);
+$purple: rgb(83,40,79);
+$clay: rgb(95,87,79);
+$sky: rgb(103,175,210);
+$paloalto: rgb(23,94,84);
+$lightsage: rgb(199,209,197);
+$illuminating: rgb(254,221,92);
+$lavender: rgb(118,94,153);
+$stone: rgb(146,139,129);
+$teal: rgb(0,80,92);
+$poppy: rgb(233,131,0);
+$spirited: rgb(224,79,57);
+$fog: rgb(218,215,203);
+
+$primary: $digitalred;
+$secondary: $illuminating;
+
+$theme-colors: (
+  "primary": $primary,
+  "secondary": $secondary
+);
+
+$nav-pills-link-active-bg: $spirited;
+
+$selected: $lagunita;
+
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  src: local('Lato'), url(./fonts/Lato/Lato-Regular.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: bold;
+  src: local('Lato'), url(./fonts/Lato/Lato-Bold.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Lato';
+  font-style: italic;
+  src: local('Lato'), url(./fonts/Lato/Lato-Italic.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Merriweather';
+  src: local('Merriweather'), url(./fonts/Merriweather/Merriweather-Regular.ttf) format('truetype');
+}
+
+@import '../node_modules/bootstrap/scss/bootstrap';
+
+body {
+  font: 14px Lato, Merriweather, sans-serif;
+}
+
+ol, ul {
+  padding-left: 30px;
+}
+
+.midchart {
+  width: 100rem;
+}
+
+.tbl-selectable {
+  tr.selected {
+    background-color: $selected;
+    color: $white;
+  }
+  tr:nth-of-type(even) tr:not(.selected) {
+    background-color: $black10;
+    color: $black;
+  }
+}
+
+#root{
+  margin: 0;
+  padding: 0;
+}
+
+#mainContainer {
+  min-width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+  .header {
+    margin-left: 0;
+    margin-right: 1.0em;
+    padding: 0;
+    width: 100%;
+  }
+  .footer {
+    width: 100%;
+    margin: 1.0em;
+    .partner {
+      float: right;
+      margin-right: 1.0em;
+    }
+  }
+  .subsection1 {
+    text-align: left;
+    font-weight: bold;
+    font-size: 1.1rem;
+    span {
+      border-bottom: solid 2px $primary;
+      padding-left: 0.25rem;
+      padding-right: 0.25rem;
+      margin-bottom: 0.25rem;
+    }
+  }
+}
+
+.newuser {
+  button {
+    margin-left: 0.25em;
+  }
+  .footer {
+    margin-top: 0.5em;
+  }
+}
+
+.nonavheader {
+  margin-left: 0;
+  padding: 0;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  width: 100%;
+  background-color: $primary;
+  .nslogo {
+    padding-left: 1.0em;
+  }
+  .napplogo {
+    padding-left: 1.0em;
+    font-size: 2.5em;
+    color: $white;
+  }
+  .nsppname {
+    padding-left: 0.15em;
+    font-size: 2.5em;
+    color: $white;
+  }
+}

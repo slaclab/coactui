@@ -101,7 +101,7 @@ class ReposTable extends Component {
 class RequestAddToRepo extends Component {
   render() {
     const showMdl = () => {  this.props.setShow(true); }
-    return <Button variant="primary" onClick={showMdl}>Request Repo Membership</Button>
+    return <Button variant="secondary" onClick={showMdl}>Request Repo Membership</Button>
   }
 }
 

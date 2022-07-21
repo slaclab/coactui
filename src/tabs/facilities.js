@@ -41,6 +41,7 @@ class FacilitiesTable extends Component {
       this.setState({ selectedFacility: facilityName });
       this.props.onSelect(facilityName);
     }
+    this.props.onSelect(this.props.selectedFacility);
   }
 
   render() {
@@ -48,7 +49,7 @@ class FacilitiesTable extends Component {
       <>
       <div className="container-fluid text-center" id="users_content">
           <div className="table-responsive">
-            <table className="table table-condensed table-striped table-bordered collabtbl">
+            <table className="table table-condensed table-bordered tbl-selectable">
               <thead>
                 <tr>
                   <th>Faclity</th>
@@ -61,7 +62,7 @@ class FacilitiesTable extends Component {
               </thead>
               <tbody>{
                 _.map(this.props.facilities, (f) => { return(
-                  <tr key={f.name} data-name={f.name} onClick={this.selectFacility} className={this.state.selectedFacility == f.name ? "bg-primary" : ''}>
+                  <tr key={f.name} data-name={f.name} onClick={this.selectFacility} className={this.state.selectedFacility == f.name ? "selected" : ''}>
  		   <td>{f.name}</td>
  		   <td>{f.description}</td>
        <td>{f.czars}</td>
@@ -96,6 +97,7 @@ class FacilitiesComputeTable extends Component {
     return (
       <>
       <div className="container-fluid text-center" id="users_content">
+          <div className="subsection1"><span>Compute clusters</span></div>
           <div className="table-responsive">
             <table className="table table-condensed table-striped table-bordered collabtbl">
               <thead>
@@ -138,6 +140,7 @@ class FacilitiesStorageTable extends Component {
     return (
       <>
       <div className="container-fluid text-center" id="users_content">
+        <div className="subsection1"><span>Storage volumes</span></div>
           <div className="table-responsive">
             <table className="table table-condensed table-striped table-bordered collabtbl">
               <thead>
