@@ -19,9 +19,12 @@ spec:
         image: slaclab/coact-ui:latest
         #command: [ "bash", "-c", "sleep infinity" ]
         command: [ "npm", "start", "--host=0.0.0.0" ]
+        #command: [ "npm", "run", "dev" ]
         env:
-        - name: GRAPHQL_URI
-          value: graphql
+        - name: REACT_APP_COACT_GRAPHQL_URI
+          value: https://coact-dev.slac.stanford.edu/graphql
+        - name: WDS_SOCKET_PORT
+          value: '443'
         volumeMounts:
         - name: code
           mountPath: /app/src/
