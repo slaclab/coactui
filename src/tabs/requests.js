@@ -81,14 +81,15 @@ class RequestsTable extends Component {
       <>
       <div className="container-fluid text-center table-responsive">
         <table className="table table-condensed table-striped table-bordered">
-          <thead><tr><th>Type</th><th>Username/EPPN</th><th>Repo</th><th>Facility / Preferred User Name</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Type</th><th>Username/EPPN</th><th>Repo</th><th>Facility</th><th>Preferred User Name</th><th>Actions</th></tr></thead>
           <tbody>{
                   _.map(this.state.requests, (r) => { return (
                                 <tr key={r.Id} data-id={r.Id}>
                                   <td>{r.reqtype}</td>
                                   <td>{!_.isEmpty(_.get(r, "username")) ? r.username : r.eppn}</td>
                                   <td>{r.reponame}</td>
-                                  <td>{r.reqtype == "UserAccount" ? r.preferredUserName: r.facilityname}</td>
+                                  <td>{r.facilityname}</td>
+                                  <td>{r.preferredUserName}</td>
                                   <td><Approve request={r} removeRequest={this.removeRequest} approve={this.props.approve} reject={this.props.reject} /></td>
                                 </tr>
                               )})

@@ -35,7 +35,8 @@ import { Footer } from "./tabs/widgets";
 
 const client = new ApolloClient({
   uri: process.env.REACT_APP_COACT_GRAPHQL_URI,
-  cache: new InMemoryCache()
+  cache: new InMemoryCache(),
+  headers: { coactimp: localStorage.getItem('imptk') }
 });
 
 const container = document.getElementById('root');
