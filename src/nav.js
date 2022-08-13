@@ -65,7 +65,7 @@ class Impersonate extends Component {
         </Modal.Header>
         <Modal.Body>Please select the user to impersonate
           <InputGroup hasValidation>
-            <Form.Control type="text" placeholder="Enter name of the repo" onChange={this.setImpName} isInvalid={this.state.impnameInvalid}/>
+            <Form.Control type="text" placeholder="Please select the user to impersonate" onChange={this.setImpName} isInvalid={this.state.impnameInvalid}/>
             <Form.Control.Feedback type="invalid">{this.state.errormsg}</Form.Control.Feedback>
           </InputGroup>
         </Modal.Body>

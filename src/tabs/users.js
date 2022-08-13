@@ -137,7 +137,7 @@ class UsersTab extends React.Component {
               Search for users and add/remove them to/from this repo.
             </ModalHeader>
             <ModalBody>
-              <SearchAndAdd alloptions={this.props.allusernames} selected={_.map(this.props.users, "username")} onSelDesel={this.props.onSelDesel}/>
+              <SearchAndAdd label="Username" alloptions={this.props.allusernames} selected={_.map(this.props.users, "username")} onSelDesel={this.props.onSelDesel}/>
             </ModalBody>
             <ModalFooter>
               <Button onClick={this.hideModal}>
@@ -177,7 +177,7 @@ class UsersTab extends React.Component {
                   </tbody>
                 </table>
               </div>
-              <Button onClick={this.showModal}>Add/remove users</Button>
+              <Button className={this.props.amILeader ? "" : "d-none"} onClick={this.showModal}>Add user to repo</Button>
               </div>
        </div>
     );
@@ -207,6 +207,7 @@ export default function Users() {
     x["has_manage_roles"] = has_manage_roles_privilege;
   });
   console.log(allusers);
+  let amILeader = _.includes(leaders, logged_in_user) || principal==logged_in_user;
 
   let toggleRole = function(username, callWhenDone) {
     console.log("Toggling role for user " + username);
@@ -223,5 +224,5 @@ export default function Users() {
     }
   }
 
-  return (<UsersTab users={allusers} allusernames={allusernames} onToggleRole={toggleRole} onSelDesel={addRemoveUser}/>);
+  return (<UsersTab users={allusers} allusernames={allusernames} onToggleRole={toggleRole} onSelDesel={addRemoveUser} amILeader={amILeader}/>);
 }

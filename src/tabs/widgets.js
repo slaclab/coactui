@@ -4,11 +4,14 @@ import React from "react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Image from 'react-bootstrap/Image'
+import InputGroup from 'react-bootstrap/InputGroup';
+import Form from 'react-bootstrap/Form';
 import SLACLogo from '../images/SLAC_primary_red.png';
 import SLACShortLogo from '../images/SLAC_short_white.png';
 import StanfordDOELogo from '../images/Stanford_DOE_black.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRocket, faPerson, faPersonCircleQuestion } from '@fortawesome/free-solid-svg-icons'
+
 
 
 
@@ -63,9 +66,12 @@ export class SearchAndAdd extends React.Component {
   render() {
     return(
       <div className="table-responsive">
-        <input onChange={this.handleTyping}/>
+        <Form.Group className="mb-3">
+          <Form.Label className="pe-2">{this.props.label}</Form.Label>
+          <Form.Control type="text" placeholder={"Please type in a " + _.toLower(this.props.label)} onChange={this.handleTyping}/>
+        </Form.Group>
         <table className="table table-condensed table-striped table-bordered">
-          <thead><tr><th>{this.props.label}</th><th></th></tr></thead>
+          <thead><tr><th>{this.props.label}</th><th>Select</th></tr></thead>
           <tbody>{ _.map(this.state.matches, (u) => { return (<tr key={u.label}><td>{u.label}</td><td><input type="checkbox" data-selkey={u.label} checked={!!u.selected} onChange={this.checkUncheck}/></td></tr>) }) }</tbody>
         </table>
       </div>
