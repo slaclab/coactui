@@ -20,6 +20,7 @@ import Image from 'react-bootstrap/Image'
 import Row from "react-bootstrap/Row";
 import TopNavBar from "./nav";
 import Facilities from "./tabs/facilities";
+import Facility from "./tabs/facility";
 import Repos from "./tabs/repos";
 import Requests from "./tabs/requests";
 import Home from "./home";
@@ -81,6 +82,7 @@ function App() {
         <Routes>
           <Route exact path="/" element={ <Navigate to="repos" /> } />
           <Route exact path="facilities" element={<Facilities />}/>
+          <Route exact path="facilities/:facilityname" element={<Facility />}/>
           <Route exact path="repos" element={<Repos />}/>
           <Route exact path="home" element={<Home />}/>
           <Route exact path="requests" element={<Requests />}/>

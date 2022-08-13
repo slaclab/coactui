@@ -1,4 +1,5 @@
 import _ from "lodash";
+import dayjs from "dayjs";
 import React from "react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -8,6 +9,7 @@ import SLACShortLogo from '../images/SLAC_short_white.png';
 import StanfordDOELogo from '../images/Stanford_DOE_black.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRocket, faPerson, faPersonCircleQuestion } from '@fortawesome/free-solid-svg-icons'
+
 
 
 export function NodeSecs(props) {
@@ -24,6 +26,17 @@ export function ChargeFactor(props) {
   if(_.isNil(props.value)) return "N/A";
   return props.value.toFixed(2);
 }
+
+export function DateDisp(props) {
+  if(_.isNil(props.value)) return "N/A";
+  return dayjs(props.value).format('MMM D YYYY');
+}
+
+export function DateTimeDisp(props) {
+  if(_.isNil(props.value)) return "N/A";
+  return dayjs(props.value).format('MMM D YYYY HH:mm:ss');
+}
+
 
 // props 1) alloptions Array of strings with all possible choices. 2) selected - those that are currently selected. 3) onSelDesel - function to process selection/deselection.
 export class SearchAndAdd extends React.Component {
