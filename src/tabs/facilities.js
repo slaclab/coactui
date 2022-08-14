@@ -17,7 +17,7 @@ query {
     name
     description
     czars
-    accessClass
+    accessgroup
     capacity {
       start
       end
