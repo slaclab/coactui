@@ -24,7 +24,7 @@ import Facility from "./tabs/facility";
 import Repos from "./tabs/repos";
 import Requests from "./tabs/requests";
 import Home from "./home";
-import NewUser from "./newuser";
+import RegisterUser from "./register";
 import Repo from "./tabs/repo";
 import Compute from "./tabs/compute";
 import Storage from "./tabs/storage";
@@ -67,8 +67,8 @@ function App() {
     return (
       <BrowserRouter>
       <Routes>
-        <Route exact path="/" element={ <Navigate to="newuser" replace />  } />
-        <Route exact path="newuser" element={<NewUser eppn={eppn} registrationPending={registrationPending} />}/>
+        <Route exact path="/" element={ <Navigate to="register" replace />  } />
+        <Route exact path="register" element={<RegisterUser eppn={eppn} registrationPending={registrationPending} />}/>
       </Routes>
       </BrowserRouter>
     )

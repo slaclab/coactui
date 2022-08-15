@@ -131,7 +131,7 @@ class ReqUserAccount extends Component {
   }
 }
 
-export default function NewUser(props) {
+export default function RegisterUser(props) {
   const { loading, error, data } = useQuery(FACNREPOS);
   const [ requestUserAccount, { uudata, uuloading, uuerror }] = useMutation(REQUEST_USERACCOUNT_MUTATION);
   const [show, setShow] = useState(false);
@@ -162,31 +162,31 @@ export default function NewUser(props) {
   if (props.registrationPending) {
     return (
       <>
-        <Container fluid className="newuser">
+      <div className="registeruser d-flex flex-column">
          <NoNavHeader/>
          <h6 className="p-2">Welcome to Coact; the portal for using the SDF.</h6>
-         <div className="p-2">
+         <div className="p-2 flex-grow-1">
           Your registration request is still pending and will be acted upon soon.
          </div>
          <Footer/>
-        </Container>
+      </div>
       </>
     );
   }
 
   return (
     <>
-    <Container fluid className="newuser">
+    <div className="registeruser d-flex flex-column">
       <NoNavHeader/>
       <h6 className="p-2">Welcome to Coact; the portal for using the SDF.</h6>
-      <div className="p-2">
+      <div className="p-2 flex-grow-1">
         You don't seem to have an SDF account associated with your InCommon EPPN <span className="text-primary"><b>{props.eppn}</b></span>.
         If you would like to request an account, please click here -
         <button type="button" className="btn btn-primary" onClick={handleShow}>Request an SDF account</button>
       </div>
       <ReqUserAccount show={show} setShow={setShow} eppn={props.eppn} requestUserAccount={requestAccount} repos={data.allreposandfacility} handleFacility={handleFacility} handleRepo={handleRepo} selectedFacility={facility} selectedRepo={repo}/>
       <Footer/>
-    </Container>
+    </div>
     </>
   );
 }

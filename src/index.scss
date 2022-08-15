@@ -124,12 +124,16 @@ ol, ul {
   }
 }
 
-.newuser {
+.registeruser {
+  min-height: 100vh;
+  width: 100vw;
   button {
     margin-left: 0.25em;
   }
   .footer {
-    margin-top: 0.5em;
+    margin-left: 0.1em;
+    margin-right: 0.1em;
+    margin-bottom: 0.5em;
   }
 }
 
