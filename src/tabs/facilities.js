@@ -1,10 +1,14 @@
 import { useQuery, useMutation, gql } from "@apollo/client";
 import _ from "lodash";
 import React, { Component, useState } from 'react';
+import { Link, Outlet } from "react-router-dom";
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
+import Facility from "../tabs/facility";
 
 
 const FACILITYDETAILS = gql`
@@ -13,7 +17,7 @@ query {
     name
     description
     czars
-    accessClass
+    accessgroup
     capacity {
       start
       end
@@ -31,143 +35,6 @@ query {
 }
 `;
 
-class FacilitiesTable extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { selectedFacility: this.props.selectedFacility }
-    this.selectFacility = (event) => {
-      let facilityName = event.currentTarget.getAttribute("data-name");
-      console.log("Selecting  " + facilityName);
-      this.setState({ selectedFacility: facilityName });
-      this.props.onSelect(facilityName);
-    }
-    this.props.onSelect(this.props.selectedFacility);
-  }
-
-  render() {
-    return (
-      <>
-      <div className="container-fluid text-center" id="users_content">
-          <div className="table-responsive">
-            <table className="table table-condensed table-bordered tbl-selectable">
-              <thead>
-                <tr>
-                  <th>Faclity</th>
-                  <th>Description</th>
-                  <th>Czars</th>
-                  <th>Access Class</th>
-                  <th>Capacity start</th>
-                  <th>Capacity end</th>
-                </tr>
-              </thead>
-              <tbody>{
-                _.map(this.props.facilities, (f) => { return(
-                  <tr key={f.name} data-name={f.name} onClick={this.selectFacility} className={this.state.selectedFacility == f.name ? "selected" : ''}>
- 		   <td>{f.name}</td>
- 		   <td>{f.description}</td>
-       <td>{f.czars}</td>
-       <td>{f.accessClass}</td>
- 		   <td>{_.get(f, "capacity.start")}</td>
-       <td>{_.get(f, "capacity.end")}</td>
- 		 </tr>
- 	       ) } )
- 	     }</tbody>
-            </table>
-          </div>
-       </div>
-
-       </>
-    )
-  }
-}
-
-class FacilitiesComputeTable extends Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
-    if(_.isEmpty(this.props.selectedFacility)) {
-      return (<div/>)
-    }
-
-    let theFacility = _.keyBy(this.props.facilities, "name")[this.props.selectedFacility];
-    console.log(theFacility);
-
-    return (
-      <>
-      <div className="container-fluid text-center" id="users_content">
-          <div className="subsection1"><span>Compute clusters</span></div>
-          <div className="table-responsive">
-            <table className="table table-condensed table-striped table-bordered collabtbl">
-              <thead>
-                <tr>
-                  <th>Cluster Name</th>
-                  <th>Capacity (in slachours)</th>
-                </tr>
-              </thead>
-              <tbody>{
-                _.map(_.get(theFacility, "capacity.clusters", []), (c) => { return(
-                  <tr key={c.name} data-name={c.name}>
- 		   <td>{c.name}</td>
- 		   <td>{c.slachours}</td>
- 		 </tr>
- 	       ) } )
- 	     }</tbody>
-            </table>
-          </div>
-       </div>
-
-       </>
-    )
-  }
-}
-
-class FacilitiesStorageTable extends Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
-
-    if(_.isEmpty(this.props.selectedFacility)) {
-      return (<div/>)
-    }
-
-    let theFacility = _.keyBy(this.props.facilities, "name")[this.props.selectedFacility];
-    console.log(theFacility);
-
-    return (
-      <>
-      <div className="container-fluid text-center" id="users_content">
-        <div className="subsection1"><span>Storage volumes</span></div>
-          <div className="table-responsive">
-            <table className="table table-condensed table-striped table-bordered collabtbl">
-              <thead>
-                <tr>
-                  <th>Cluster Name</th>
-                  <th>Capacity (in gigabytes)</th>
-                  <th>Capacity (in inodes)</th>
-                </tr>
-              </thead>
-              <tbody>{
-                _.map(_.get(theFacility, "capacity.storage", []), (c) => { return(
-                  <tr key={c.name} data-name={c.name}>
- 		   <td>{c.name}</td>
-       <td>{c.gigabytes}</td>
-       <td>{c.inodes}</td>
- 		 </tr>
- 	       ) } )
- 	     }</tbody>
-            </table>
-          </div>
-       </div>
-
-       </>
-    )
-  }
-}
-
 class RequestNewFacility extends Component {
   render() {
     return <Button variant="secondary">Request New Facility</Button>
@@ -182,27 +49,25 @@ export default function Facilities() {
 //  if (error) return <p>Error :</p>;
 
   const triggerDetails = function(facilityname) {
+    console.log("Selected " + facilityname);
     setSelectedFacility(facilityname)
   }
 
   console.log(data);
+  let facilities = data.facilities;
+  let firstFacility = _.get(facilities, "[0].name", "");
 
-  return (
-    <>
-      <Container fluid>
-       <div className="row no-gutters">
-        <Row>
-          <Col></Col>
-          <Col></Col>
-          <Col className="float-end">
-            <RequestNewFacility />
-          </Col>
-        </Row>
-       </div>
-      </Container>
-    <FacilitiesTable facilities={data.facilities} selectedFacility={_.get(data, "facilities[0].name")} onSelect={triggerDetails}/>
-    <FacilitiesComputeTable selectedFacility={selectedFacility} facilities={data.facilities}/>
-    <FacilitiesStorageTable selectedFacility={selectedFacility} facilities={data.facilities}/>
-    </>
-  );
+  return (<div id="facilities">
+    <Tabs
+      defaultActiveKey={firstFacility}
+      id="facilities-tab"
+      className="mb-3"
+    >
+    { facilities.map((facility) => (
+      <Tab key={facility.name} eventKey={facility.name} title={facility.name}>
+        <Facility facilityname={facility.name}/>
+      </Tab>
+    ))}
+    </Tabs>
+  </div>);
 }

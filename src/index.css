@@ -10315,6 +10315,7 @@ ol, ul {
   text-align: left;
   font-weight: bold;
   font-size: 1.1rem;
+  margin-bottom: 0.5rem;
 }
 #mainContainer .subsection1 span {
   border-bottom: solid 2px rgb(177, 4, 14);
@@ -10350,6 +10351,15 @@ ol, ul {
   padding-left: 0.15em;
   font-size: 2.5em;
   color: rgb(255, 255, 255);
+}
+
+#facilities .nav-item .active {
+  background-color: rgb(224, 79, 57);
+  color: rgb(255, 255, 255);
+}
+#facilities .nav-item :not(.active) {
+  background-color: rgb(255, 255, 255);
+  color: rgb(46, 45, 41);
 }
 
 /*# sourceMappingURL=index.css.map */
