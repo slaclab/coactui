@@ -16,7 +16,8 @@ query Facility($facilityinput: FacilityInput){
     name
     description
     czars
-    accessgroup
+    serviceaccount
+    servicegroup
     capacity {
       start
       end
@@ -51,7 +52,8 @@ class FacilitiesTable extends Component {
                   <th>Facility</th>
                   <th>Description</th>
                   <th>Czars</th>
-                  <th>Access Group</th>
+                  <th>Service Account</th>
+                  <th>Service Group</th>
                   <th>Capacity start</th>
                   <th>Capacity end</th>
                 </tr>
@@ -60,8 +62,9 @@ class FacilitiesTable extends Component {
                 <tr key={_.get(this.props.facility, "name")}>
                   <td>{_.get(this.props.facility, "name")}</td>
                   <td>{_.get(this.props.facility, "description")}</td>
-                  <td>{_.get(this.props.facility, "czars")}</td>
-                  <td>{_.get(this.props.facility, "accessgroup")}</td>
+                  <td>{_.join(_.get(this.props.facility, "czars"), ", ")}</td>
+                  <td>{_.get(this.props.facility, "serviceaccount")}</td>
+                  <td>{_.get(this.props.facility, "servicegroup")}</td>
                   <td><DateDisp value={_.get(this.props.facility, "capacity.start")} /></td>
                   <td><DateDisp value={_.get(this.props.facility, "capacity.end")} /></td>
                 </tr>
