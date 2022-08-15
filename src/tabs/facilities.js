@@ -17,7 +17,8 @@ query {
     name
     description
     czars
-    accessgroup
+    serviceaccount
+    servicegroup
     capacity {
       start
       end
