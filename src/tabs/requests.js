@@ -20,6 +20,7 @@ query{
     preferredUserName
     reponame
     facilityname
+    principal
   }
 }`;
 
@@ -81,7 +82,7 @@ class RequestsTable extends Component {
       <>
       <div className="container-fluid text-center table-responsive">
         <table className="table table-condensed table-striped table-bordered">
-          <thead><tr><th>Type</th><th>Username/EPPN</th><th>Repo</th><th>Facility</th><th>Preferred User Name</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Type</th><th>Username/EPPN</th><th>Repo</th><th>Facility</th><th>Preferred User Name</th><th>Principal</th><th>Actions</th></tr></thead>
           <tbody>{
                   _.map(this.state.requests, (r) => { return (
                                 <tr key={r.Id} data-id={r.Id}>
@@ -90,6 +91,7 @@ class RequestsTable extends Component {
                                   <td>{r.reponame}</td>
                                   <td>{r.facilityname}</td>
                                   <td>{r.preferredUserName}</td>
+                                  <td>{r.principal}</td>
                                   <td><Approve request={r} removeRequest={this.removeRequest} approve={this.props.approve} reject={this.props.reject} /></td>
                                 </tr>
                               )})
