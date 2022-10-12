@@ -34,8 +34,7 @@ mutation newSDFAccountRequest($request: SDFRequestInput!){
 
 const schema = yup.object().shape({
   userName: yup.string().required().min(5, "Usernames must be 5 characters or more").max(15, "Usernames cannot be more than 15 characters"),
-  facility: yup.string().required(),
-  repo: yup.string().required(),
+  facility: yup.string().required()
 });
 
 function UserIdForm(props) {
@@ -45,8 +44,7 @@ function UserIdForm(props) {
       onSubmit={values => { props.handleSubmit(values.userName); }}
       initialValues={{
         userName: props.preferredUserName,
-        facility: props.selectedFacility,
-        repo: props.selectedRepo
+        facility: props.selectedFacility
       }}
       validateOnChange={true}
       validateOnBlur={true}
@@ -87,16 +85,6 @@ function UserIdForm(props) {
                 <Form.Control.Feedback type='invalid' tooltip>{errors.facility}</Form.Control.Feedback>
               </Form.Group>
             </Row>
-            <Row className="mb-3">
-              <Form.Group as={Col} md="4" controlId="validationFormik03" className="position-relative">
-                <Form.Label>Please select a repo</Form.Label>
-                <Form.Select name="repo" value={values.repo} isValid={touched.repo && !errors.repo} isInvalid={touched.repo && errors.repo} onChange={(e) => { values.repo = e.target.value; props.handleRepo(values.repo)}} onBlur={handleBlur}>
-                  <option value="">Please select a repo</option>
-                  { _.map(_.map(_.filter(props.repos, ["facility", props.selectedFacility]), "name"), (r) => { return (<option key={r} value={r}>{r}</option>)}) }
-                </Form.Select>
-                <Form.Control.Feedback type='invalid' tooltip>{errors.repo}</Form.Control.Feedback>
-              </Form.Group>
-            </Row>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={props.handleClose}>Close</Button>
@@ -125,7 +113,7 @@ class ReqUserAccount extends Component {
         <Modal.Header closeButton>
           <Modal.Title>Request an SDF account</Modal.Title>
         </Modal.Header>
-        <UserIdForm handleSubmit={this.requestAccount} preferredUserName={_.split(this.props.eppn, "@")[0]} handleClose={this.handleClose} eppn={this.props.eppn} repos={this.props.repos} handleFacility={this.props.handleFacility} handleRepo={this.props.handleRepo} selectedFacility={this.props.selectedFacility} selectedRepo={this.props.selectedRepo}/>
+        <UserIdForm handleSubmit={this.requestAccount} preferredUserName={_.split(this.props.eppn, "@")[0]} handleClose={this.handleClose} eppn={this.props.eppn} repos={this.props.repos} handleFacility={this.props.handleFacility} selectedFacility={this.props.selectedFacility}/>
       </Modal>
       )
   }
@@ -136,10 +124,9 @@ export default function RegisterUser(props) {
   const [ requestUserAccount, { uudata, uuloading, uuerror }] = useMutation(REQUEST_USERACCOUNT_MUTATION);
   const [show, setShow] = useState(false);
   const [facility, setFacility] = useState("");
-  const [repo, setRepo] = useState("");
   const requestAccount = (preferredUserName) => {
     console.log("Account requested for eppn " + props.eppn + " and preferred userid " + preferredUserName);
-    requestUserAccount({ variables: { request: { reqtype: "UserAccount", eppn: props.eppn, preferredUserName: preferredUserName, "facilityname": facility, "reponame": repo }}});
+    requestUserAccount({ variables: { request: { reqtype: "UserAccount", eppn: props.eppn, preferredUserName: preferredUserName, "facilityname": facility }}});
     setShow(false);
   };
   const handleClose = () => setShow(false);
@@ -148,11 +135,6 @@ export default function RegisterUser(props) {
   const handleFacility = (selectedFacilty) => {
     setFacility(selectedFacilty);
     console.log("Setting facility to " + selectedFacilty);
-  }
-
-  const handleRepo = (selectedRepo) => {
-    setRepo(selectedRepo);
-    console.log("Setting repo to " + selectedRepo);
   }
 
   if (loading) return <p>Loading...</p>;
@@ -184,7 +166,7 @@ export default function RegisterUser(props) {
         If you would like to request an account, please click here -
         <button type="button" className="btn btn-primary" onClick={handleShow}>Request an SDF account</button>
       </div>
-      <ReqUserAccount show={show} setShow={setShow} eppn={props.eppn} requestUserAccount={requestAccount} repos={data.allreposandfacility} handleFacility={handleFacility} handleRepo={handleRepo} selectedFacility={facility} selectedRepo={repo}/>
+      <ReqUserAccount show={show} setShow={setShow} eppn={props.eppn} requestUserAccount={requestAccount} repos={data.allreposandfacility} handleFacility={handleFacility} selectedFacility={facility} />
       <Footer/>
     </div>
     </>
