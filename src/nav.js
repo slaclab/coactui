@@ -5,6 +5,8 @@ import { NavLink } from "react-router-dom";
 import React, { Component, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRocket, faPerson, faPersonCircleQuestion } from '@fortawesome/free-solid-svg-icons'
+import { Link } from 'react-router-dom';
+
 
 const USER = gql`
 query whoami{
@@ -29,7 +31,7 @@ function logged_in( props ) {
        <NavDropdown.Item href="https://vouch.slac.stanford.edu/logout">Log out...</NavDropdown.Item>
        <NavDropdown.Item className={props.isAdmin ? "" : "d-none"} onClick={props.impersonate}>Impersonate...</NavDropdown.Item>
        <NavDropdown.Divider />
-       <NavDropdown.Item eventKey="4.4">My Aliases...</NavDropdown.Item>
+       <NavDropdown.Item><Link to="/myprofile">My Profile</Link></NavDropdown.Item>
      </NavDropdown>
      </>
   );
@@ -149,11 +151,6 @@ export default function TopNavBar( ) {
             <Nav.Item>
               <Nav.Link as={NavLink} to="/requests">
 					      Requests
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link as={NavLink} to="/home">
-					      Home
               </Nav.Link>
             </Nav.Item>
           </Nav>

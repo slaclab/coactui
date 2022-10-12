@@ -23,7 +23,7 @@ import Facilities from "./tabs/facilities";
 import Facility from "./tabs/facility";
 import Repos from "./tabs/repos";
 import Requests from "./tabs/requests";
-import Home from "./home";
+import MyProfile from "./myprofile";
 import RegisterUser from "./register";
 import Repo from "./tabs/repo";
 import Compute from "./tabs/compute";
@@ -84,7 +84,7 @@ function App() {
           <Route exact path="facilities" element={<Facilities />}/>
           <Route exact path="facilities/:facilityname" element={<Facility />}/>
           <Route exact path="repos" element={<Repos />}/>
-          <Route exact path="home" element={<Home />}/>
+          <Route exact path="myprofile" element={<MyProfile />}/>
           <Route exact path="requests" element={<Requests />}/>
           <Route exact path="repos/:name" element={<Repo />}>
           <Route exact path="compute/:resourcename" element={<Compute />} />
