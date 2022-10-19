@@ -31,7 +31,7 @@ function logged_in( props ) {
        <NavDropdown.Item href="https://vouch.slac.stanford.edu/logout">Log out...</NavDropdown.Item>
        <NavDropdown.Item className={props.isAdmin ? "" : "d-none"} onClick={props.impersonate}>Impersonate...</NavDropdown.Item>
        <NavDropdown.Divider />
-       <NavDropdown.Item><Link to="/myprofile">My Profile</Link></NavDropdown.Item>
+       <NavDropdown.Item as="span"><Link to="/myprofile">My Profile</Link></NavDropdown.Item>
      </NavDropdown>
      </>
   );

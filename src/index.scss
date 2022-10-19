@@ -83,6 +83,18 @@ ol, ul {
   }
 }
 
+.vmid {
+  vertical-align: middle;
+}
+
+.sectiontitle {
+  font-size: 1.1rem;
+  .ref {
+    font-weight: bold;
+    color: $primary;
+  }
+}
+
 #root{
   margin: 0;
   padding: 0;

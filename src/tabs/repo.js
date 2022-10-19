@@ -32,13 +32,6 @@ export default function Repo() {
         <Navbar.Brand>{facility} / {reponame}</Navbar.Brand>
         <Navbar.Collapse>
           <Nav className="me-auto" navbar>
-          { resources.map((resource) => (
-            <Nav.Item key={resource}>
-              <Nav.Link as={Link} to={`/repos/${reponame}/${resource == "storage" ? "storage" : "compute"}/${resource}`}>
-                {resource}
-              </Nav.Link>
-            </Nav.Item>
-          ))}
           <Nav.Item key="users"><Nav.Link as={Link} to={`/repos/${reponame}/users/`}>Users</Nav.Link></Nav.Item>
           <Nav.Item key="groups"><Nav.Link as={Link} to={`/repos/${reponame}/groups/`}>Groups</Nav.Link></Nav.Item>
           </Nav>

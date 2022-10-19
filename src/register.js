@@ -148,7 +148,7 @@ export default function RegisterUser(props) {
          <NoNavHeader/>
          <h6 className="p-2">Welcome to Coact; the portal for using the SDF.</h6>
          <div className="p-2 flex-grow-1">
-          Your registration request is still pending and will be acted upon soon.
+          Your registration request for the EPPN <span className="text-primary"><b>{props.eppn}</b></span> is still pending and will be acted upon soon.
          </div>
          <Footer/>
       </div>

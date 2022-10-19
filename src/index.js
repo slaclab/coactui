@@ -87,11 +87,11 @@ function App() {
           <Route exact path="myprofile" element={<MyProfile />}/>
           <Route exact path="requests" element={<Requests />}/>
           <Route exact path="repos/:name" element={<Repo />}>
-          <Route exact path="compute/:resourcename" element={<Compute />} />
-          <Route exact path="storage/:resourcename" element={<Storage />} />
           <Route exact path="users/" element={<Users />} />
           <Route exact path="groups/" element={<Groups />} />
           </Route>
+          <Route exact path="repousage/:reponame/compute/:resourcename" element={<Compute />} />
+          <Route exact path="repousage/:reponame/storage/:resourcename" element={<Storage />} />
         </Routes>
         </BrowserRouter>
       </div>

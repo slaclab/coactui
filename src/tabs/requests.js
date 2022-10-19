@@ -6,8 +6,10 @@ import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import ListGroup from 'react-bootstrap/ListGroup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faMultiply } from '@fortawesome/free-solid-svg-icons'
+import { DateTimeDisp } from "./widgets";
 
 
 const REQUESTS = gql`
@@ -15,12 +17,22 @@ query{
   requests {
     Id
     reqtype
+    requestedby
+    timeofrequest
     eppn
     username
     preferredUserName
     reponame
     facilityname
     principal
+    volumename
+    intent
+    clustername
+    qosname
+    slachours
+    gigabytes
+    inodes
+    notes
   }
 }`;
 
@@ -60,6 +72,83 @@ class Approve extends React.Component {
   }
 }
 
+class RequestDetails extends Component {
+  constructor(props) {
+    super(props);
+  }
+  render() {
+    let req = this.props.req;
+    if(this.props.req.reqtype == "UserAccount") {
+      return (
+        <ListGroup>
+          {_.map(["eppn", "preferredUserName", "facilityname"], function(x){
+            return(
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
+            )
+          })}
+        </ListGroup>
+      )
+    }
+    if(this.props.req.reqtype == "RepoMembership") {
+      return (
+        <ListGroup>
+          {_.map(["username", "reponame"], function(x){
+            return(
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
+            )
+          })}
+        </ListGroup>
+      )
+    }
+    if(this.props.req.reqtype == "NewRepo") {
+      return (
+        <ListGroup>
+          {_.map(["reponame", "facilityname", "principal"], function(x){
+            return(
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
+            )
+          })}
+        </ListGroup>
+      )
+    }
+    if(this.props.req.reqtype == "NewFacility") {
+      return (
+        <ListGroup>
+          {_.map(["facilityname"], function(x){
+            return(
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
+            )
+          })}
+        </ListGroup>
+      )
+    }
+    if(this.props.req.reqtype == "UserStorageAllocation") {
+      return (
+        <ListGroup>
+          {_.map(["volumename", "intent", "gigabytes", "inodes"], function(x){
+            return(
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
+            )
+          })}
+        </ListGroup>
+      )
+    }
+    if(this.props.req.reqtype == "RepoComputeAllocation") {
+      return (
+        <ListGroup>
+          {_.map(["clustername", "qosname", "slachours"], function(x){
+            return(
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
+            )
+          })}
+        </ListGroup>
+      )
+    }
+    return (
+      <span>Details!!!</span>
+    )
+  }
+}
 
 class RequestsTable extends Component {
   constructor(props) {
@@ -82,16 +171,15 @@ class RequestsTable extends Component {
       <>
       <div className="container-fluid text-center table-responsive">
         <table className="table table-condensed table-striped table-bordered">
-          <thead><tr><th>Type</th><th>Username/EPPN</th><th>Repo</th><th>Facility</th><th>Preferred User Name</th><th>Principal</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Type</th><th>By</th><th>At</th><th>Details</th><th>Notes</th><th>Actions</th></tr></thead>
           <tbody>{
                   _.map(this.state.requests, (r) => { return (
                                 <tr key={r.Id} data-id={r.Id}>
                                   <td>{r.reqtype}</td>
-                                  <td>{!_.isEmpty(_.get(r, "username")) ? r.username : r.eppn}</td>
-                                  <td>{r.reponame}</td>
-                                  <td>{r.facilityname}</td>
-                                  <td>{r.preferredUserName}</td>
-                                  <td>{r.principal}</td>
+                                  <td>{r.requestedby}</td>
+                                  <td><DateTimeDisp value={r.timeofrequest}/></td>
+                                  <td><RequestDetails req={r} /></td>
+                                  <td>{r.notes}</td>
                                   <td><Approve request={r} removeRequest={this.removeRequest} approve={this.props.approve} reject={this.props.reject} /></td>
                                 </tr>
                               )})
@@ -105,7 +193,7 @@ class RequestsTable extends Component {
 }
 
 export default function Requests() {
-  const { loading, error, data } = useQuery(REQUESTS);
+  const { loading, error, data } = useQuery(REQUESTS, { fetchPolicy: 'network-only'});
   const [ approveRequestMutation ] = useMutation(APPROVE_REQUEST_MUTATION);
   const [ rejectRequestMutation ] = useMutation(REJECT_REQUEST_MUTATION);
 

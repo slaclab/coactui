@@ -10283,6 +10283,18 @@ ol, ul {
   color: #000;
 }
 
+.vmid {
+  vertical-align: middle;
+}
+
+.sectiontitle {
+  font-size: 1.1rem;
+}
+.sectiontitle .ref {
+  font-weight: bold;
+  color: rgb(177, 4, 14);
+}
+
 #root {
   margin: 0;
   padding: 0;

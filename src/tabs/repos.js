@@ -9,6 +9,7 @@ import Col from "react-bootstrap/Col";
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
+import ListGroup from 'react-bootstrap/ListGroup';
 import { NodeSecs } from "./widgets";
 
 const REPOS = gql`
@@ -19,8 +20,8 @@ query{
     facilityObj {
       name
     }
-    currentAllocations(resource:null) {
-      resource
+    currentComputeAllocations {
+      clustername
       start
       end
       qoses {
@@ -33,12 +34,11 @@ query{
         gigabytes
         inodes
       }
-    }
-    usage(resource:null) {
-      resource
-      qos
-      slacsecs
-      avgcf
+      usage {
+        resource
+        slacsecs
+        avgcf
+      }
     }
   }
   whoami {
@@ -65,24 +65,44 @@ mutation newRepoRequest($request: SDFRequestInput!){
 }
 `;
 
-class ReposRow extends Component {
+class ReposRows extends Component {
   constructor(props) {
     super(props);
-    this.totalSlachours = _.sum(_.map(_.get(_.find(_.get(this.props.repo, "currentAllocations", []), ["resource", "compute"]), "qoses"), "slachours"))
-    this.totalGigabytes = _.sum(_.map(_.get(_.find(_.get(this.props.repo, "currentAllocations", []), ["resource", "storage"]), "volumes"), "gigabytes"))
-    this.totalSlacSecsused = _.sum(_.map(_.get(this.props.repo, "usage", []), "slacsecs"));
+    this.reponame = props.repo.name;
   }
   render() {
-    return (
-      <tr data-name={this.props.repo.name}>
-        <td><NavLink to={`/repos/${this.props.repo.name}`} key={this.props.repo.name}>{this.props.repo.name}</NavLink></td>
-        <td>{this.props.repo.facilityObj.name}</td>
-        <td>{this.props.repo.principal}</td>
-        <td>{this.totalSlachours}</td>
-        <td><NodeSecs value={this.totalSlacSecsused}/></td>
-        <td>{this.totalGigabytes}</td>
-        <td>TBD</td>
-      </tr>)
+    var first = true;
+    let cas = _.get(this.props.repo, "currentComputeAllocations", [{}]), rows = cas.length;
+    let trs = _.map(cas, (a) => {
+      let totalSlachours = _.sum(_.map(_.get(a, "qoses", []), "slachours"))
+      let totalSlacSecsused = _.sum(_.map(_.get(a, "usage", []), "slacsecs"));
+      if(first) {
+        first = false;
+        return (
+          <tr data-name={this.reponame}>
+            <td rowSpan={rows} className="vmid"><NavLink to={"/repos/"+this.reponame} key={this.reponame}>{this.reponame}</NavLink></td>
+            <td rowSpan={rows} className="vmid">{this.props.repo.facilityObj.name}</td>
+            <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
+            <td><NavLink to={"/repousage/"+this.reponame+"/compute/"+a.clustername} key={this.reponame}>{a.clustername}</NavLink></td>
+            <td>{totalSlachours}</td>
+            <td><NodeSecs value={totalSlacSecsused}/></td>
+            <td>TBD</td>
+            <td>TBD</td>
+            <td>TBD</td>
+          </tr>)
+        } else {
+          return (
+            <tr data-name={this.reponame}>
+              <td><NavLink to={"/repousage/"+this.reponame+"/compute/"+a.clustername} key={this.reponame}>{a.clustername}</NavLink></td>
+              <td>{totalSlachours}</td>
+              <td><NodeSecs value={totalSlacSecsused}/></td>
+              <td>TBD</td>
+              <td>TBD</td>
+              <td>TBD</td>
+            </tr>)
+        }
+    });
+    return ( <tbody>{trs}</tbody> )
   }
 }
 
@@ -96,11 +116,11 @@ class ReposTable extends Component {
       <>
       <div className="container-fluid text-center table-responsive">
         <table className="table table-condensed table-striped table-bordered">
-          <thead><tr><th>Name</th><th>Facility</th><th>PI</th><th>Total compute allocation</th><th>Total compute used</th><th>Total storage allocation</th><th>Total storage used</th></tr></thead>
-          <tbody>{
-                  _.map(this.props.repos, (r) => { return (<ReposRow key={r.name} repo={r}/>) })
-                    }
-            </tbody>
+          <thead>
+            <tr><th colSpan={3}></th><th colSpan={3}>Compute</th><th colSpan={3}>Storage</th></tr>
+            <tr><th>Name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th>Total compute used</th><th>Volume</th><th>Total storage allocation</th><th>Total storage used</th></tr>
+          </thead>
+          { _.map(this.props.repos, (r) => { return (<ReposRows key={r.name} repo={r}/>) }) }
           </table>
         </div>
       </>
@@ -269,7 +289,6 @@ export default function Repos() {
     newrepofn({ variables: { request: { reqtype: "NewRepo", reponame: repodetails.reponame, facilityname: repodetails.facility, principal: repodetails.principal }}});
     setNewRepShow(false);
   };
-
 
   return (
     <>
