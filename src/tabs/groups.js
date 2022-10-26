@@ -199,8 +199,8 @@ class GroupsTab extends React.Component {
 
 
 export default function Groups() {
-  let params = useParams(), reponame = params.name, resourcename = params.resourcename, datayear = dayjs().year();
-  const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame }, resourcename: resourcename, datayear: datayear } });
+  let params = useParams(), reponame = params.name;
+  const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame } } });
   const [ toggleGrpMutation] = useMutation(TOGGLE_GROUPMEMBERSHIP_MUTATION);
 
   if (loading) return <p>Loading...</p>;

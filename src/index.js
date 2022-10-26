@@ -21,7 +21,8 @@ import Row from "react-bootstrap/Row";
 import TopNavBar from "./nav";
 import Facilities from "./tabs/facilities";
 import Facility from "./tabs/facility";
-import Repos from "./tabs/repos";
+import RepoTabs from "./tabs/repostabs";
+import RequestTypes from "./tabs/requesttypes";
 import Requests from "./tabs/requests";
 import MyProfile from "./myprofile";
 import RegisterUser from "./register";
@@ -30,6 +31,8 @@ import Compute from "./tabs/compute";
 import Storage from "./tabs/storage";
 import Users from "./tabs/users";
 import Groups from "./tabs/groups";
+import ClustersTabs from "./tabs/clusterstabs";
+import StorageTabs from "./tabs/storagetabs";
 import './index.css';
 import { Footer } from "./tabs/widgets";
 
@@ -49,6 +52,7 @@ query {
     isRegistered
     isRegistrationPending
     eppn
+    fullname
   }
 }
 `;
@@ -62,13 +66,14 @@ function App() {
   let hasUserAcc = _.get(data, "amIRegistered.isRegistered", false);
   let eppn = _.get(data, "amIRegistered.eppn", null);
   let registrationPending = _.get(data, "amIRegistered.isRegistrationPending", false);
+  let fullname = _.get(data, "amIRegistered.fullname", "");
 
   if (!hasUserAcc) {
     return (
       <BrowserRouter>
       <Routes>
         <Route exact path="/" element={ <Navigate to="register" replace />  } />
-        <Route exact path="register" element={<RegisterUser eppn={eppn} registrationPending={registrationPending} />}/>
+        <Route exact path="register" element={<RegisterUser eppn={eppn} registrationPending={registrationPending} fullname={fullname}/>}/>
       </Routes>
       </BrowserRouter>
     )
@@ -80,18 +85,21 @@ function App() {
         <BrowserRouter>
         <TopNavBar/>
         <Routes>
-          <Route exact path="/" element={ <Navigate to="repos" /> } />
+          <Route exact path="/" element={ <Navigate to="myprofile" /> } />
           <Route exact path="facilities" element={<Facilities />}/>
           <Route exact path="facilities/:facilityname" element={<Facility />}/>
-          <Route exact path="repos" element={<Repos />}/>
+          <Route exact path="repos" element={<RepoTabs />}/>
           <Route exact path="myprofile" element={<MyProfile />}/>
-          <Route exact path="requests" element={<Requests />}/>
+          <Route exact path="requests" element={<RequestTypes/>}/>
           <Route exact path="repos/:name" element={<Repo />}>
           <Route exact path="users/" element={<Users />} />
           <Route exact path="groups/" element={<Groups />} />
           </Route>
-          <Route exact path="repousage/:reponame/compute/:resourcename" element={<Compute />} />
-          <Route exact path="repousage/:reponame/storage/:resourcename" element={<Storage />} />
+          <Route exact path="repousage/:reponame/compute/:allocationid" element={<Compute />} />
+          <Route exact path="repousage/:reponame/storage/:allocationid" element={<Storage />} />
+          <Route exact path="clusterusage/:clustername" element={<ClustersTabs />} />
+          <Route exact path="storageusage/:storagename" element={<StorageTabs />} />
+          <Route exact path="storageusage/:storagename/purpose/:purpose" element={<StorageTabs />} />
         </Routes>
         </BrowserRouter>
       </div>

@@ -10266,12 +10266,21 @@ body {
   font: 14px Lato, Merriweather, sans-serif;
 }
 
+#mainContainer .nav-item .active {
+  background-color: rgb(224, 79, 57);
+  color: rgb(255, 255, 255);
+}
+
 ol, ul {
   padding-left: 30px;
 }
 
 .midchart {
   width: 100rem;
+}
+
+.modal-title {
+  font-size: 1.1rem;
 }
 
 .tbl-selectable tr.selected {
@@ -10371,13 +10380,125 @@ ol, ul {
   color: rgb(255, 255, 255);
 }
 
+.navtxt {
+  color: rgb(255, 255, 255);
+}
+
+.tbllbl {
+  font-weight: bold;
+}
+
 #facilities .nav-item .active {
   background-color: rgb(224, 79, 57);
   color: rgb(255, 255, 255);
 }
-#facilities .nav-item :not(.active) {
-  background-color: rgb(255, 255, 255);
-  color: rgb(46, 45, 41);
+#facilities .facrsc .row:nth-child(even) {
+  background: rgb(244, 244, 244);
+}
+#facilities .facrsc .row > div {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  margin: 0px;
+}
+
+.btmtbl {
+  margin: 0.5rem;
+}
+.btmtbl .hdr {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+.btmtbl .col {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  border-right: thin rgb(213, 213, 212) solid;
+}
+.btmtbl .col:first-child {
+  border-left: thin rgb(213, 213, 212) solid;
+}
+.btmtbl .row:nth-child(even) {
+  background: rgb(244, 244, 244);
+}
+.btmtbl .row:first-child {
+  border-top: thin rgb(213, 213, 212) solid;
+}
+.btmtbl .row:last-child {
+  border-bottom: thin rgb(213, 213, 212) solid;
+}
+.btmtbl .usrcmpalc {
+  width: 5rem;
+}
+
+#requesttypes .nav-item .active {
+  background-color: rgb(224, 79, 57);
+  color: rgb(255, 255, 255);
+}
+
+#requests .rqsttbl .row {
+  border-bottom: thin rgb(213, 213, 212) solid;
+}
+#requests .rqsttbl .row:first-child {
+  border-top: thin rgb(213, 213, 212) solid;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  font-weight: bold;
+}
+#requests .rqsttbl .row:nth-child(odd) {
+  background: rgb(244, 244, 244);
+}
+#requests .rqsttbl .row > div {
+  border-left: thin rgb(213, 213, 212) solid;
+}
+#requests .rqsttbl .row > div:last-child {
+  border-right: thin rgb(213, 213, 212) solid;
+}
+#requests .rqsttbl button {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+#requests .rqAuto {
+  background-color: rgb(39, 153, 137);
+  border: none;
+}
+#requests .rqManual {
+  background-color: rgb(254, 221, 92);
+  border: none;
+}
+
+#repotabs .nav-item .active {
+  background-color: rgb(224, 79, 57);
+  color: rgb(255, 255, 255);
+}
+
+@keyframes inPlaceSuccessAnimation {
+  0% {
+    background-color: rgb(0, 124, 146);
+  }
+  100% {
+    background-color: inherit;
+  }
+}
+@keyframes inPlaceErrorAnimation {
+  0% {
+    background-color: rgb(177, 4, 14);
+  }
+  100% {
+    background-color: inherit;
+  }
+}
+.inplacesuccess {
+  animation-name: inPlaceSuccessAnimation;
+  animation-duration: 3s;
+}
+
+.inplaceerror {
+  animation-name: inPlaceErrorAnimation;
+  animation-duration: 3s;
+}
+
+#clusterreports .nav-item .active {
+  background-color: rgb(224, 79, 57);
+  color: rgb(255, 255, 255);
 }
 
 /*# sourceMappingURL=index.css.map */

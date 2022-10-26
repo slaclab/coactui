@@ -59,20 +59,10 @@ function UserIdForm(props) {
         errors,
       }) => (
         <Form noValidate onSubmit={handleSubmit}>
-          <Modal.Body>Request an SDF account for {props.eppn}. Please choose a username.
-            <Row className="mb-3">
+          <Modal.Body>Enable your EPPN <span className="text-primary"><b>{props.eppn}</b></span> for the SDF.
+            <Row className="mt-3">
               <Form.Group as={Col} md="4" controlId="validationFormik01" className="position-relative">
-                <Form.Label>Preferred username</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="userName"
-                  value={values.userName}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  isValid={touched.userName && !errors.userName}
-                  isInvalid={touched.userName && errors.userName}
-                />
-                <Form.Control.Feedback type='invalid' tooltip>{errors.userName}</Form.Control.Feedback>
+                <Form.Label>Username: <span className="text-primary"><b>{values.userName}</b></span></Form.Label>
               </Form.Group>
             </Row>
             <Row className="mb-3">
@@ -146,9 +136,9 @@ export default function RegisterUser(props) {
       <>
       <div className="registeruser d-flex flex-column">
          <NoNavHeader/>
-         <h6 className="p-2">Welcome to Coact; the portal for using the SDF.</h6>
+         <h6 className="p-2">Hi <span className="text-primary">{props.fullname}</span>, welcome to Coact; the portal for using the SDF.</h6>
          <div className="p-2 flex-grow-1">
-          Your registration request for the EPPN <span className="text-primary"><b>{props.eppn}</b></span> is still pending and will be acted upon soon.
+          Your request to enable the EPPN <span className="text-primary"><b>{props.eppn}</b></span> for SDF is still pending and will be acted upon soon.
          </div>
          <Footer/>
       </div>
@@ -160,11 +150,11 @@ export default function RegisterUser(props) {
     <>
     <div className="registeruser d-flex flex-column">
       <NoNavHeader/>
-      <h6 className="p-2">Welcome to Coact; the portal for using the SDF.</h6>
+      <h6 className="p-2">Hi <span className="text-primary">{props.fullname}</span>, welcome to Coact; the portal for using the SDF.</h6>
       <div className="p-2 flex-grow-1">
-        You don't seem to have an SDF account associated with your InCommon EPPN <span className="text-primary"><b>{props.eppn}</b></span>.
-        If you would like to request an account, please click here -
-        <button type="button" className="btn btn-primary" onClick={handleShow}>Request an SDF account</button>
+        You don't seem to have an SDF account associated with your EPPN <span className="text-primary"><b>{props.eppn}</b></span>.
+        If you would like to request your account be enabled for SDF, please click here -
+        <button type="button" className="btn btn-primary" onClick={handleShow}>Enable my SDF account</button>
       </div>
       <ReqUserAccount show={show} setShow={setShow} eppn={props.eppn} requestUserAccount={requestAccount} repos={data.allreposandfacility} handleFacility={handleFacility} selectedFacility={facility} />
       <Footer/>

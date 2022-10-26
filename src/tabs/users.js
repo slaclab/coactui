@@ -186,8 +186,8 @@ class UsersTab extends React.Component {
 
 
 export default function Users() {
-  let params = useParams(), reponame = params.name, resourcename = params.resourcename, datayear = dayjs().year();
-  const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame }, resourcename: resourcename, datayear: datayear } });
+  let params = useParams(), reponame = params.name;
+  const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame } } });
 
   const [ toggleRoleMutation ] = useMutation(TOGGLE_ROLE_MUTATION);
   const [ addUserMutation ] = useMutation(ADD_USER_MUTATION);

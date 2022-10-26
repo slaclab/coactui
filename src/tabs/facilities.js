@@ -15,23 +15,6 @@ const FACILITYDETAILS = gql`
 query {
   facilities {
     name
-    description
-    czars
-    serviceaccount
-    servicegroup
-    capacity {
-      start
-      end
-      clusters {
-        name
-        slachours
-      }
-      storage {
-        name
-        gigabytes
-        inodes
-      }
-    }
   }
 }
 `;

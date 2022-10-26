@@ -5,7 +5,7 @@ import { NavLink } from "react-router-dom";
 import React, { Component, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRocket, faPerson, faPersonCircleQuestion } from '@fortawesome/free-solid-svg-icons'
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 
 const USER = gql`
@@ -13,6 +13,7 @@ query whoami{
   whoami {
     username
     isAdmin
+    isCzar
   }
   users {
     username
@@ -24,14 +25,14 @@ query whoami{
 function logged_in( props ) {
   return(
      <>
-     <Nav.Item>
+     <Nav.Item className="navtxt">
        <FontAwesomeIcon icon={faPerson} size="2x"/>
      </Nav.Item>
      <NavDropdown align="end" title={props.logged_in_user} id="nav-dropdown">
        <NavDropdown.Item href="https://vouch.slac.stanford.edu/logout">Log out...</NavDropdown.Item>
        <NavDropdown.Item className={props.isAdmin ? "" : "d-none"} onClick={props.impersonate}>Impersonate...</NavDropdown.Item>
        <NavDropdown.Divider />
-       <NavDropdown.Item as="span"><Link to="/myprofile">My Profile</Link></NavDropdown.Item>
+       <NavDropdown.Item as="span" onClick={() => { props.gotomyprofile() }}>My Profile</NavDropdown.Item>
      </NavDropdown>
      </>
   );
@@ -109,19 +110,26 @@ function UserDropDown( props ) {
   if( props.logged_in_user === undefined ){
 	  return <LoginLink/>;
 	}
-	return logged_in( props );
+  return logged_in( props );
 }
 
-export default function TopNavBar( ) {
+export default function TopNavBar( props ) {
   let logged_in_user = undefined;
   let isAdmin = false;
+  let isCzar = false;
+  let showFacs = false;
   let usernames = [];
   const [show, setShow] = useState(false);
   const { loading, error, data } = useQuery(USER);
+  let navigate = useNavigate();
+  let gotomyprofile = () => { navigate("/myprofile") }
+
   if (loading) return <p>Loading...</p>;
   if ( data !== undefined && data.hasOwnProperty("whoami") ) {
     logged_in_user = data["whoami"].username;
     isAdmin = data["whoami"].isAdmin;
+    isCzar = data["whoami"].isCzar;
+    showFacs = isAdmin || isCzar;
     usernames = _.map(_.get(data, "users"), "username", []);
   };
 
@@ -133,33 +141,27 @@ export default function TopNavBar( ) {
 
   return (
     <Navbar bg="primary" variant="dark" expand="lg">
-      <Container>
-        <Navbar.Brand><FontAwesomeIcon icon={faRocket} size="lg"/> Coact</Navbar.Brand>
-	<Navbar.Toggle onClick={function noRefCheck(){}} />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav variant="pills" activeKey="1">
-            <Nav.Item>
-              <Nav.Link as={NavLink} to="/facilities">
-                Facilities
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link as={NavLink} to="/repos">
-                Repos
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link as={NavLink} to="/requests">
-					      Requests
-              </Nav.Link>
-            </Nav.Item>
-          </Nav>
-        </Navbar.Collapse>
-        <Nav>
-					<UserDropDown logged_in_user={logged_in_user} isAdmin={isAdmin} impersonate={setShow}/>
+      <Navbar.Brand className="ps-2"  onClick={() => { gotomyprofile() }}><FontAwesomeIcon icon={faRocket} size="lg"/> Coact</Navbar.Brand>
+<Navbar.Toggle onClick={function noRefCheck(){}} />
+      <Navbar.Collapse id="basic-navbar-nav">
+        <Nav variant="pills" activeKey="1">
+          { showFacs ? <Nav.Item> <Nav.Link as={NavLink} to="/facilities"> Facilities </Nav.Link> </Nav.Item> : null }
+          <Nav.Item>
+            <Nav.Link as={NavLink} to="/repos">
+              Repos
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link as={NavLink} to="/requests">
+              Requests
+            </Nav.Link>
+          </Nav.Item>
         </Nav>
-        <Impersonate show={show} setShow={setShow} usernames={usernames} impersonate={impersonate}/>
-      </Container>
+      </Navbar.Collapse>
+      <Nav>
+				<UserDropDown logged_in_user={logged_in_user} isAdmin={isAdmin} impersonate={setShow} gotomyprofile={gotomyprofile}/>
+      </Nav>
+      <Impersonate show={show} setShow={setShow} usernames={usernames} impersonate={impersonate}/>
     </Navbar>
   );
 }

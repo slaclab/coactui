@@ -7,6 +7,14 @@ $stanfordblack: rgb(46,45,41);
 $coolgrey: rgb(83,86,90);
 $trueblack: rgb(0,0,0);
 $black10: rgb(234,234,234);
+$black20: rgb(213,213,212);
+$black30: rgb(192,192,191);
+$black40: rgb(171,171,169);
+$black50: rgb(151,150,148);
+$black60: rgb(118,118,116);
+$black70: rgb(109,108,105);
+$black80: rgb(88,87,84);
+$black90: rgb(67,66,62);
 
 $lagunita: rgb(0,124,146);
 $paloverde: rgb(39,153,137);
@@ -27,6 +35,8 @@ $fog: rgb(218,215,203);
 
 $primary: $digitalred;
 $secondary: $illuminating;
+
+$zebrabg: rgb(244,244,244);
 
 $theme-colors: (
   "primary": $primary,
@@ -60,9 +70,21 @@ $selected: $lagunita;
 
 @import '../node_modules/bootstrap/scss/bootstrap';
 
+@mixin navbg {
+  .nav-item .active {
+    background-color: $nav-pills-link-active-bg;
+    color: $white;
+  }
+}
+
 body {
   font: 14px Lato, Merriweather, sans-serif;
 }
+
+#mainContainer {
+  @include navbg;
+}
+
 
 ol, ul {
   padding-left: 30px;
@@ -70,6 +92,10 @@ ol, ul {
 
 .midchart {
   width: 100rem;
+}
+
+.modal-title {
+  font-size: 1.1rem;
 }
 
 .tbl-selectable {
@@ -171,13 +197,128 @@ ol, ul {
   }
 }
 
+.navtxt {
+  color: $white;
+}
+
+.tbllbl {
+  font-weight: bold;
+}
+
 #facilities {
-  .nav-item .active {
-    background-color: $nav-pills-link-active-bg;
-    color: $white;
+  @include navbg;
+
+  .facrsc {
+    .row:nth-child(even) {
+      background: $zebrabg;
+    }
+    .row > div {
+      padding-top: 0.25rem;
+      padding-bottom: 0.25rem;
+      margin: 0px;
+    }
   }
-  .nav-item :not(.active) {
-    background-color: $white;
-    color: $stanfordblack;
+}
+
+.btmtbl {
+  .hdr {
+    font-weight: bold;
+    font-size: 0.9rem;
   }
+  .col {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    border-right: thin $black20 solid;
+  }
+  .col:first-child {
+    border-left: thin $black20 solid;
+  }
+  .row:nth-child(even) {
+    background: $zebrabg;
+  }
+  .row:first-child {
+    border-top: thin $black20 solid;
+  }
+  .row:last-child {
+    border-bottom: thin $black20 solid;
+  }
+  .usrcmpalc {
+    width: 5.0rem;
+  }
+
+  margin: 0.5rem;
+}
+
+#requesttypes {
+  @include navbg;
+}
+
+#requests {
+  .rqsttbl {
+    .row {
+      border-bottom: thin $black20 solid;
+    }
+    .row:first-child {
+      border-top: thin $black20 solid;
+      padding-top: 0.25rem;
+      padding-bottom: 0.25rem;
+      font-weight: bold;
+    }
+    .row:nth-child(odd) {
+      background: $zebrabg;
+    }
+    .row > div {
+      border-left: thin $black20 solid;
+    }
+    .row > div:last-child {
+      border-right: thin $black20 solid;
+    }
+    button {
+      margin-top: 0.25rem;
+      margin-bottom: 0.25rem;
+    }
+  }
+  .rqAuto {
+    background-color: $paloverde;
+    border: none;
+  }
+  .rqManual {
+    background-color: $illuminating;
+    border: none;
+  }
+}
+
+#repotabs {
+  @include navbg;
+}
+
+@keyframes inPlaceSuccessAnimation {
+    0% {
+        background-color: $lagunita;
+    }
+    100% {
+        background-color: inherit;
+    }
+}
+
+@keyframes inPlaceErrorAnimation {
+    0% {
+        background-color: $digitalred;
+    }
+    100% {
+        background-color: inherit;
+    }
+}
+
+.inplacesuccess {
+  animation-name: inPlaceSuccessAnimation;
+  animation-duration: 3s;
+}
+.inplaceerror {
+  animation-name: inPlaceErrorAnimation;
+  animation-duration: 3s;
+}
+
+#clusterreports {
+  @include navbg;
 }

@@ -1,46 +1,21 @@
 import _ from "lodash";
-import { NavLink } from "react-router-dom";
-import { useQuery, useMutation, gql } from "@apollo/client";
 import React, { Component, useState } from 'react';
+import { useQuery, useMutation, gql } from "@apollo/client";
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
 import Button from 'react-bootstrap/Button';
-import Container from 'react-bootstrap/Container';
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
+import Col from 'react-bootstrap/Col';
+import Nav from 'react-bootstrap/Nav';
+import Row from 'react-bootstrap/Row';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
-import ListGroup from 'react-bootstrap/ListGroup';
-import { NodeSecs } from "./widgets";
 
-const REPOS = gql`
+import ReposComputeListView from "./reposcompute";
+import ReposStorageListView from "./reposstorage";
+
+const WHOAMI = gql`
 query{
-  myRepos {
-    name
-    principal
-    facilityObj {
-      name
-    }
-    currentComputeAllocations {
-      clustername
-      start
-      end
-      qoses {
-        name
-        slachours
-      }
-      volumes {
-        name
-        purpose
-        gigabytes
-        inodes
-      }
-      usage {
-        resource
-        slacsecs
-        avgcf
-      }
-    }
-  }
   whoami {
     username
   }
@@ -64,69 +39,6 @@ mutation newRepoRequest($request: SDFRequestInput!){
   }
 }
 `;
-
-class ReposRows extends Component {
-  constructor(props) {
-    super(props);
-    this.reponame = props.repo.name;
-  }
-  render() {
-    var first = true;
-    let cas = _.get(this.props.repo, "currentComputeAllocations", [{}]), rows = cas.length;
-    let trs = _.map(cas, (a) => {
-      let totalSlachours = _.sum(_.map(_.get(a, "qoses", []), "slachours"))
-      let totalSlacSecsused = _.sum(_.map(_.get(a, "usage", []), "slacsecs"));
-      if(first) {
-        first = false;
-        return (
-          <tr data-name={this.reponame}>
-            <td rowSpan={rows} className="vmid"><NavLink to={"/repos/"+this.reponame} key={this.reponame}>{this.reponame}</NavLink></td>
-            <td rowSpan={rows} className="vmid">{this.props.repo.facilityObj.name}</td>
-            <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
-            <td><NavLink to={"/repousage/"+this.reponame+"/compute/"+a.clustername} key={this.reponame}>{a.clustername}</NavLink></td>
-            <td>{totalSlachours}</td>
-            <td><NodeSecs value={totalSlacSecsused}/></td>
-            <td>TBD</td>
-            <td>TBD</td>
-            <td>TBD</td>
-          </tr>)
-        } else {
-          return (
-            <tr data-name={this.reponame}>
-              <td><NavLink to={"/repousage/"+this.reponame+"/compute/"+a.clustername} key={this.reponame}>{a.clustername}</NavLink></td>
-              <td>{totalSlachours}</td>
-              <td><NodeSecs value={totalSlacSecsused}/></td>
-              <td>TBD</td>
-              <td>TBD</td>
-              <td>TBD</td>
-            </tr>)
-        }
-    });
-    return ( <tbody>{trs}</tbody> )
-  }
-}
-
-
-class ReposTable extends Component {
-  constructor(props) {
-    super(props);
-  }
-  render() {
-    return (
-      <>
-      <div className="container-fluid text-center table-responsive">
-        <table className="table table-condensed table-striped table-bordered">
-          <thead>
-            <tr><th colSpan={3}></th><th colSpan={3}>Compute</th><th colSpan={3}>Storage</th></tr>
-            <tr><th>Name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th>Total compute used</th><th>Volume</th><th>Total storage allocation</th><th>Total storage used</th></tr>
-          </thead>
-          { _.map(this.props.repos, (r) => { return (<ReposRows key={r.name} repo={r}/>) }) }
-          </table>
-        </div>
-      </>
-     )
-  }
-}
 
 class RequestAddToRepo extends Component {
   render() {
@@ -175,7 +87,7 @@ class ReqRepMembership extends Component {
             Close
           </Button>
           <Button variant="primary" onClick={this.requestRepoMembership}>
-            Request Account
+            Request Repo Membership
           </Button>
         </Modal.Footer>
       </Modal>
@@ -264,8 +176,8 @@ class ReqNewRepo extends Component {
   }
 }
 
-export default function Repos() {
-  const { loading, error, data } = useQuery(REPOS);
+export default function RepoTabs() {
+  const { loading, error, data } = useQuery(WHOAMI);
   const [repMemShow, setRepMemShow] = useState(false);
   const [newRepShow, setNewRepShow] = useState(false);
   const [ repomemnrshipfn, { rmdata, rmloading, rmerror }] = useMutation(REQUEST_REPOMEMBERSHIP_MUTATION);
@@ -276,7 +188,6 @@ export default function Repos() {
 
   let username = _.get(data, "whoami.username");
   let facilities = _.map(_.get(data, "facilities"), "name");
-  console.log(data);
 
   const requestRepoMembership = (reponame) => {
     console.log("Repo membership requested for repo " + reponame);
@@ -290,24 +201,32 @@ export default function Repos() {
     setNewRepShow(false);
   };
 
-  return (
-    <>
-    <Container fluid>
-    <ReqRepMembership show={repMemShow} setShow={setRepMemShow} username={username} requestRepoMembership={requestRepoMembership} />
-    <ReqNewRepo show={newRepShow} setShow={setNewRepShow} username={username} requestNewRepo={requestNewRepo}  facilities={facilities}/>
-     <div className="row no-gutters">
-      <Row>
-        <Col></Col>
-        <Col></Col>
-        <Col className="float-end">
-          <RequestAddToRepo setShow={setRepMemShow} />
-          <RequestNewRepo setShow={setNewRepShow}/>
-        </Col>
-      </Row>
-     </div>
-    </Container>
-
-    <ReposTable repos={data.myRepos} />
-    </>
-  );
+  return (<Tab.Container defaultActiveKey="compute">
+        <Row id="repotabs">
+          <Col>
+            <Nav variant="tabs">
+              <Nav.Item>
+                <Nav.Link eventKey="compute">Compute</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="storage">Storage</Nav.Link>
+              </Nav.Item>
+            </Nav>
+            </Col>
+            <Col md={5} className="float-end">
+              <RequestAddToRepo setShow={setRepMemShow} />
+              <RequestNewRepo setShow={setNewRepShow}/>
+            </Col>
+        </Row>
+        <Tab.Content>
+          <Tab.Pane eventKey="compute">
+            <ReposComputeListView/>
+          </Tab.Pane>
+          <Tab.Pane eventKey="storage">
+            <ReposStorageListView/>
+          </Tab.Pane>
+        </Tab.Content>
+        <ReqRepMembership show={repMemShow} setShow={setRepMemShow} username={username} requestRepoMembership={requestRepoMembership} />
+        <ReqNewRepo show={newRepShow} setShow={setNewRepShow} username={username} requestNewRepo={requestNewRepo}  facilities={facilities}/>
+    </Tab.Container>);
 }

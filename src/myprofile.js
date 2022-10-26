@@ -21,19 +21,21 @@ query {
   whoami {
     Id
     username
+    fullname
     uidnumber
     eppns
     preferredemail
     shell
+    publichtml
     isAdmin
     groups
     storages {
       Id
-      intent
+      purpose
       gigabytes
       inodes
-      volumename
-      mount
+      storagename
+      rootfolder
       usage {
         gigabytes
         inodes
@@ -80,7 +82,6 @@ mutation userQuotaRequest($request: SDFRequestInput!){
   }
 }
 `;
-
 
 class ChangePreferredEmail extends Component {
   constructor(props) {
@@ -268,7 +269,7 @@ class StorageQuotaRequest extends Component {
 
     this.quotaRequest = () => {
       console.log(this.state);
-      this.props.requestQuota(this.props.storage.volumename, this.state.gigabytes, this.state.inodes, this.props.storage.intent, this.state.notes);
+      this.props.requestQuota(this.props.storage.storagename, this.state.gigabytes, this.state.inodes, this.props.storage.purpose, this.state.notes);
       this.props.setShow(false);
     }
   }
@@ -279,22 +280,25 @@ class StorageQuotaRequest extends Component {
           <Modal.Title>Quota request for {this.props.userdetails.username}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form.Text>Request a change in quota on volume {this.props.storage.volumename} used for {this.props.storage.intent}</Form.Text>
+          <Form.Text>Request a change in quota on volume {this.props.storage.storagename} used for {this.props.storage.purpose}. <br/> You currently have {this.state.gigabytes} GB</Form.Text>
           <Row className="mb-3">
             <InputGroup hasValidation>
-              <Form.Control type="text" value={this.state.gigabytes} placeholder="Please enter the storage requested in GB" onChange={this.setgigabytes} isInvalid={this.state.gigabytesinvalid}/>
+              <Form.Control className="my-2" type="text" value={this.state.gigabytes} placeholder="Please enter the storage requested in GB" onChange={this.setgigabytes} isInvalid={this.state.gigabytesinvalid}/>
+              <InputGroup.Text className="my-2">GB</InputGroup.Text>
               <Form.Control.Feedback type="invalid">Please enter a valid gigabytes</Form.Control.Feedback>
             </InputGroup>
           </Row>
+          <Form.Text>You currently have {this.state.inodes} files</Form.Text>
           <Row className="mb-3">
             <InputGroup hasValidation>
-              <Form.Control type="text" value={this.state.inodes} placeholder="Please enter the inodes requested in files" onChange={this.setinodes} isInvalid={this.state.inodesinvalid}/>
+              <Form.Control className="my-2" type="text" value={this.state.inodes} placeholder="Please enter the inodes requested in files" onChange={this.setinodes} isInvalid={this.state.inodesinvalid}/>
+              <InputGroup.Text className="my-2">files</InputGroup.Text>
               <Form.Control.Feedback type="invalid">Please enter a valid inodes</Form.Control.Feedback>
             </InputGroup>
           </Row>
           <Row className="mb-3">
             <InputGroup>
-              <Form.Control type="textarea" value={this.state.notes} placeholder="Please enter any additional comments" onChange={this.setnotes}/>
+              <Form.Control as="textarea" rows={3} value={this.state.notes} placeholder="Please enter any additional comments" onChange={this.setnotes}/>
             </InputGroup>
           </Row>
         </Modal.Body>
@@ -321,7 +325,7 @@ class UserStorage extends Component {
   render() {
     return (
       <>
-      <Row><Card.Subtitle title={this.props.storage.mount}>{this.props.storage.intent}</Card.Subtitle><hr/></Row>
+      <Row><Card.Subtitle title={this.props.storage.rootfolder}>{this.props.storage.purpose}</Card.Subtitle><hr/></Row>
       <Row>
         <Col>
           <Row className="mx-2">Used {this.props.storage.usage.gigabytes} GB of {this.props.storage.gigabytes} GB</Row>
@@ -338,12 +342,64 @@ class UserStorage extends Component {
 }
 
 
+class RequestPublicHTML extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { agreedToConditions: false, showErr: false }
+    this.handleClose = () => { this.props.setShow(false); }
+    this.agreeToConditions = (event) => { console.log(event.target.checked); this.setState({ agreedToConditions: event.target.checked, showErr: false  }) }
+    this.enablePublicHTML = () => {
+      console.log(this.state.agreedToConditions);
+      if(!this.state.agreedToConditions) {
+        this.setState({ showErr: true });
+        return;
+      }
+
+      this.props.enablePublicHTML(true);
+      this.props.setShow(false);
+    }
+  }
+  render() {
+    return (
+      <Modal show={this.props.show} onHide={this.handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Enable public HTML for {this.props.userdetails.username}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Row className="mb-3">
+            <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
+            <InputGroup className="mt-3" hasValidation>
+              <InputGroup.Text>I agree to these terms and conditions</InputGroup.Text>
+              <InputGroup.Checkbox value={this.state.agreedToConditions} onChange={this.agreeToConditions} isInvalid={this.state.showErr} />
+              <Alert show={this.state.showErr}>Please agree to the terms and conditions to turn on your public HTML space.</Alert>
+            </InputGroup>
+          </Row>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={this.handleClose}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={this.enablePublicHTML}>
+            Enable public HTML
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    )
+  }
+}
+
+
 class UserDetails extends Component {
   constructor(props) {
     super(props);
     this.showUserShellModal = function() { props.setChgShellShow(true) }
     this.showEppnModal = function() { props.setUpdtEppnShow(true) }
     this.showPrefEmailModal = function() { props.setUpdtPrefEmail(true) }
+    this.showPublicHTML = function() { props.setEnblPublicHtml(true) }
+    this.publichtmlurl = "/~" + props.userdetails.username + "/public_html/";
   }
   render() {
     return (
@@ -354,21 +410,22 @@ class UserDetails extends Component {
             <Card>
               <Card.Body>
               <Card.Title>Account details</Card.Title>
-                <Row><Col md={3}><Card.Subtitle>Userid</Card.Subtitle></Col><Col>{this.props.userdetails.username}</Col></Row>
-                <Row><Col md={3}><Card.Subtitle>UID</Card.Subtitle></Col><Col>{this.props.userdetails.uidnumber}</Col></Row>
+                <Row className="my-1"><Col md={3}><span className="tbllbl">Userid</span></Col><Col>{this.props.userdetails.username}</Col></Row>
+                <Row className="my-1"><Col md={3}><span className="tbllbl">UID</span></Col><Col>{this.props.userdetails.uidnumber}</Col></Row>
+                <Row className="my-1"><Col md={3}><span className="tbllbl">Name</span></Col><Col>{this.props.userdetails.fullname}</Col></Row>
                 <hr/>
-                <Row><Col md={3}><Card.Subtitle>Preferred Email</Card.Subtitle></Col><Col md={5}>{this.props.userdetails.preferredemail}</Col><Col><Button variant="secondary" onClick={this.showPrefEmailModal}>Change</Button></Col></Row>
+                <Row><Col md={3}><span className="tbllbl">Preferred Email</span></Col><Col md={5}>{this.props.userdetails.preferredemail}</Col><Col><Button variant="secondary" onClick={this.showPrefEmailModal}>Change</Button></Col></Row>
                 <hr/>
-                <Row><Col md={3}><Card.Subtitle>Shell</Card.Subtitle></Col><Col md={5}>{this.props.userdetails.shell}</Col><Col><Button variant="secondary" onClick={this.showUserShellModal}>Change my shell</Button></Col></Row>
+                <Row><Col md={3}><span className="tbllbl">Shell</span></Col><Col md={5}>{this.props.userdetails.shell}</Col><Col><Button variant="secondary" onClick={this.showUserShellModal}>Change my shell</Button></Col></Row>
                 <hr/>
                 <Col>
-                  <Row><Card.Subtitle>Aliases</Card.Subtitle></Row>
+                  <Row><Card.Subtitle>EPPNs</Card.Subtitle></Row>
 
                   <Row><Col md={8}><ul className="ps-5">
                   {
                     _.map(this.props.userdetails.eppns, (e) => { return (<li key={e}>{e}</li>) })
                   }
-                  </ul></Col><Col><Button variant="secondary" onClick={this.showEppnModal} >Add/remove aliases</Button></Col>
+                  </ul></Col><Col><Button className="d-none" variant="secondary" onClick={this.showEppnModal} >Add/remove EPPNs</Button></Col>
                   </Row>
                 </Col>
                 <hr/>
@@ -381,14 +438,30 @@ class UserDetails extends Component {
             </Card>
           </Col>
           <Col>
-            <Card>
-              <Card.Body>
-              <Card.Title>Storage details</Card.Title>
-              {
-                _.map(this.props.userdetails.storages, (s) => { return (<UserStorage key={s.Id} userdetails={this.props.userdetails} storage={s} requestQuota={this.props.requestQuota} />) })
-              }
-              </Card.Body>
-            </Card>
+            <Row>
+              <Card>
+                <Card.Body>
+                <Card.Title>Storage details</Card.Title>
+                {
+                  _.map(this.props.userdetails.storages, (s) => { return (<UserStorage key={s.Id} userdetails={this.props.userdetails} storage={s} requestQuota={this.props.requestQuota} />) })
+                }
+                </Card.Body>
+              </Card>
+            </Row>
+            <Row>
+              <Card>
+                <Card.Body>
+                <Card.Subtitle>Public HTML space</Card.Subtitle>
+                <Row className="mt-2"><Col>{this.props.userdetails.publichtml ? (<span>Your public HTML pages are viewable <a href={this.publichtmlurl}>here</a></span>) : "You have not turned on the public html space"}</Col>
+                <Col md={3}>
+                  {
+                    this.props.userdetails.publichtml ? (<span></span>) : (<Button className="my-2" variant="secondary" onClick={this.showPublicHTML}>Request</Button>)
+                  }
+                </Col>
+                </Row>
+                </Card.Body>
+              </Card>
+            </Row>
           </Col>
         </Row>
       </Container>
@@ -408,6 +481,7 @@ export default function MyProfile() {
   const [chgShellShow, setChgShellShow] = useState(false);
   const [updtEppnShow, setUpdtEppnShow] = useState(false);
   const [updtPrefEmail, setUpdtPrefEmail] = useState(false);
+  const [enblPublicHtml, setEnblPublicHtml] = useState(false);
 
   const changeUserShell = (newshell) => {
     console.log("Changing shell to " + newshell);
@@ -426,9 +500,15 @@ export default function MyProfile() {
     setUpdtPrefEmail(false);
   };
 
-  const requestQuota = (volumename, gigabytes, inodes, intent, notes) => {
+  const requestQuota = (storagename, gigabytes, inodes, purpose, notes) => {
     console.log("Putting in a request for changing the quota");
-    quotafn({ variables: { request: { reqtype: "UserStorageAllocation", volumename: volumename, gigabytes: gigabytes, inodes: inodes, intent: intent, notes: notes }}});
+    quotafn({ variables: { request: { reqtype: "UserStorageAllocation", storagename: storagename, gigabytes: gigabytes, inodes: inodes, purpose: purpose, notes: notes }}});
+  };
+
+  const enablePublicHTML = () => {
+    console.log("Enabling public HTML for user");
+    updtUserfn({ variables: { user: { Id: data["whoami"]["Id"], username: data["whoami"]["username"], publichtml: true } }, refetchQueries: [ HOMEDETAILS, 'whoami' ]});
+    setEnblPublicHtml(false);
   };
 
 
@@ -442,7 +522,8 @@ export default function MyProfile() {
       <ChangeUserShell show={chgShellShow} setShow={setChgShellShow} userdetails={data["whoami"]} changeUserShell={changeUserShell} />
       <AddRemoveEPPNs show={updtEppnShow} setShow={setUpdtEppnShow} userdetails={data["whoami"]} updateEppns={updateEppns} />
       <ChangePreferredEmail show={updtPrefEmail} setShow={setUpdtPrefEmail} userdetails={data["whoami"]} changePreferredEmail={changePreferredEmail} />
-      <UserDetails userdetails={data["whoami"]} setChgShellShow={setChgShellShow} setUpdtEppnShow={setUpdtEppnShow} setUpdtPrefEmail={setUpdtPrefEmail} requestQuota={requestQuota}/>
+      <RequestPublicHTML show={enblPublicHtml} setShow={setEnblPublicHtml} userdetails={data["whoami"]} enablePublicHTML={enablePublicHTML} />
+      <UserDetails userdetails={data["whoami"]} setChgShellShow={setChgShellShow} setUpdtEppnShow={setUpdtEppnShow} setUpdtPrefEmail={setUpdtPrefEmail} setEnblPublicHtml={setEnblPublicHtml} requestQuota={requestQuota}/>
     </>
   );
 }

@@ -4,6 +4,9 @@ import React from "react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Image from 'react-bootstrap/Image'
+import Modal from 'react-bootstrap/Modal';
+import Alert from 'react-bootstrap/Alert';
+import Button from 'react-bootstrap/Button';
 import { Nav, Navbar, Container } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import SLACLogo from '../images/SLAC_primary_red.png';
@@ -11,19 +14,24 @@ import StanfordDOELogo from '../images/Stanford_DOE_black.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRocket } from '@fortawesome/free-solid-svg-icons'
 
-export function NodeSecs(props) {
+export function TwoPrecFloat(props) {
   if(_.isNil(props.value)) return "N/A";
-  return (props.value/3600).toFixed(2);
-}
-
-export function Percent(props) {
-  if(_.isNil(props.value)) return "N/A";
-  return props.value.toFixed(2);
+  return (props.value).toFixed(2);
 }
 
 export function ChargeFactor(props) {
   if(_.isNil(props.value)) return "N/A";
   return props.value.toFixed(2);
+}
+
+export function TeraBytes(props) {
+  if(_.isNil(props.value)) return "N/A";
+  return (props.value/1024.0).toFixed(2);
+}
+
+export function InMillions(props) {
+  if(_.isNil(props.value)) return "N/A";
+  return (props.value/1000000.0).toFixed(2);
 }
 
 export function DateDisp(props) {
@@ -78,15 +86,13 @@ export class SearchAndAdd extends React.Component {
 export function NoNavHeader() { // Use for pages that do have a navbar on top.
   return (
     <Navbar bg="primary" variant="dark" expand="lg">
-      <Container>
-        <Navbar.Brand><FontAwesomeIcon icon={faRocket} size="lg"/> Coact</Navbar.Brand>
-	<Navbar.Toggle onClick={function noRefCheck(){}} />
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-        </Navbar.Collapse>
-        <Nav>
-        </Nav>
-      </Container>
+      <Navbar.Brand className="px-2"><FontAwesomeIcon icon={faRocket} size="lg"/> Coact</Navbar.Brand>
+      <Navbar.Toggle onClick={function noRefCheck(){}} />
+      <Navbar.Toggle aria-controls="basic-navbar-nav" />
+      <Navbar.Collapse id="basic-navbar-nav">
+      </Navbar.Collapse>
+      <Nav>
+      </Nav>
     </Navbar>
   )
 }
@@ -99,5 +105,23 @@ export function Footer() {
         <Col><Image height={"50vh"} src={StanfordDOELogo} className="partner float-end"/></Col>
       </Row>
      </div>
+  )
+}
+
+export function ErrorMsgModal(props) { // Sometimes, it's easier to show error messages in a modal
+  return (
+    <Modal show={props.show} onHide={() => {props.setShow(false)}}>
+      <Modal.Header closeButton>
+        <Modal.Title>{props.title}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Alert>{props.message}</Alert>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => {props.setShow(false)}}>
+          Close
+        </Button>
+      </Modal.Footer>
+    </Modal>
   )
 }
