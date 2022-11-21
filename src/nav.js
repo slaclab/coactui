@@ -4,7 +4,7 @@ import { useQuery, gql } from "@apollo/client";
 import { NavLink } from "react-router-dom";
 import React, { Component, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faRocket, faPerson, faPersonCircleQuestion } from '@fortawesome/free-solid-svg-icons'
+import { faRocket, faUser, faUserNinja, faPersonCircleQuestion } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from 'react-router-dom';
 
 
@@ -14,6 +14,7 @@ query whoami{
     username
     isAdmin
     isCzar
+    isImpersonating
   }
   users {
     username
@@ -26,11 +27,12 @@ function logged_in( props ) {
   return(
      <>
      <Nav.Item className="navtxt">
-       <FontAwesomeIcon icon={faPerson} size="2x"/>
+       <FontAwesomeIcon icon={props.isImpersonating ? faUserNinja : faUser} size="2x"/>
      </Nav.Item>
      <NavDropdown align="end" title={props.logged_in_user} id="nav-dropdown">
        <NavDropdown.Item href="https://vouch.slac.stanford.edu/logout">Log out...</NavDropdown.Item>
-       <NavDropdown.Item className={props.isAdmin ? "" : "d-none"} onClick={props.impersonate}>Impersonate...</NavDropdown.Item>
+       <NavDropdown.Item className={props.isAdmin && !props.isImpersonating ? "" : "d-none"} onClick={props.impersonate}>Impersonate...</NavDropdown.Item>
+       <NavDropdown.Item className={props.isImpersonating ? "" : "d-none"} onClick={props.stopImpersonation}>Stop impersonation</NavDropdown.Item>
        <NavDropdown.Divider />
        <NavDropdown.Item as="span" onClick={() => { props.gotomyprofile() }}>My Profile</NavDropdown.Item>
      </NavDropdown>
@@ -125,6 +127,7 @@ export default function TopNavBar( props ) {
   let gotomyprofile = () => { navigate("/myprofile") }
 
   if (loading) return <p>Loading...</p>;
+  console.log(data);
   if ( data !== undefined && data.hasOwnProperty("whoami") ) {
     logged_in_user = data["whoami"].username;
     isAdmin = data["whoami"].isAdmin;
@@ -136,6 +139,11 @@ export default function TopNavBar( props ) {
   let impersonate = function(impname) {
     console.log(impname);
     localStorage.setItem('imptk', impname);
+    window.location.reload(false);
+  }
+
+  let stopImpersonation = function(impname) {
+    localStorage.removeItem('imptk');
     window.location.reload(false);
   }
 
@@ -159,7 +167,7 @@ export default function TopNavBar( props ) {
         </Nav>
       </Navbar.Collapse>
       <Nav>
-				<UserDropDown logged_in_user={logged_in_user} isAdmin={isAdmin} impersonate={setShow} gotomyprofile={gotomyprofile}/>
+				<UserDropDown logged_in_user={logged_in_user} isAdmin={isAdmin} isImpersonating={data["whoami"].isImpersonating} impersonate={setShow} stopImpersonation={stopImpersonation} gotomyprofile={gotomyprofile}/>
       </Nav>
       <Impersonate show={show} setShow={setShow} usernames={usernames} impersonate={impersonate}/>
     </Navbar>
