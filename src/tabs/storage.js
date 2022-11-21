@@ -175,8 +175,10 @@ class StorageTab extends React.Component {
         <ChangeAllocationModal show={this.props.allocMdlShow} setShow={this.props.setAllocMdlShow} repodata={this.props.repodata} requestChangeAllocation={this.props.requestChangeAllocation} />
         <Col md={3} className="mb-1"></Col>
         <Col className="my-2"><div className="sectiontitle">Resource usage for repo <span className="ref">{this.props.repodata.name}</span> on the <span className="ref">{this.props.repodata.storageAllocation.storagename}</span> storage volume used for <span className="ref">{this.props.repodata.storageAllocation.purpose}</span> </div></Col>
-        <Col md={3} className="float-end mb-1">
-          <RequestAllocation setShow={this.props.setAllocMdlShow}/>
+        <Col md={3} className="mb-1">
+          <span className="float-end me-1">
+            <RequestAllocation setShow={this.props.setAllocMdlShow}/>
+          </span>
         </Col>
       </Row>
       <TopTab repodata={this.props.repodata}/>

@@ -305,8 +305,10 @@ class ComputeTab extends React.Component {
       <Row>
         <Col></Col>
         <Col><div className="sectiontitle">Resource usage for repo <span className="ref">{this.props.repodata.name}</span> on the <span className="ref">{this.props.repodata.computeAllocation.clustername}</span> cluster</div></Col>
-        <Col className="float-end mb-2">
-          <RequestAllocation setShow={this.props.setAllocMdlShow}/>
+        <Col className="mb-2">
+          <span className="float-end me-1">
+            <RequestAllocation setShow={this.props.setAllocMdlShow}/>
+          </span>
         </Col>
       </Row>
       <TopTab repodata={this.props.repodata}/>

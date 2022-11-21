@@ -119,20 +119,15 @@ class ManageRoleAction extends React.Component {
 class UsersTab extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { showModal: false}
-
-    this.showModal = () => {
-      this.setState({showModal: true});
-    }
     this.hideModal = () => {
-      this.setState({showModal: false});
+      this.props.setShowModal(false);
     }
   }
 
   render() {
     return (
       <div className="container-fluid text-center tabcontainer">
-        <Modal show={this.state.showModal}>
+        <Modal show={this.props.showModal}>
             <ModalHeader>
               Search for users and add/remove them to/from this repo.
             </ModalHeader>
@@ -177,16 +172,15 @@ class UsersTab extends React.Component {
                   </tbody>
                 </table>
               </div>
-              <Button className={this.props.amILeader ? "" : "d-none"} onClick={this.showModal}>Add user to repo</Button>
-              </div>
+            </div>
        </div>
     );
   }
 }
 
 
-export default function Users() {
-  let params = useParams(), reponame = params.name;
+export default function Users(props) {
+  let reponame = props.reponame;
   const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame } } });
 
   const [ toggleRoleMutation ] = useMutation(TOGGLE_ROLE_MUTATION);
@@ -224,5 +218,8 @@ export default function Users() {
     }
   }
 
-  return (<UsersTab users={allusers} allusernames={allusernames} onToggleRole={toggleRole} onSelDesel={addRemoveUser} amILeader={amILeader}/>);
+  return (<UsersTab users={allusers} allusernames={allusernames}
+    onToggleRole={toggleRole} onSelDesel={addRemoveUser} amILeader={amILeader}
+    showModal={props.showModal} setShowModal={props.setShowModal}
+    />);
 }

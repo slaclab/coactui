@@ -213,9 +213,11 @@ export default function RepoTabs() {
               </Nav.Item>
             </Nav>
             </Col>
-            <Col md={5} className="float-end">
-              <RequestAddToRepo setShow={setRepMemShow} />
-              <RequestNewRepo setShow={setNewRepShow}/>
+            <Col md={5}>
+              <span className="float-end me-1">
+                <RequestAddToRepo setShow={setRepMemShow} />
+                <RequestNewRepo setShow={setNewRepShow}/>
+              </span>
             </Col>
         </Row>
         <Tab.Content>

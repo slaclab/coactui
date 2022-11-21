@@ -121,7 +121,7 @@ class AddGroupModal extends React.Component {
 class GroupsTab extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { selectedGroup: "", usrswithsels: [], showModal: false }
+    this.state = { selectedGroup: "", usrswithsels: []}
     const groupnames = _.map(this.props.groups, "name");
     this.selGroup = (event) => {
       let grpName = event.currentTarget.dataset.name, grpObj = _.find(this.props.groups, ["name", grpName]);
@@ -140,11 +140,8 @@ class GroupsTab extends React.Component {
       })
     }
 
-    this.showModal = () => {
-      this.setState({showModal: true});
-    }
     this.hideModal = () => {
-      this.setState({showModal: false});
+      this.props.setShowModal(false);
     }
 
     this.createGroup = (groupName) => {
@@ -155,12 +152,16 @@ class GroupsTab extends React.Component {
 
   render() {
     if(_.isEmpty(this.props.groups)) {
-      return (<div className="container-fluid text-center tabcontainer"><AddGroupModal reponame={this.props.reponame} groupnames={this.groupnames} showModal={this.state.showModal} handleClose={this.hideModal} handleSubmit={this.createGroup}/><div className="row">This repo does not have any access groups defined</div><Button className={this.props.amILeader ? "" : "d-none"} onClick={this.showModal}>Create new access group</Button></div>)
+      return (<div className="container-fluid text-center tabcontainer">
+      <AddGroupModal reponame={this.props.reponame} groupnames={this.groupnames} showModal={this.props.showModal}
+        handleClose={this.hideModal} handleSubmit={this.createGroup}/>
+        <div className="row">This repo does not have any access groups defined</div></div>)
     }
 
     return (
       <div className="container-fluid text-center tabcontainer">
-        <AddGroupModal reponame={this.props.reponame} groupnames={this.groupnames} showModal={this.state.showModal} handleClose={this.hideModal} handleSubmit={this.createGroup}/>
+        <AddGroupModal reponame={this.props.reponame} groupnames={this.groupnames} showModal={this.props.showModal}
+        handleClose={this.hideModal} handleSubmit={this.createGroup}/>
         <div className="row">
           <div className="col table-responsive">
             <table className="table table-condensed table-striped table-bordered collabtbl">
@@ -190,7 +191,6 @@ class GroupsTab extends React.Component {
               </tbody>
             </table>
           </div>
-          <Button className={this.props.amILeader ? "d-none" : "d-none"} onClick={this.showModal}>Create new access group</Button>
         </div>
       </div>
     )
@@ -198,8 +198,8 @@ class GroupsTab extends React.Component {
 }
 
 
-export default function Groups() {
-  let params = useParams(), reponame = params.name;
+export default function Groups(props) {
+  let reponame = props.reponame;
   const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame } } });
   const [ toggleGrpMutation] = useMutation(TOGGLE_GROUPMEMBERSHIP_MUTATION);
 
@@ -214,5 +214,7 @@ export default function Groups() {
     toggleGrpMutation({ variables: { reposinput: { name: reponame }, user: { username: username }, group: { name: groupname } }, refetchQueries: [ REPODETAILS, 'Repos' ], onError: (error) => { console.log("Error when toggling role " + error); } });
   }
 
-  return (<GroupsTab groups={repodata.accessGroupObjs} allUsers={repodata.allUsers} amILeader={amILeader} onSelDesel={toggleUserMembershipForGroup} reponame={repodata.name}/>);
+  return (<GroupsTab groups={repodata.accessGroupObjs} allUsers={repodata.allUsers} amILeader={amILeader}
+    showModal={props.showModal} setShowModal={props.setShowModal}
+    onSelDesel={toggleUserMembershipForGroup} reponame={repodata.name}/>);
 }
