@@ -86,6 +86,7 @@ function App() {
         <TopNavBar/>
         <Routes>
           <Route exact path="/" element={ <Navigate to="myprofile" /> } />
+          <Route exact path="/login" element={ <Navigate to="../myprofile" /> } />
           <Route exact path="facilities" element={<Facilities />}/>
           <Route exact path="facilities/:facilityname" element={<Facility />}/>
           <Route exact path="repos" element={<RepoTabs />}/>
