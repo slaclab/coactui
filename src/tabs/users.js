@@ -103,9 +103,9 @@ class ManageRoleAction extends React.Component {
     var act = (<span/>);
     if(user.has_manage_roles) {
       if(this.state.is_leader) {
-        act = (<span className="inlntlbr select_role px-2" title="Remove the leader role for this user" onClick={this.handleRoleChange}><FontAwesomeIcon icon={faPersonArrowDownToLine}/></span>)
+        act = (<span className="inlntlbr select_role px-2 text-warning" title="Remove the leader role for this user" onClick={this.handleRoleChange}><FontAwesomeIcon icon={faPersonArrowDownToLine}/></span>)
       } else {
-        act = (<span className="inlntlbr select_role px-2" title="Add the leader role to this user" onClick={this.handleRoleChange}><FontAwesomeIcon icon={faPersonArrowUpFromLine}/></span>)
+        act = (<span className="inlntlbr select_role px-2 text-warning" title="Add the leader role to this user" onClick={this.handleRoleChange}><FontAwesomeIcon icon={faPersonArrowUpFromLine}/></span>)
       }
     }
     return (
@@ -126,7 +126,7 @@ class UsersTab extends React.Component {
 
   render() {
     return (
-      <div className="container-fluid text-center tabcontainer">
+      <div className="container-fluid tabcontainer">
         <Modal show={this.props.showModal}>
             <ModalHeader>
               Search for users and add/remove them to/from this repo.
@@ -140,21 +140,21 @@ class UsersTab extends React.Component {
               </Button>
             </ModalFooter>
           </Modal>
-          <div className="container-fluid text-center" id="users_content">
+          <div className="container-fluid" id="users_content">
               <div className="table-responsive">
                 <table className="table table-condensed table-striped table-bordered collabtbl">
                   <thead>
                     <tr>
                       <th>Userid</th>
-                      <th>Account state</th>
                       <th>Role</th>
                       <th colSpan="3">
                         <div className="row">
-                          <span className="col-4">EPPN</span>
+                          <span className="col-4">Username</span>
                           <span className="col-4">User email</span>
                           <span className="col-4">Organization</span>
                         </div>
                       </th>
+                      <th>Account state</th>
                       <th>Created</th>
                       <th>Updated</th>
                     </tr>
@@ -163,9 +163,9 @@ class UsersTab extends React.Component {
                   {_.map(this.props.users, (user) => {
                     return (<tr key={user.username}>
                       <td>{user.username}</td>
-                      <td></td>
                       <td className="manage_roles"><ManageRoleAction user={user} onToggleRole={this.props.onToggleRole}/></td>
                       <td colSpan="3"><Eppn user={user}/></td>
+                      <td></td>
                       <td></td>
                       <td></td>
                     </tr>)})}

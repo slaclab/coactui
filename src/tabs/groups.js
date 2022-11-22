@@ -131,15 +131,25 @@ class AddGroupModal extends React.Component {
 class GroupsTab extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { selectedGroup: "", usrswithsels: []}
     const groupnames = _.map(this.props.groups, "name");
-    this.selGroup = (event) => {
-      let grpName = event.currentTarget.dataset.name, grpObj = _.find(this.props.groups, ["name", grpName]);
+    this.getUserSels = (grpName) => {
+      let grpObj = _.find(this.props.groups, ["name", grpName]);
       let selUserNames = _.map(_.get(grpObj, "memberObjs", []), "username");
       let newusrswithsels = _.map(this.props.allUsers, (u) => {
         return { "name": u["username"], "selected": _.includes(selUserNames, u["username"])  }
       })
-      this.setState({selectedGroup: grpName, usrswithsels: newusrswithsels});
+      return newusrswithsels;
+    }
+    this.state = { selectedGroup: "", usrswithsels: []}
+
+    if(!_.isEmpty(groupnames)) {
+      let grpName = groupnames[0];
+      this.state = { selectedGroup: grpName, usrswithsels: this.getUserSels(grpName)}
+    }
+
+    this.selGroup = (event) => {
+      let grpName = event.currentTarget.dataset.name;
+      this.setState({selectedGroup: grpName, usrswithsels: this.getUserSels(grpName)});
     }
 
     this.checkUncheck = (event) => {
@@ -170,7 +180,7 @@ class GroupsTab extends React.Component {
     }
 
     return (
-      <div className="container-fluid text-center tabcontainer">
+      <div className="container-fluid tabcontainer">
         <AddGroupModal reponame={this.props.reponame} groupnames={this.groupnames} showModal={this.props.showModal}
         handleClose={this.hideModal} handleSubmit={this.createGroup}/>
         <div className="row">
@@ -183,7 +193,7 @@ class GroupsTab extends React.Component {
                 </tr>
               </thead>
               <tbody>{
-                _.map(this.props.groups, (g) => { return (<tr key={g.name} data-name={g.name} onClick={this.selGroup} className={(g.name === this.state.selectedGroup) ? "bg-primary": ""}><td>{g.name}</td><td>{g.gidnumber}</td></tr>) })
+                _.map(this.props.groups, (g) => { return (<tr key={g.name} data-name={g.name} onClick={this.selGroup} className={(g.name === this.state.selectedGroup) ? "bg-secondary": ""}><td>{g.name}</td><td>{g.gidnumber}</td></tr>) })
               }
               </tbody>
             </table>
