@@ -11,9 +11,8 @@ import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
 import Alert from 'react-bootstrap/Alert';
 import InputGroup from 'react-bootstrap/InputGroup';
-import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faXmark, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faXmark, faPlus } from '@fortawesome/free-solid-svg-icons'
 
 
 const HOMEDETAILS = gql`

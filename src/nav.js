@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { Nav, Navbar, NavDropdown, Container, Modal, Form, Button, InputGroup } from 'react-bootstrap';
+import { Nav, Navbar, NavDropdown, Modal, Form, Button, InputGroup } from 'react-bootstrap';
 import { useQuery, gql } from "@apollo/client";
 import { NavLink } from "react-router-dom";
 import React, { Component, useState } from 'react';

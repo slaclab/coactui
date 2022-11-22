@@ -7,7 +7,7 @@ import Image from 'react-bootstrap/Image'
 import Modal from 'react-bootstrap/Modal';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
-import { Nav, Navbar, Container } from 'react-bootstrap';
+import { Nav, Navbar } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import SLACLogo from '../images/SLAC_primary_red.png';
 import StanfordDOELogo from '../images/Stanford_DOE_black.png';

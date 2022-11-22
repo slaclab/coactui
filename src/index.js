@@ -14,16 +14,11 @@ import {
   useQuery,
   gql
 } from "@apollo/client";
-import Col from "react-bootstrap/Col";
-import Container from 'react-bootstrap/Container';
-import Image from 'react-bootstrap/Image'
-import Row from "react-bootstrap/Row";
 import TopNavBar from "./nav";
 import Facilities from "./tabs/facilities";
 import Facility from "./tabs/facility";
 import RepoTabs from "./tabs/repostabs";
 import RequestTypes from "./tabs/requesttypes";
-import Requests from "./tabs/requests";
 import MyProfile from "./myprofile";
 import RegisterUser from "./register";
 import Repo from "./tabs/repo";
