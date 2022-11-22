@@ -28,7 +28,7 @@ query Repos($reposinput: RepoInput){
     }
     accessGroupObjs {
       name
-      gidNumber
+      gidnumber
       memberObjs {
         username
       }
@@ -172,7 +172,7 @@ class GroupsTab extends React.Component {
                 </tr>
               </thead>
               <tbody>{
-                _.map(this.props.groups, (g) => { return (<tr key={g.name} data-name={g.name} onClick={this.selGroup} className={(g.name === this.state.selectedGroup) ? "bg-primary": ""}><td>{g.name}</td><td>{g.gidNumber}</td></tr>) })
+                _.map(this.props.groups, (g) => { return (<tr key={g.name} data-name={g.name} onClick={this.selGroup} className={(g.name === this.state.selectedGroup) ? "bg-primary": ""}><td>{g.name}</td><td>{g.gidnumber}</td></tr>) })
               }
               </tbody>
             </table>
