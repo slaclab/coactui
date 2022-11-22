@@ -48,6 +48,16 @@ mutation ToggleUserRole($reposinput: RepoInput!, $user: UserInput!, $group: Acce
 }
 `;
 
+const NEW_USERGROUP_MUTATION = gql`
+mutation accessGroupCreate($grp: AccessGroupInput!){
+  accessGroupCreate(accessgroup: $grp){
+    name
+    gidnumber
+  }
+}
+`;
+
+
 
 class AddGroupModal extends React.Component {
   constructor(props) {
@@ -146,6 +156,7 @@ class GroupsTab extends React.Component {
 
     this.createGroup = (groupName) => {
       console.log("Need to create " + groupName);
+      this.props.createNewUserGroup(groupName)
       this.hideModal();
     }
   }
@@ -202,6 +213,7 @@ export default function Groups(props) {
   let reponame = props.reponame;
   const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame } } });
   const [ toggleGrpMutation] = useMutation(TOGGLE_GROUPMEMBERSHIP_MUTATION);
+  const [ newusergrpfn, { newusergrpdata, newusergrploading, newusergrperror }] = useMutation(NEW_USERGROUP_MUTATION);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;
@@ -214,7 +226,11 @@ export default function Groups(props) {
     toggleGrpMutation({ variables: { reposinput: { name: reponame }, user: { username: username }, group: { name: groupname } }, refetchQueries: [ REPODETAILS, 'Repos' ], onError: (error) => { console.log("Error when toggling role " + error); } });
   }
 
+  let createNewUserGroup = function(newusergroupname) {
+    newusergrpfn({ variables: { grp: { name: newusergroupname, repo: reponame, members: [] } }, refetchQueries: [ REPODETAILS, 'Repos' ], onError: (error) => { console.log("Error when creating new user group role " + error); } });
+  }
+
   return (<GroupsTab groups={repodata.accessGroupObjs} allUsers={repodata.allUsers} amILeader={amILeader}
-    showModal={props.showModal} setShowModal={props.setShowModal}
+    showModal={props.showModal} setShowModal={props.setShowModal} createNewUserGroup={createNewUserGroup}
     onSelDesel={toggleUserMembershipForGroup} reponame={repodata.name}/>);
 }
