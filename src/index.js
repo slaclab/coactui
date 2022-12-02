@@ -14,6 +14,8 @@ import {
   useQuery,
   gql
 } from "@apollo/client";
+import LandingPage from "./landingpage";
+import FakeLogin from "./fakelogin";
 import TopNavBar from "./nav";
 import Facilities from "./tabs/facilities";
 import Facility from "./tabs/facility";
@@ -67,7 +69,8 @@ function App() {
     return (
       <BrowserRouter>
       <Routes>
-        <Route exact path="/" element={ <Navigate to="register" replace />  } />
+        <Route exact path="/" element={ <LandingPage/>  } />
+        <Route exact path="/login" element={ <FakeLogin/> } />
         <Route exact path="register" element={<RegisterUser eppn={eppn} registrationPending={registrationPending} fullname={fullname}/>}/>
       </Routes>
       </BrowserRouter>

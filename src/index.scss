@@ -324,3 +324,27 @@ ol, ul {
 #clusterreports {
   @include navbg;
 }
+
+#landingpage {
+  @include navbg;
+  .nav-item a {
+    color: white;
+  }
+  .card {
+    margin: 1.0em;
+    .cardicn {
+      color: $spirited;
+    }
+  }
+  min-height: 100vh;
+  width: 100vw;
+  .footer {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    margin-left: 0.1em;
+    margin-right: 0.1em;
+    margin-bottom: 0.5em;
+  }
+}
