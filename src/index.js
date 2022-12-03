@@ -70,7 +70,7 @@ function App() {
       <BrowserRouter>
       <Routes>
         <Route exact path="/" element={ <LandingPage/>  } />
-        <Route exact path="/login" element={ <FakeLogin/> } />
+        <Route exact path="/login" element={ <Navigate to="../register" replace /> } />
         <Route exact path="register" element={<RegisterUser eppn={eppn} registrationPending={registrationPending} fullname={fullname}/>}/>
       </Routes>
       </BrowserRouter>
