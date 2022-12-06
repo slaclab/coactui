@@ -49,8 +49,8 @@ class FacilityComputePurchases extends Component {
           <Card.Header>Compute</Card.Header>
           <Card.Body>
             <Row className="mb-2">
-              <Col md={3}><span className="tbllbl">Cluster name</span></Col>
-              <Col md={3}><span className="tbllbl">Purchased</span></Col>
+              <Col md={3}><span className="tbllbl">Cluster</span></Col>
+              <Col md={3}><span className="tbllbl">Acquired</span></Col>
               <Col md={3}><span className="tbllbl">Allocated</span></Col>
               <Col md={3}><span className="tbllbl">Used</span></Col>
             </Row>
@@ -84,9 +84,9 @@ class FacilityStoragePurchases extends Component {
           <Card.Header>Storage</Card.Header>
           <Card.Body>
             <Row className="mb-2">
-              <Col md={3}><span className="tbllbl">Storage name</span></Col>
+              <Col md={3}><span className="tbllbl">Storage Class</span></Col>
               <Col md={3}><span className="tbllbl">Purpose</span></Col>
-              <Col md={2}><span className="tbllbl">Purchased (TB)</span></Col>
+              <Col md={2}><span className="tbllbl">Acquired (TB)</span></Col>
               <Col md={2}><span className="tbllbl">Allocated (TB)</span></Col>
               <Col md={2}><span className="tbllbl">Used (TB)</span></Col>
             </Row>
