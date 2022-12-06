@@ -117,6 +117,7 @@ function UserDropDown( props ) {
 
 export default function TopNavBar( props ) {
   let logged_in_user = undefined;
+  let isImpersonating = false;
   let isAdmin = false;
   let isCzar = false;
   let showFacs = false;
@@ -134,6 +135,7 @@ export default function TopNavBar( props ) {
     isCzar = data["whoami"].isCzar;
     showFacs = isAdmin || isCzar;
     usernames = _.map(_.get(data, "users"), "username", []);
+    isImpersonating = data["whoami"].isImpersonating;
   };
 
   let impersonate = function(impname) {
@@ -167,7 +169,7 @@ export default function TopNavBar( props ) {
         </Nav>
       </Navbar.Collapse>
       <Nav>
-				<UserDropDown logged_in_user={logged_in_user} isAdmin={isAdmin} isImpersonating={data["whoami"].isImpersonating} impersonate={setShow} stopImpersonation={stopImpersonation} gotomyprofile={gotomyprofile}/>
+				<UserDropDown logged_in_user={logged_in_user} isAdmin={isAdmin} isImpersonating={isImpersonating} impersonate={setShow} stopImpersonation={stopImpersonation} gotomyprofile={gotomyprofile}/>
       </Nav>
       <Impersonate show={show} setShow={setShow} usernames={usernames} impersonate={impersonate}/>
     </Navbar>
