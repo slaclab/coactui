@@ -142,11 +142,10 @@ class FacilityDetails extends Component {
           </Col>
           <Col>
             <Card>
-              <Card.Header>Service accounts</Card.Header>
+              <Card.Header>Service Accounts</Card.Header>
               <Card.Body>
-                <Row><Col md={3}><span className="tbllbl">User account</span></Col><Col md={5}>{_.get(this.props.facility, "serviceaccount")}</Col></Row>
-                <hr/>
-                <Row><Col md={3}><span className="tbllbl">Group account</span></Col><Col md={5}>{_.get(this.props.facility, "servicegroup")}</Col></Row>
+                <Row><Col md={3}><span className="tbllbl">User</span></Col><Col md={5}>{_.get(this.props.facility, "serviceaccount")}</Col></Row>
+                <Row><Col md={3}><span className="tbllbl">Group</span></Col><Col md={5}>{_.get(this.props.facility, "servicegroup")}</Col></Row>
               </Card.Body>
             </Card>
           </Col>
