@@ -336,15 +336,9 @@ ol, ul {
       color: $spirited;
     }
   }
-  min-height: 100vh;
-  width: 100vw;
-  .footer {
-    position: absolute;
-    bottom: 0px;
-    left: 0px;
-    right: 0px;
-    margin-left: 0.1em;
-    margin-right: 0.1em;
-    margin-bottom: 0.5em;
+  margin: 1.0em;
+  .partner {
+    float: right;
+    margin-right: 1.0em;
   }
 }

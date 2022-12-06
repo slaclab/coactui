@@ -7,7 +7,7 @@ import { faGlobe, faRobot  } from '@fortawesome/free-solid-svg-icons'
 
 export default function LandingPage() {
   return (
-    <div className="content">
+    <div className="content" id="landingpage">
       <Row>
         <Col>
           <Card className="text-center">
