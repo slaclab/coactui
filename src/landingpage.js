@@ -1,4 +1,3 @@
-import Container from 'react-bootstrap/Container';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
@@ -7,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGlobe, faRobot  } from '@fortawesome/free-solid-svg-icons'
 
 export default function LandingPage() {
-  return (<Container fluid id="landingpage">
+  return (
     <div className="content">
       <Row>
         <Col>
@@ -30,5 +29,5 @@ export default function LandingPage() {
         </Col>
       </Row>
     </div>
-  </Container>);
+  );
 }
