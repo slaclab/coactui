@@ -55,27 +55,15 @@ query {
 `;
 
 function App() {
+  console.log("starting app....");
   const { loading, error, data } = useQuery(HOMEDETAILS, { errorPolicy: 'all'} );
-
   if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :</p>;
+  // if (error) return <p>Error!</p>;
   console.log(data);
   let hasUserAcc = _.get(data, "amIRegistered.isRegistered", false);
   let eppn = _.get(data, "amIRegistered.eppn", null);
   let registrationPending = _.get(data, "amIRegistered.isRegistrationPending", false);
   let fullname = _.get(data, "amIRegistered.fullname", "");
-
-  if (!hasUserAcc) {
-    return (
-      <BrowserRouter>
-      <Routes>
-        <Route exact path="/" element={ <LandingPage/>  } />
-        <Route exact path="/login" element={ <Navigate to="../register" replace /> } />
-        <Route exact path="register" element={<RegisterUser eppn={eppn} registrationPending={registrationPending} fullname={fullname}/>}/>
-      </Routes>
-      </BrowserRouter>
-    )
-  }
 
   return (
     <div id="mainContainer">
@@ -83,7 +71,7 @@ function App() {
         <BrowserRouter>
         <TopNavBar/>
         <Routes>
-          <Route exact path="/" element={ <Navigate to="myprofile" /> } />
+          <Route exact path="/" element={ hasUserAcc ? <Navigate to="myprofile" /> : <LandingPage/> } />
           <Route exact path="/login" element={ <Navigate to="../myprofile" /> } />
           <Route exact path="facilities" element={<Facilities />}/>
           <Route exact path="facilities/:facilityname" element={<Facility />}/>
