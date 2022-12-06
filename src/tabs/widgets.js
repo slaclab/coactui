@@ -9,7 +9,7 @@ import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import { Nav, Navbar } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
-import SLACLogo from '../images/SLAC_primary_red.png';
+import SLACLogo from '../images/SLAC_primary_red_small.png';
 import StanfordDOELogo from '../images/Stanford_DOE_black.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRocket } from '@fortawesome/free-solid-svg-icons'
@@ -101,7 +101,7 @@ export function Footer() {
   return (
      <div className="footer">
       <Row>
-        <Col><a href="https://www.slac.stanford.edu"><Image height={"50vh"} src={SLACLogo}/></a></Col>
+        <Col><a href="https://www.slac.stanford.edu"><Image id="slac_logo" height={"30vh"} src={SLACLogo} style={({marginTop: '11px'})}/></a></Col>
         <Col><Image height={"50vh"} src={StanfordDOELogo} className="partner float-end"/></Col>
       </Row>
      </div>
