@@ -98,10 +98,11 @@ class LoginLink extends React.Component {
   render() {
     return (
       <>
-      <Nav.Item>
-        <FontAwesomeIcon icon={faPersonCircleQuestion} size="2x" />
+      <Nav.Item className="navtxt">
+         <FontAwesomeIcon icon={faPersonCircleQuestion} size="2x"/>
       </Nav.Item>
-      <Nav.Item><a href="/login" class="nav-link active">Log in...</a></Nav.Item>
+      <NavDropdown align="end" title="Log in..." id="nav-dropdown" disabled="true">
+      </NavDropdown>
       </>
     );
   }
@@ -151,18 +152,18 @@ export default function TopNavBar( props ) {
 
   return (
     <Navbar bg="primary" variant="dark" expand="lg">
-      <Navbar.Brand className="ps-2"  onClick={() => { gotomyprofile() }}><FontAwesomeIcon icon={faRocket} size="lg"/> Coact</Navbar.Brand>
+      <Navbar.Brand className="ps-2"  onClick={() => { navigate("/") }}><FontAwesomeIcon icon={faRocket} size="lg"/> Coact</Navbar.Brand>
 <Navbar.Toggle onClick={function noRefCheck(){}} />
       <Navbar.Collapse id="basic-navbar-nav">
         <Nav variant="pills" activeKey="1">
           { showFacs ? <Nav.Item> <Nav.Link as={NavLink} to="/facilities"> Facilities </Nav.Link> </Nav.Item> : null }
           <Nav.Item>
-            <Nav.Link as={NavLink} to="/repos">
+            <Nav.Link as={NavLink} to="/repos" disabled={logged_in_user ? false : true}>
               Repos
             </Nav.Link>
           </Nav.Item>
           <Nav.Item>
-            <Nav.Link as={NavLink} to="/requests">
+            <Nav.Link as={NavLink} to="/requests"  disabled={logged_in_user ? false : true}>
               Requests
             </Nav.Link>
           </Nav.Item>
