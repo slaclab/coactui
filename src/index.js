@@ -66,7 +66,7 @@ function App() {
   let fullname = _.get(data, "amIRegistered.fullname", "");
 
   return (
-    <div id="mainContainer" id="landingpage">
+    <div id="mainContainer">
       <div className="header">
         <BrowserRouter>
         <TopNavBar/>
