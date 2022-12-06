@@ -407,8 +407,8 @@ class UserDetails extends Component {
         <Row>
           <Col>
             <Card>
+              <Card.Header>Account</Card.Header>
               <Card.Body>
-              <Card.Title>Account details</Card.Title>
                 <Row className="my-1"><Col md={3}><span className="tbllbl">Userid</span></Col><Col>{this.props.userdetails.username}</Col></Row>
                 <Row className="my-1"><Col md={3}><span className="tbllbl">UID</span></Col><Col>{this.props.userdetails.uidnumber}</Col></Row>
                 <Row className="my-1"><Col md={3}><span className="tbllbl">Name</span></Col><Col>{this.props.userdetails.fullname}</Col></Row>
@@ -439,8 +439,8 @@ class UserDetails extends Component {
           <Col>
             <Row>
               <Card>
+                <Card.Header>Storage</Card.Header>
                 <Card.Body>
-                <Card.Title>Storage details</Card.Title>
                 {
                   _.map(this.props.userdetails.storages, (s) => { return (<UserStorage key={s.Id} userdetails={this.props.userdetails} storage={s} requestQuota={this.props.requestQuota} />) })
                 }
@@ -449,8 +449,8 @@ class UserDetails extends Component {
             </Row>
             <Row>
               <Card>
+                <Card.Header>Public HTML</Card.Header>
                 <Card.Body>
-                <Card.Subtitle>Public HTML space</Card.Subtitle>
                 <Row className="mt-2"><Col>{this.props.userdetails.publichtml ? (<span>Your public HTML pages are viewable <a href={this.publichtmlurl}>here</a></span>) : "You have not turned on the public html space"}</Col>
                 <Col md={3}>
                   {

@@ -46,8 +46,8 @@ class FacilityComputePurchases extends Component {
     return (
       <Col>
         <Card className="facrsc">
+          <Card.Header>Compute</Card.Header>
           <Card.Body>
-            <Card.Title>Compute</Card.Title>
             <Row className="mb-2">
               <Col md={3}><span className="tbllbl">Cluster name</span></Col>
               <Col md={3}><span className="tbllbl">Purchased</span></Col>
@@ -81,8 +81,8 @@ class FacilityStoragePurchases extends Component {
     return (
       <Col>
         <Card className="facrsc">
+          <Card.Header>Storage</Card.Header>
           <Card.Body>
-            <Card.Title>Storage</Card.Title>
             <Row className="mb-2">
               <Col md={3}><span className="tbllbl">Storage name</span></Col>
               <Col md={3}><span className="tbllbl">Purpose</span></Col>
@@ -120,8 +120,8 @@ class FacilityDetails extends Component {
         <Row>
           <Col>
             <Card>
+              <Card.Header>Details</Card.Header>
               <Card.Body>
-                <Card.Title>Details</Card.Title>
                 <Row><Col md={3}><span className="tbllbl">Name</span></Col><Col>{this.props.facility.name}</Col></Row>
                 <Row><Col md={3}><span className="tbllbl">Description</span></Col><Col>{this.props.facility.description}</Col></Row>
               </Card.Body>
@@ -129,8 +129,8 @@ class FacilityDetails extends Component {
           </Col>
           <Col>
             <Card>
+              <Card.Header>Czars</Card.Header>
               <Card.Body>
-                <Card.Title>Czars</Card.Title>
                 <Row><Col md={8}><ul className="ps-5">
                 {
                   _.map(this.props.facility.czars, (z) => { return (<li key={z}>{z}</li>) })
@@ -142,8 +142,8 @@ class FacilityDetails extends Component {
           </Col>
           <Col>
             <Card>
+              <Card.Header>Service accounts</Card.Header>
               <Card.Body>
-                <Card.Title>Service accounts</Card.Title>
                 <Row><Col md={3}><span className="tbllbl">User account</span></Col><Col md={5}>{_.get(this.props.facility, "serviceaccount")}</Col></Row>
                 <hr/>
                 <Row><Col md={3}><span className="tbllbl">Group account</span></Col><Col md={5}>{_.get(this.props.facility, "servicegroup")}</Col></Row>
