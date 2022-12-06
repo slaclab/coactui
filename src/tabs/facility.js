@@ -135,7 +135,7 @@ class FacilityDetails extends Component {
                 {
                   _.map(this.props.facility.czars, (z) => { return (<li key={z}>{z}</li>) })
                 }
-                </ul></Col><Col><Button variant="secondary">Add/remove czars</Button></Col>
+                </ul></Col><Col><Button variant="secondary">Add/Remove Czars</Button></Col>
                 </Row>
               </Card.Body>
             </Card>
