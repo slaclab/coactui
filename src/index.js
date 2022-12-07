@@ -63,6 +63,7 @@ function App() {
   let hasUserAcc = _.get(data, "amIRegistered.isRegistered", false);
   let eppn = _.get(data, "amIRegistered.eppn", null);
   let registrationPending = _.get(data, "amIRegistered.isRegistrationPending", false);
+  let isRegistered = _.get(data, "amIRegistered.isRegistered", false);
   let fullname = _.get(data, "amIRegistered.fullname", "");
 
   return (
@@ -73,7 +74,7 @@ function App() {
         <Routes>
           <Route exact path="/" element={ hasUserAcc ? <Navigate to="myprofile" /> : <LandingPage/> } />
           <Route exact path="/login" element={ <Navigate to="../myprofile" /> } />
-          <Route exact path="register" element={<RegisterUser eppn={eppn} registrationPending={registrationPending} fullname={fullname}/>}/>          
+          <Route exact path="register" element={<RegisterUser eppn={eppn} isRegistered={isRegistered} registrationPending={registrationPending} fullname={fullname}/>}/>
           <Route exact path="facilities" element={<Facilities />}/>
           <Route exact path="facilities/:facilityname" element={<Facility />}/>
           <Route exact path="repos" element={<RepoTabs />}/>

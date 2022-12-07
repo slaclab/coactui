@@ -6,6 +6,7 @@ import Col from "react-bootstrap/Col";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import { Navigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRocket, faPerson, faPersonCircleQuestion } from '@fortawesome/free-solid-svg-icons'
 import { NoNavHeader, Footer } from "./tabs/widgets";
@@ -130,6 +131,12 @@ export default function RegisterUser(props) {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;
   console.log(data)
+
+  if(props.isRegistered) {
+    return (
+      <Navigate to="../myprofile" replace />
+    );
+  }
 
   if (props.registrationPending) {
     return (
