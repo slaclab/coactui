@@ -73,6 +73,7 @@ function App() {
         <Routes>
           <Route exact path="/" element={ hasUserAcc ? <Navigate to="myprofile" /> : <LandingPage/> } />
           <Route exact path="/login" element={ <Navigate to="../myprofile" /> } />
+          <Route exact path="register" element={<RegisterUser eppn={eppn} registrationPending={registrationPending} fullname={fullname}/>}/>          
           <Route exact path="facilities" element={<Facilities />}/>
           <Route exact path="facilities/:facilityname" element={<Facility />}/>
           <Route exact path="repos" element={<RepoTabs />}/>
