@@ -23,7 +23,6 @@ import RepoTabs from "./tabs/repostabs";
 import RequestTypes from "./tabs/requesttypes";
 import MyProfile from "./myprofile";
 import RegisterUser from "./register";
-import Repo from "./tabs/repo";
 import Compute from "./tabs/compute";
 import Storage from "./tabs/storage";
 import Users from "./tabs/users";
