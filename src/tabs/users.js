@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, gql } from "@apollo/client";
+import { Link, useParams } from "react-router-dom";
 import { SearchAndAdd } from "./widgets";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Button from 'react-bootstrap/Button';
@@ -7,6 +8,8 @@ import Modal from 'react-bootstrap/Modal';
 import ModalHeader from 'react-bootstrap/ModalHeader';
 import ModalBody from 'react-bootstrap/ModalBody';
 import ModalFooter from 'react-bootstrap/ModalFooter';
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 import { faPersonArrowUpFromLine, faPersonArrowDownToLine } from '@fortawesome/free-solid-svg-icons'
 import _ from "lodash";
 
@@ -139,38 +142,47 @@ class UsersTab extends React.Component {
             </ModalFooter>
           </Modal>
           <div className="container-fluid" id="users_content">
-              <div className="table-responsive">
-                <table className="table table-condensed table-striped table-bordered collabtbl">
-                  <thead>
-                    <tr>
-                      <th>Userid</th>
-                      <th>Role</th>
-                      <th colSpan="3">
-                        <div className="row">
-                          <span className="col-4">Username</span>
-                          <span className="col-4">User email</span>
-                          <span className="col-4">Organization</span>
-                        </div>
-                      </th>
-                      <th>Account state</th>
-                      <th>Created</th>
-                      <th>Updated</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                  {_.map(this.props.users, (user) => {
-                    return (<tr key={user.username}>
-                      <td>{user.username}</td>
-                      <td className="manage_roles"><ManageRoleAction user={user} onToggleRole={this.props.onToggleRole}/></td>
-                      <td colSpan="3"><Eppn user={user}/></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>)})}
-                  </tbody>
-                </table>
-              </div>
+            <Row>
+              <Col><div><Link to={"../users"}>Users</Link> / </div></Col>
+              <Col><div className="sectiontitle">Users for repo <span className="ref">{this.props.repodata.name}</span></div></Col>
+              <Col className="mb-2">
+                <span className="float-end me-1">
+                  <Button variant="secondary" className={this.props.amILeader ? "" : "d-none"} onClick={() => { this.props.setShowModal(true)} }>Add user to repo</Button>
+                </span>
+              </Col>
+            </Row>
+            <div className="table-responsive">
+              <table className="table table-condensed table-striped table-bordered collabtbl">
+                <thead>
+                  <tr>
+                    <th>Userid</th>
+                    <th>Role</th>
+                    <th colSpan="3">
+                      <div className="row">
+                        <span className="col-4">Username</span>
+                        <span className="col-4">User email</span>
+                        <span className="col-4">Organization</span>
+                      </div>
+                    </th>
+                    <th>Account state</th>
+                    <th>Created</th>
+                    <th>Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {_.map(this.props.users, (user) => {
+                  return (<tr key={user.username}>
+                    <td>{user.username}</td>
+                    <td className="manage_roles"><ManageRoleAction user={user} onToggleRole={this.props.onToggleRole}/></td>
+                    <td colSpan="3"><Eppn user={user}/></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>)})}
+                </tbody>
+              </table>
             </div>
+          </div>
        </div>
     );
   }
@@ -178,12 +190,13 @@ class UsersTab extends React.Component {
 
 
 export default function Users(props) {
-  let reponame = props.reponame;
+  let params = useParams(), reponame = params.name;
   const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame } } });
 
   const [ toggleRoleMutation ] = useMutation(TOGGLE_ROLE_MUTATION);
   const [ addUserMutation ] = useMutation(ADD_USER_MUTATION);
   const [ removeUserMutation ] = useMutation(REMOVE_USER_MUTATION);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;
@@ -216,8 +229,8 @@ export default function Users(props) {
     }
   }
 
-  return (<UsersTab users={allusers} allusernames={allusernames}
+  return (<UsersTab repodata={repodata} users={allusers} allusernames={allusernames}
     onToggleRole={toggleRole} onSelDesel={addRemoveUser} amILeader={amILeader}
-    showModal={props.showModal} setShowModal={props.setShowModal}
+    showModal={showAddUserModal} setShowModal={setShowAddUserModal}
     />);
 }

@@ -1,5 +1,5 @@
-import React from "react";
-import { useParams } from "react-router-dom";
+import React, { useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import dayjs from "dayjs";
 import _ from "lodash";
@@ -183,35 +183,50 @@ class GroupsTab extends React.Component {
       <div className="container-fluid tabcontainer">
         <AddGroupModal reponame={this.props.reponame} groupnames={this.groupnames} showModal={this.props.showModal}
         handleClose={this.hideModal} handleSubmit={this.createGroup}/>
-        <div className="row">
-          <div className="col table-responsive">
-            <table className="table table-condensed table-striped table-bordered collabtbl">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>GID</th>
-                </tr>
-              </thead>
-              <tbody>{
-                _.map(this.props.groups, (g) => { return (<tr key={g.name} data-name={g.name} onClick={this.selGroup} className={(g.name === this.state.selectedGroup) ? "bg-secondary": ""}><td>{g.name}</td><td>{g.gidnumber}</td></tr>) })
-              }
-              </tbody>
-            </table>
-          </div>
-          <div className="col table-responsive">
-            <table className="table table-condensed table-striped table-bordered collabtbl">
-              <thead>
-                <tr>
-                  <th>UserID</th>
-                  <th>UserName</th>
-                </tr>
-              </thead>
-              <tbody>{
-                _.map(this.state.usrswithsels, (u) => { return (<tr key={u.name}><td>{u.name} <input type="checkbox" data-selkey={u.name} checked={!!u.selected} onChange={this.checkUncheck}/></td><td>{u.uidNumber}</td></tr>) })
-              }
-              </tbody>
-            </table>
-          </div>
+        <div>
+          <Row>
+            <Col><div><Link to={"../groups"}>Groups</Link> / </div></Col>
+            <Col><div className="sectiontitle">Groups for repo <span className="ref">{this.props.repodata.name}</span></div></Col>
+            <Col className="mb-2">
+              <span className="float-end me-1">
+                <Button variant="secondary" className={this.props.amILeader ? "" : "d-none"} onClick={() => { this.props.setShowModal(true)} }>Create new access group</Button>
+              </span>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <div className="table-responsive">
+                <table className="table table-condensed table-striped table-bordered collabtbl">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>GID</th>
+                    </tr>
+                  </thead>
+                  <tbody>{
+                    _.map(this.props.groups, (g) => { return (<tr key={g.name} data-name={g.name} onClick={this.selGroup} className={(g.name === this.state.selectedGroup) ? "bg-secondary": ""}><td>{g.name}</td><td>{g.gidnumber}</td></tr>) })
+                  }
+                  </tbody>
+                </table>
+              </div>
+            </Col>
+            <Col>
+              <div className="table-responsive">
+                <table className="table table-condensed table-striped table-bordered collabtbl">
+                  <thead>
+                    <tr>
+                      <th>UserID</th>
+                      <th>UserName</th>
+                    </tr>
+                  </thead>
+                  <tbody>{
+                    _.map(this.state.usrswithsels, (u) => { return (<tr key={u.name}><td>{u.name} <input type="checkbox" data-selkey={u.name} checked={!!u.selected} onChange={this.checkUncheck}/></td><td>{u.uidNumber}</td></tr>) })
+                  }
+                  </tbody>
+                </table>
+              </div>
+            </Col>
+          </Row>
         </div>
       </div>
     )
@@ -219,11 +234,12 @@ class GroupsTab extends React.Component {
 }
 
 
-export default function Groups(props) {
-  let reponame = props.reponame;
+export default function Groups() {
+  let params = useParams(), reponame = params.name;
   const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame } } });
   const [ toggleGrpMutation] = useMutation(TOGGLE_GROUPMEMBERSHIP_MUTATION);
   const [ newusergrpfn, { newusergrpdata, newusergrploading, newusergrperror }] = useMutation(NEW_USERGROUP_MUTATION);
+  const [showAddGroupModal, setShowAddGroupModal] = useState(false);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;
@@ -240,7 +256,7 @@ export default function Groups(props) {
     newusergrpfn({ variables: { grp: { name: newusergroupname, repo: reponame, members: [] } }, refetchQueries: [ REPODETAILS, 'Repos' ], onError: (error) => { console.log("Error when creating new user group role " + error); } });
   }
 
-  return (<GroupsTab groups={repodata.accessGroupObjs} allUsers={repodata.allUsers} amILeader={amILeader}
-    showModal={props.showModal} setShowModal={props.setShowModal} createNewUserGroup={createNewUserGroup}
+  return (<GroupsTab repodata={repodata} groups={repodata.accessGroupObjs} allUsers={repodata.allUsers} amILeader={amILeader}
+    showModal={showAddGroupModal} setShowModal={setShowAddGroupModal} createNewUserGroup={createNewUserGroup}
     onSelDesel={toggleUserMembershipForGroup} reponame={repodata.name}/>);
 }

@@ -59,17 +59,17 @@ class ReposRows extends Component {
         first = false;
         return (
           <tr key={this.reponame+a.clustername} data-name={this.reponame}>
-            <td rowSpan={rows} className="vmid"><NavLink to={"/repos/"+this.reponame} key={this.reponame}>{this.reponame}</NavLink></td>
+            <td rowSpan={rows} className="vmid">{this.reponame}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.facilityObj.name}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
-            <td><NavLink to={"/repousage/"+this.reponame+"/compute/"+a.Id} key={this.reponame}>{a.clustername}</NavLink></td>
+            <td><NavLink to={"/repos/compute/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink></td>
             <td>{totalAllocatedHours}</td>
             <td><TwoPrecFloat value={totalUsedHours}/></td>
           </tr>)
         } else {
           return (
             <tr key={this.reponame+a.clustername} data-name={this.reponame}>
-              <td><NavLink to={"/repousage/"+this.reponame+"/compute/"+a.Id} key={this.reponame}>{a.clustername}</NavLink></td>
+              <td><NavLink to={"/repos/compute/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink></td>
               <td>{totalAllocatedHours}</td>
               <td><TwoPrecFloat value={totalUsedHours}/></td>
             </tr>)

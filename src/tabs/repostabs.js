@@ -1,5 +1,6 @@
 import _ from "lodash";
 import React, { Component, useState } from 'react';
+import { Link, Outlet } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
@@ -201,17 +202,23 @@ export default function RepoTabs() {
     setNewRepShow(false);
   };
 
-  return (<Tab.Container defaultActiveKey="compute">
+  return (<Tab.Container defaultActiveKey={"users"}>
         <Row id="repotabs">
           <Col>
             <Nav variant="tabs">
               <Nav.Item>
-                <Nav.Link eventKey="compute">Compute</Nav.Link>
+                <Nav.Link eventKey="users" as={Link} to={`users`}>Users</Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="storage">Storage</Nav.Link>
+                <Nav.Link eventKey="groups" as={Link} to={`groups`}>Groups</Nav.Link>
               </Nav.Item>
-            </Nav>
+                <Nav.Item>
+                  <Nav.Link eventKey="compute" as={Link} to={`compute`}>Compute</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="storage" as={Link} to={`storage`}>Storage</Nav.Link>
+                </Nav.Item>
+              </Nav>
             </Col>
             <Col md={5}>
               <span className="float-end me-1">
@@ -221,12 +228,7 @@ export default function RepoTabs() {
             </Col>
         </Row>
         <Tab.Content>
-          <Tab.Pane eventKey="compute">
-            <ReposComputeListView/>
-          </Tab.Pane>
-          <Tab.Pane eventKey="storage">
-            <ReposStorageListView/>
-          </Tab.Pane>
+          <Outlet/>
         </Tab.Content>
         <ReqRepMembership show={repMemShow} setShow={setRepMemShow} username={username} requestRepoMembership={requestRepoMembership} />
         <ReqNewRepo show={newRepShow} setShow={setNewRepShow} username={username} requestNewRepo={requestNewRepo}  facilities={facilities}/>

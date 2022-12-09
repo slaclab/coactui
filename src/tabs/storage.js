@@ -1,6 +1,6 @@
 import React, { Component, useState } from 'react';
 import Button from 'react-bootstrap/Button';
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import dayjs from "dayjs";
 import Table from "react-bootstrap/Table";
@@ -173,7 +173,7 @@ class StorageTab extends React.Component {
     return (<div className="container-fluid text-center tabcontainer">
       <Row>
         <ChangeAllocationModal show={this.props.allocMdlShow} setShow={this.props.setAllocMdlShow} repodata={this.props.repodata} requestChangeAllocation={this.props.requestChangeAllocation} />
-        <Col md={3} className="mb-1"></Col>
+        <Col md={3} className="mb-1"><div><Link to={"../storage"}>Storage</Link> / </div></Col>
         <Col className="my-2"><div className="sectiontitle">Resource usage for repo <span className="ref">{this.props.repodata.name}</span> on the <span className="ref">{this.props.repodata.storageAllocation.storagename}</span> storage volume used for <span className="ref">{this.props.repodata.storageAllocation.purpose}</span> </div></Col>
         <Col md={3} className="mb-1">
           <span className="float-end me-1">
@@ -188,7 +188,7 @@ class StorageTab extends React.Component {
 }
 
 export default function Storage() {
-  let params = useParams(), reponame = params.reponame, allocationid = params.allocationid, datayear = dayjs().year();
+  let params = useParams(), reponame = params.name, allocationid = params.allocationid, datayear = dayjs().year();
   const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame }, allocationid: allocationid, datayear: datayear} });
   const [ repostgallocfn, { repostgallocdata, repostgallocloading, repostgallocerror }] = useMutation(REPO_STORAGE_ALLOCATION_REQUEST);
 

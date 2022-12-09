@@ -30,9 +30,15 @@ import Users from "./tabs/users";
 import Groups from "./tabs/groups";
 import ClustersTabs from "./tabs/clusterstabs";
 import StorageTabs from "./tabs/storagetabs";
+import ReposComputeListView from "./tabs/reposcompute";
+import ReposStorageListView from "./tabs/reposstorage";
+import ReposUsersListView from "./tabs/reposusers";
+import ReposGroupsListView from "./tabs/reposgroups";
 import './index.css';
 import { Footer } from "./tabs/widgets";
-
+import { Nav } from 'react-bootstrap';
+import Tab from 'react-bootstrap/Tab';
+import { Link, Outlet, useParams } from "react-router-dom";
 
 const client = new ApolloClient({
   uri: process.env.REACT_APP_COACT_GRAPHQL_URI,
@@ -77,18 +83,23 @@ function App() {
           <Route exact path="register" element={<RegisterUser eppn={eppn} isRegistered={isRegistered} registrationPending={registrationPending} fullname={fullname}/>}/>
           <Route exact path="facilities" element={<Facilities />}/>
           <Route exact path="facilities/:facilityname" element={<Facility />}/>
-          <Route exact path="repos" element={<RepoTabs />}/>
           <Route exact path="myprofile" element={<MyProfile />}/>
           <Route exact path="requests" element={<RequestTypes/>}/>
-          <Route exact path="repos/:name" element={<Repo />}>
-          <Route exact path="users/" element={<Users />} />
-          <Route exact path="groups/" element={<Groups />} />
-          </Route>
           <Route exact path="repousage/:reponame/compute/:allocationid" element={<Compute />} />
           <Route exact path="repousage/:reponame/storage/:allocationid" element={<Storage />} />
           <Route exact path="clusterusage/:clustername" element={<ClustersTabs />} />
           <Route exact path="storageusage/:storagename" element={<StorageTabs />} />
           <Route exact path="storageusage/:storagename/purpose/:purpose" element={<StorageTabs />} />
+          <Route exact path="repos" element={<RepoTabs />}>
+            <Route exact path={`compute`} element={ <ReposComputeListView/> }/>
+            <Route exact path={`compute/:name/allocation/:allocationid`} element={ <Compute/> }/>
+            <Route exact path={`storage`} element={ <ReposStorageListView/> } />
+            <Route exact path={`storage/:name/allocation/:allocationid`} element={ <Storage/> }/>
+            <Route exact path={`users`} element = { <ReposUsersListView/>} />
+            <Route exact path={`users/:name`} element = { <Users />} />
+            <Route exact path={`groups`} element = { <ReposGroupsListView/> } />
+            <Route exact path={`groups/:name`} element = { <Groups /> } />
+          </Route>
         </Routes>
         </BrowserRouter>
       </div>

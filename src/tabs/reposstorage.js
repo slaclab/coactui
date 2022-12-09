@@ -54,17 +54,17 @@ class ReposRows extends Component {
         first = false;
         return (
           <tr key={this.reponame+a.storagename+a.purpose} data-name={this.reponame}>
-            <td rowSpan={rows} className="vmid"><NavLink to={"/repos/"+this.reponame} key={this.reponame}>{this.reponame}</NavLink></td>
+            <td rowSpan={rows} className="vmid">{this.reponame}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.facilityObj.name}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
-            <td><NavLink to={"/repousage/"+this.reponame+"/storage/"+a.Id} key={this.reponame}>{a.purpose}</NavLink></td>
+            <td><NavLink to={"/repos/storage/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.purpose}</NavLink></td>
             <td>{a.gigabytes}</td>
             <td>{a.usage.gigabytes}</td>
           </tr>)
         } else {
           return (
             <tr key={this.reponame+a.storagename+a.purpose} data-name={this.reponame}>
-              <td><NavLink to={"/repousage/"+this.reponame+"/storage/"+a.Id} key={this.reponame}>{a.purpose}</NavLink></td>
+              <td><NavLink to={"/repos/storage/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.purpose}</NavLink></td>
               <td>{a.gigabytes}</td>
               <td>{a.usage.gigabytes}</td>
             </tr>)
