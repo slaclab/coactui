@@ -1,6 +1,6 @@
 import React, { Component, useState } from 'react';
 import Button from 'react-bootstrap/Button';
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useOutletContext } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import dayjs from "dayjs";
 import Table from "react-bootstrap/Table";
@@ -91,13 +91,6 @@ class TopTab extends React.Component {
   }
 }
 
-class RequestAllocation extends Component {
-  render() {
-    const showMdl = () => { this.props.setShow(true); }
-    return <Button variant="secondary" onClick={showMdl}>Request more storage</Button>
-  }
-}
-
 class ChangeAllocationModal extends Component {
   constructor(props) {
     super(props);
@@ -169,6 +162,14 @@ class StorageTab extends React.Component {
     this.chartdata = [ daily_storage_usage ];
   }
 
+  componentDidMount() {
+    this.props.setToolbaritems(oldItems => [...oldItems, ["Request more storage", this.props.setAllocMdlShow]]);
+  }
+
+  componentWillUnmount() {
+    this.props.setToolbaritems(oldItems => _.filter(oldItems, (x) => { return x[0] != "Request more storage" }));
+  }
+
   render() {
     return (<div className="container-fluid text-center tabcontainer">
       <Row>
@@ -176,9 +177,6 @@ class StorageTab extends React.Component {
         <Col md={3} className="mb-1"><div><Link to={"../storage"}>Storage</Link> / {this.props.repodata.name} - {this.props.repodata.storageAllocation.purpose} </div></Col>
         <Col className="my-2"><div className="sectiontitle">Resource usage for repo <span className="ref">{this.props.repodata.name}</span> on the <span className="ref">{this.props.repodata.storageAllocation.storagename}</span> storage volume used for <span className="ref">{this.props.repodata.storageAllocation.purpose}</span> </div></Col>
         <Col md={3} className="mb-1">
-          <span className="float-end me-1">
-            <RequestAllocation setShow={this.props.setAllocMdlShow}/>
-          </span>
         </Col>
       </Row>
       <TopTab repodata={this.props.repodata}/>
@@ -193,6 +191,8 @@ export default function Storage() {
   const [ repostgallocfn, { repostgallocdata, repostgallocloading, repostgallocerror }] = useMutation(REPO_STORAGE_ALLOCATION_REQUEST);
 
   const [ allocMdlShow, setAllocMdlShow] = useState(false);
+  const [ toolbaritems, setToolbaritems ] = useOutletContext();
+
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;
@@ -210,5 +210,8 @@ export default function Storage() {
       inodes: _.toNumber(newInodes), notes: notes }}});
   }
 
-  return (<StorageTab repodata={repodata} allocMdlShow={allocMdlShow} setAllocMdlShow={setAllocMdlShow} requestChangeAllocation={requestChangeAllocation}/>);
+  return (<StorageTab repodata={repodata} allocMdlShow={allocMdlShow} setAllocMdlShow={setAllocMdlShow}
+    requestChangeAllocation={requestChangeAllocation}
+    toolbaritems={toolbaritems} setToolbaritems={setToolbaritems}
+    />);
 }

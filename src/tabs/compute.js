@@ -9,7 +9,7 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Fade from 'react-bootstrap/Fade';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from '@fortawesome/free-solid-svg-icons'
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useOutletContext } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import dayjs from "dayjs";
 import dayOfYear from 'dayjs/plugin/dayOfYear';
@@ -286,17 +286,17 @@ class ChangeAllocationModal extends Component {
   }
 }
 
-class RequestAllocation extends Component {
-  render() {
-    const showMdl = () => { this.props.setShow(true); }
-    return <Button variant="secondary" onClick={showMdl}>Request more compute</Button>
-  }
-}
-
-
 class ComputeTab extends React.Component {
   constructor(props) {
     super(props);
+  }
+
+  componentDidMount() {
+    this.props.setToolbaritems(oldItems => [...oldItems, ["Request more compute", this.props.setAllocMdlShow]]);
+  }
+
+  componentWillUnmount() {
+    this.props.setToolbaritems(oldItems => _.filter(oldItems, (x) => { return x[0] != "Request more compute" }));
   }
 
   render() {
@@ -306,9 +306,6 @@ class ComputeTab extends React.Component {
         <Col><div><Link to={"../compute"}>Compute </Link> / {this.props.repodata.name} - {this.props.repodata.computeAllocation.clustername}</div></Col>
         <Col><div className="sectiontitle">Resource usage for repo <span className="ref">{this.props.repodata.name}</span> on the <span className="ref">{this.props.repodata.computeAllocation.clustername}</span> cluster</div></Col>
         <Col className="mb-2">
-          <span className="float-end me-1">
-            <RequestAllocation setShow={this.props.setAllocMdlShow}/>
-          </span>
         </Col>
       </Row>
       <TopTab repodata={this.props.repodata}/>
@@ -324,6 +321,7 @@ export default function Compute() {
   const [ updateUserAllocation, { allocdata, allocloading, allocerror }] = useMutation(ALLOCATION_MUTATION);
   const [ repocmpallocfn, { repocmpallocdata, repocmpallocloading, repocmpallocerror }] = useMutation(REPO_COMPUTE_ALLOCATION_REQUEST);
   const [ allocMdlShow, setAllocMdlShow] = useState(false);
+  const [ toolbaritems, setToolbaritems ] = useOutletContext();
 
 
   if (loading) return <p>Loading...</p>;
@@ -347,5 +345,6 @@ export default function Compute() {
 
   return (<ComputeTab repodata={repodata} onAllocationChange={changeAllocation}
     allocMdlShow={allocMdlShow} setAllocMdlShow={setAllocMdlShow} requestChangeAllocation={requestChangeAllocation}
+    toolbaritems={toolbaritems} setToolbaritems={setToolbaritems}
     />);
 }
