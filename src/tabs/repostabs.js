@@ -11,6 +11,7 @@ import Row from 'react-bootstrap/Row';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
+import { ToolbarButton } from './widgets'
 
 import ReposComputeListView from "./reposcompute";
 import ReposStorageListView from "./reposstorage";
@@ -40,20 +41,6 @@ mutation newRepoRequest($request: SDFRequestInput!){
   }
 }
 `;
-
-class RequestAddToRepo extends Component {
-  render() {
-    const showMdl = () => {  this.props.setShow(true); }
-    return <Button variant="secondary" onClick={showMdl}>Request Repo Membership</Button>
-  }
-}
-
-class RequestNewRepo extends Component {
-  render() {
-    const showMdl = () => {  this.props.setShow(true); }
-    return <Button variant="secondary" onClick={showMdl}>Request New Repo</Button>
-  }
-}
 
 class ReqRepMembership extends Component {
   constructor(props) {
@@ -181,6 +168,10 @@ export default function RepoTabs() {
   const { loading, error, data } = useQuery(WHOAMI);
   const [repMemShow, setRepMemShow] = useState(false);
   const [newRepShow, setNewRepShow] = useState(false);
+  const [toolbaritems, setToolbaritems] = useState([
+    ["Request Repo Membership", setRepMemShow ],
+    ["Request New Repo", setNewRepShow ]
+  ]);
   const [ repomemnrshipfn, { rmdata, rmloading, rmerror }] = useMutation(REQUEST_REPOMEMBERSHIP_MUTATION);
   const [ newrepofn, { nrdata, nrloading, nrerror }] = useMutation(REQUEST_NEWREPO_MUTATION);
 
@@ -210,7 +201,7 @@ export default function RepoTabs() {
                 <Nav.Link eventKey="users" as={Link} to={`users`}>Users</Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="groups" as={Link} to={`groups`}>Groups</Nav.Link>
+                <Nav.Link eventKey="groups" as={Link} to={`groups`}>Access groups</Nav.Link>
               </Nav.Item>
                 <Nav.Item>
                   <Nav.Link eventKey="compute" as={Link} to={`compute`}>Compute</Nav.Link>
@@ -222,13 +213,14 @@ export default function RepoTabs() {
             </Col>
             <Col md={5}>
               <span className="float-end me-1">
-                <RequestAddToRepo setShow={setRepMemShow} />
-                <RequestNewRepo setShow={setNewRepShow}/>
+              {
+                _.map(toolbaritems, (x) => { return <ToolbarButton key={x[0]} label={x[0]} setShow={x[1]} /> })
+              }
               </span>
             </Col>
         </Row>
         <Tab.Content>
-          <Outlet/>
+          <Outlet context={[toolbaritems, setToolbaritems]}/>
         </Tab.Content>
         <ReqRepMembership show={repMemShow} setShow={setRepMemShow} username={username} requestRepoMembership={requestRepoMembership} />
         <ReqNewRepo show={newRepShow} setShow={setNewRepShow} username={username} requestNewRepo={requestNewRepo}  facilities={facilities}/>

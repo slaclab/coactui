@@ -125,3 +125,10 @@ export function ErrorMsgModal(props) { // Sometimes, it's easier to show error m
     </Modal>
   )
 }
+
+export function ToolbarButton(props) {
+  const showMdl = () => { props.setShow(true); }
+  return (
+    <Button variant="secondary" onClick={showMdl}>{props.label}</Button>
+  );
+}

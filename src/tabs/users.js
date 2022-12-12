@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, gql } from "@apollo/client";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useOutletContext } from "react-router-dom";
 import { SearchAndAdd } from "./widgets";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Button from 'react-bootstrap/Button';
@@ -125,6 +125,16 @@ class UsersTab extends React.Component {
     }
   }
 
+  componentDidMount() {
+    if(this.props.amILeader) {
+      this.props.setToolbaritems(oldItems => [...oldItems, ["Add user to repo", this.props.setShowModal]]);
+    }
+  }
+
+  componentWillUnmount() {
+    this.props.setToolbaritems(oldItems => _.filter(oldItems, (x) => { return x[0] != "Add user to repo" }));
+  }
+
   render() {
     return (
       <div className="container-fluid tabcontainer">
@@ -143,12 +153,9 @@ class UsersTab extends React.Component {
           </Modal>
           <div className="container-fluid" id="users_content">
             <Row>
-              <Col><div><Link to={"../users"}>Users</Link> / </div></Col>
+              <Col><div><Link to={"../users"}>Users</Link> / {this.props.repodata.name}</div></Col>
               <Col><div className="sectiontitle">Users for repo <span className="ref">{this.props.repodata.name}</span></div></Col>
               <Col className="mb-2">
-                <span className="float-end me-1">
-                  <Button variant="secondary" className={this.props.amILeader ? "" : "d-none"} onClick={() => { this.props.setShowModal(true)} }>Add user to repo</Button>
-                </span>
               </Col>
             </Row>
             <div className="table-responsive">
@@ -197,6 +204,7 @@ export default function Users(props) {
   const [ addUserMutation ] = useMutation(ADD_USER_MUTATION);
   const [ removeUserMutation ] = useMutation(REMOVE_USER_MUTATION);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [ toolbaritems, setToolbaritems ] = useOutletContext();
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;
@@ -232,5 +240,6 @@ export default function Users(props) {
   return (<UsersTab repodata={repodata} users={allusers} allusernames={allusernames}
     onToggleRole={toggleRole} onSelDesel={addRemoveUser} amILeader={amILeader}
     showModal={showAddUserModal} setShowModal={setShowAddUserModal}
+    toolbaritems={toolbaritems} setToolbaritems={setToolbaritems}
     />);
 }

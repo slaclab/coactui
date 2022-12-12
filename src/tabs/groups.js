@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useOutletContext } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import dayjs from "dayjs";
 import _ from "lodash";
@@ -171,6 +171,16 @@ class GroupsTab extends React.Component {
     }
   }
 
+  componentDidMount() {
+    if(this.props.amILeader) {
+      this.props.setToolbaritems(oldItems => [...oldItems, ["Create new access group", this.props.setShowModal]]);
+    }
+  }
+
+  componentWillUnmount() {
+    this.props.setToolbaritems(oldItems => _.filter(oldItems, (x) => { return x[0] != "Create new access group" }));
+  }
+
   render() {
     if(_.isEmpty(this.props.groups)) {
       return (<div className="container-fluid text-center tabcontainer">
@@ -185,12 +195,9 @@ class GroupsTab extends React.Component {
         handleClose={this.hideModal} handleSubmit={this.createGroup}/>
         <div>
           <Row>
-            <Col><div><Link to={"../groups"}>Groups</Link> / </div></Col>
+            <Col><div><Link to={"../groups"}>Groups</Link> / {this.props.repodata.name}</div></Col>
             <Col><div className="sectiontitle">Groups for repo <span className="ref">{this.props.repodata.name}</span></div></Col>
             <Col className="mb-2">
-              <span className="float-end me-1">
-                <Button variant="secondary" className={this.props.amILeader ? "" : "d-none"} onClick={() => { this.props.setShowModal(true)} }>Create new access group</Button>
-              </span>
             </Col>
           </Row>
           <Row>
@@ -240,6 +247,8 @@ export default function Groups() {
   const [ toggleGrpMutation] = useMutation(TOGGLE_GROUPMEMBERSHIP_MUTATION);
   const [ newusergrpfn, { newusergrpdata, newusergrploading, newusergrperror }] = useMutation(NEW_USERGROUP_MUTATION);
   const [showAddGroupModal, setShowAddGroupModal] = useState(false);
+  const [ toolbaritems, setToolbaritems ] = useOutletContext();
+
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;
@@ -258,5 +267,7 @@ export default function Groups() {
 
   return (<GroupsTab repodata={repodata} groups={repodata.accessGroupObjs} allUsers={repodata.allUsers} amILeader={amILeader}
     showModal={showAddGroupModal} setShowModal={setShowAddGroupModal} createNewUserGroup={createNewUserGroup}
-    onSelDesel={toggleUserMembershipForGroup} reponame={repodata.name}/>);
+    onSelDesel={toggleUserMembershipForGroup} reponame={repodata.name}
+    toolbaritems={toolbaritems} setToolbaritems={setToolbaritems}
+    />);
 }
