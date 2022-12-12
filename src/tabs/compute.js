@@ -300,13 +300,12 @@ class ComputeTab extends React.Component {
   }
 
   render() {
-    return (<div className="container-fluid text-center tabcontainer">
+    return (<div className="container-fluid text-left tabcontainer">
       <ChangeAllocationModal show={this.props.allocMdlShow} setShow={this.props.setAllocMdlShow} reponame={this.props.repodata.name} clustername={this.props.repodata.computeAllocation.clustername} currallocation={this.props.repodata.computeAllocation} requestChangeAllocation={this.props.requestChangeAllocation}/>
       <Row>
-        <Col><div><Link to={"../compute"}>Compute </Link> / {this.props.repodata.name} - {this.props.repodata.computeAllocation.clustername}</div></Col>
-        <Col><div className="sectiontitle">Resource usage for repo <span className="ref">{this.props.repodata.name}</span> on the <span className="ref">{this.props.repodata.computeAllocation.clustername}</span> cluster</div></Col>
-        <Col className="mb-2">
-        </Col>
+        <Col className="text-left"><div className="brdcrmb"><Link to={"../compute"}>Compute </Link> / {this.props.repodata.name} - {this.props.repodata.computeAllocation.clustername}</div></Col>
+        <Col className="text-center"><div className="sectiontitle">Resource usage for repo <span className="ref">{this.props.repodata.name}</span> on the <span className="ref">{this.props.repodata.computeAllocation.clustername}</span> cluster</div></Col>
+        <Col></Col>
       </Row>
       <TopTab repodata={this.props.repodata}/>
       <MidChart repodata={this.props.repodata}/>

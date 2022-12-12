@@ -195,7 +195,7 @@ class GroupsTab extends React.Component {
         handleClose={this.hideModal} handleSubmit={this.createGroup}/>
         <div>
           <Row>
-            <Col><div><Link to={"../groups"}>Groups</Link> / {this.props.repodata.name}</div></Col>
+            <Col><div className="brdcrmb"><Link to={"../groups"}>Access groups</Link> / {this.props.repodata.name}</div></Col>
             <Col><div className="sectiontitle">Groups for repo <span className="ref">{this.props.repodata.name}</span></div></Col>
             <Col className="mb-2">
             </Col>

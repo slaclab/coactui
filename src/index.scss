@@ -121,6 +121,11 @@ ol, ul {
     font-weight: bold;
     color: $primary;
   }
+  padding-bottom: 0.25rem;
+}
+
+.brdcrmb {
+  font-size: 0.9rem;
 }
 
 #root{
@@ -162,6 +167,10 @@ ol, ul {
       margin-bottom: 0.25rem;
     }
   }
+}
+
+.tlbrbtn {
+  margin-right: 0.25rem;
 }
 
 .registeruser {

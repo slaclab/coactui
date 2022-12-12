@@ -10470,10 +10470,15 @@ ol, ul {
 
 .sectiontitle {
   font-size: 1.1rem;
+  padding-bottom: 0.25rem;
 }
 .sectiontitle .ref {
   font-weight: bold;
   color: rgb(177, 4, 14);
+}
+
+.brdcrmb {
+  font-size: 0.9rem;
 }
 
 #root {
@@ -10515,6 +10520,10 @@ ol, ul {
   padding-left: 0.25rem;
   padding-right: 0.25rem;
   margin-bottom: 0.25rem;
+}
+
+.tlbrbtn {
+  margin-right: 0.25rem;
 }
 
 .registeruser {

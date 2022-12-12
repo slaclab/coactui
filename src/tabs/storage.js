@@ -171,11 +171,11 @@ class StorageTab extends React.Component {
   }
 
   render() {
-    return (<div className="container-fluid text-center tabcontainer">
+    return (<div className="container-fluid text-left tabcontainer">
       <Row>
         <ChangeAllocationModal show={this.props.allocMdlShow} setShow={this.props.setAllocMdlShow} repodata={this.props.repodata} requestChangeAllocation={this.props.requestChangeAllocation} />
-        <Col md={3} className="mb-1"><div><Link to={"../storage"}>Storage</Link> / {this.props.repodata.name} - {this.props.repodata.storageAllocation.purpose} </div></Col>
-        <Col className="my-2"><div className="sectiontitle">Resource usage for repo <span className="ref">{this.props.repodata.name}</span> on the <span className="ref">{this.props.repodata.storageAllocation.storagename}</span> storage volume used for <span className="ref">{this.props.repodata.storageAllocation.purpose}</span> </div></Col>
+        <Col md={3} className="mb-1 text-left"><div className="brdcrmb"><Link to={"../storage"}>Storage</Link> / {this.props.repodata.name} - {this.props.repodata.storageAllocation.purpose} </div></Col>
+        <Col className="text-center"><div className="sectiontitle">Resource usage for repo <span className="ref">{this.props.repodata.name}</span> on the <span className="ref">{this.props.repodata.storageAllocation.storagename}</span> storage volume used for <span className="ref">{this.props.repodata.storageAllocation.purpose}</span> </div></Col>
         <Col md={3} className="mb-1">
         </Col>
       </Row>
