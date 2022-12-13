@@ -90,8 +90,6 @@ function App() {
           <Route exact path="facilities/:facilityname" element={<Facility />}/>
           <Route exact path="myprofile" element={<MyProfile />}/>
           <Route exact path="requests" element={<RequestTypes/>}/>
-          <Route exact path="repousage/:reponame/compute/:allocationid" element={<Compute />} />
-          <Route exact path="repousage/:reponame/storage/:allocationid" element={<Storage />} />
           <Route exact path="clusterusage/:clustername" element={<ClustersTabs />} />
           <Route exact path="storageusage/:storagename" element={<StorageTabs />} />
           <Route exact path="storageusage/:storagename/purpose/:purpose" element={<StorageTabs />} />
