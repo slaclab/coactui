@@ -132,3 +132,11 @@ export function ToolbarButton(props) {
     <Button variant="secondary" className="tlbrbtn" onClick={showMdl}>{props.label}</Button>
   );
 }
+
+export function submitOnEnter(submitfn) {
+  return (event) => {
+    if(event.key === "Enter") {
+      submitfn();
+    }
+  }
+}

@@ -6,6 +6,7 @@ import React, { Component, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRocket, faUser, faUserNinja, faPersonCircleQuestion } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from 'react-router-dom';
+import { submitOnEnter } from './tabs/widgets'
 
 
 const USER = gql`
@@ -64,7 +65,7 @@ class Impersonate extends Component {
   }
   render() {
     return (
-      <Modal show={this.props.show} onHide={this.handleClose}>
+      <Modal show={this.props.show} onHide={this.handleClose} onKeyPress={submitOnEnter(this.impersonate)}>
         <Modal.Header closeButton>
           <Modal.Title>Impersonate user</Modal.Title>
         </Modal.Header>
