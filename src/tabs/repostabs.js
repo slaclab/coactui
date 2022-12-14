@@ -164,7 +164,7 @@ class ReqNewRepo extends Component {
   }
 }
 
-export default function RepoTabs() {
+export default function RepoTabs(props) {
   const { loading, error, data } = useQuery(WHOAMI);
   const [repMemShow, setRepMemShow] = useState(false);
   const [newRepShow, setNewRepShow] = useState(false);
@@ -193,10 +193,10 @@ export default function RepoTabs() {
     setNewRepShow(false);
   };
 
-  return (<Tab.Container defaultActiveKey={"users"}>
+  return (<Tab.Container activeKey={props.reposActiveTab}>
         <Row id="repotabs">
           <Col>
-            <Nav variant="tabs">
+            <Nav variant="tabs" onSelect={(selKey) => { props.setReposActiveTab(selKey); }}>
               <Nav.Item>
                 <Nav.Link eventKey="users" as={Link} to={`users`}>Users</Nav.Link>
               </Nav.Item>

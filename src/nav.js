@@ -159,7 +159,7 @@ export default function TopNavBar( props ) {
         <Nav variant="pills" activeKey="1">
           { showFacs ? <Nav.Item> <Nav.Link as={NavLink} to="/facilities"> Facilities </Nav.Link> </Nav.Item> : null }
           <Nav.Item>
-            <Nav.Link as={NavLink} to="/repos" disabled={logged_in_user ? false : true}>
+            <Nav.Link as={NavLink} to="/repos" disabled={logged_in_user ? false : true} onClick={() => { props.setReposActiveTab("users"); }}>
               Repos
             </Nav.Link>
           </Nav.Item>

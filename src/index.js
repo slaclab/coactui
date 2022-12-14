@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React from 'react';
+import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   BrowserRouter,
@@ -61,6 +61,7 @@ query {
 
 function App() {
   console.log("starting app....");
+  const [reposActiveTab, setReposActiveTab] = useState("");
   const { loading, error, data } = useQuery(HOMEDETAILS, { errorPolicy: 'all'} );
   if (loading) return <p>Loading...</p>;
   // if (error) return <p>Error!</p>;
@@ -80,7 +81,7 @@ function App() {
     <div id="mainContainer">
       <div className="header">
         <BrowserRouter>
-        { hasUserAcc ? <TopNavBar/> : <div/> }
+        { hasUserAcc ? <TopNavBar setReposActiveTab={setReposActiveTab} /> : <div/> }
         <Routes>
           <Route exact path="/" element={ hasUserAcc ? <Navigate to="myprofile" /> : <LandingPage/> } />
           <Route exact path="/login" element={ hasUserAcc ? <Navigate to="../myprofile" /> : <Navigate to="../register" /> } />
@@ -93,7 +94,7 @@ function App() {
           <Route exact path="clusterusage/:clustername" element={<ClustersTabs />} />
           <Route exact path="storageusage/:storagename" element={<StorageTabs />} />
           <Route exact path="storageusage/:storagename/purpose/:purpose" element={<StorageTabs />} />
-          <Route exact path="repos" element={<RepoTabs />}>
+          <Route exact path="repos" element={<RepoTabs reposActiveTab={reposActiveTab} setReposActiveTab={setReposActiveTab} />}>
             <Route exact path={`compute`} element={ <ReposComputeListView/> }/>
             <Route exact path={`compute/:name/allocation/:allocationid`} element={ <Compute/> }/>
             <Route exact path={`storage`} element={ <ReposStorageListView/> } />
