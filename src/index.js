@@ -71,6 +71,11 @@ function App() {
   let isRegistered = _.get(data, "amIRegistered.isRegistered", false);
   let fullname = _.get(data, "amIRegistered.fullname", "");
 
+  const RedirectUrl = ({ url }) => {
+    window.location.href = url;
+    return <h5>Redirecting...</h5>;
+};
+
   return (
     <div id="mainContainer">
       <div className="header">
@@ -79,6 +84,7 @@ function App() {
         <Routes>
           <Route exact path="/" element={ hasUserAcc ? <Navigate to="myprofile" /> : <LandingPage/> } />
           <Route exact path="/login" element={ hasUserAcc ? <Navigate to="../myprofile" /> : <Navigate to="../register" /> } />
+          <Route exact path="/logout" element={<RedirectUrl url="https://vouch.slac.stanford.edu/logout" />} />
           <Route exact path="register" element={<RegisterUser eppn={eppn} isRegistered={isRegistered} registrationPending={registrationPending} fullname={fullname}/>}/>
           <Route exact path="facilities" element={<Facilities />}/>
           <Route exact path="facilities/:facilityname" element={<Facility />}/>
