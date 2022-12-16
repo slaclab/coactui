@@ -62,7 +62,14 @@ class Impersonate extends Component {
       this.props.setShow(false);
     }
     this.setImpName = (event) => { this.setState({ impname: event.target.value }) }
+
+    this.setRef = (element) => {
+      if(element != null) {
+        setTimeout(() => {element.focus();}, 2);
+      }
+    }
   }
+
   render() {
     return (
       <Modal show={this.props.show} onHide={this.handleClose} onKeyPress={submitOnEnter(this.impersonate)}>
@@ -71,7 +78,7 @@ class Impersonate extends Component {
         </Modal.Header>
         <Modal.Body>Please select the user to impersonate
           <InputGroup hasValidation>
-            <Form.Control type="text" placeholder="Please select the user to impersonate" onChange={this.setImpName} isInvalid={this.state.impnameInvalid}/>
+            <Form.Control autoFocus ref={this.setRef} type="text" placeholder="Please select the user to impersonate" onChange={this.setImpName} isInvalid={this.state.impnameInvalid}/>
             <Form.Control.Feedback type="invalid">{this.state.errormsg}</Form.Control.Feedback>
           </InputGroup>
         </Modal.Body>
