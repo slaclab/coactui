@@ -16,6 +16,9 @@ import { ToolbarButton } from './widgets'
 import ReposComputeListView from "./reposcompute";
 import ReposStorageListView from "./reposstorage";
 
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
+import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
+
 const WHOAMI = gql`
 query{
   whoami {
@@ -196,7 +199,11 @@ export default function RepoTabs(props) {
   return (<Tab.Container activeKey={props.reposActiveTab}>
         <Row id="repotabs">
           <Col>
-            <Nav variant="tabs" onSelect={(selKey) => { props.setReposActiveTab(selKey); }}>
+            <Nav variant="pills" onSelect={(selKey) => { props.setReposActiveTab(selKey); }}>
+              <ButtonGroup aria-label="Repo context">
+                <Button active>All</Button>
+                <Button>Repo</Button>
+              </ButtonGroup>
               <Nav.Item>
                 <Nav.Link eventKey="compute" as={Link} to={`compute`}>Compute</Nav.Link>
               </Nav.Item>
