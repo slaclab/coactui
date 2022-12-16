@@ -198,26 +198,26 @@ export default function RepoTabs(props) {
           <Col>
             <Nav variant="tabs" onSelect={(selKey) => { props.setReposActiveTab(selKey); }}>
               <Nav.Item>
+                <Nav.Link eventKey="compute" as={Link} to={`compute`}>Compute</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="storage" as={Link} to={`storage`}>Storage</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
                 <Nav.Link eventKey="users" as={Link} to={`users`}>Users</Nav.Link>
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="groups" as={Link} to={`groups`}>Access groups</Nav.Link>
               </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="compute" as={Link} to={`compute`}>Compute</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="storage" as={Link} to={`storage`}>Storage</Nav.Link>
-                </Nav.Item>
-              </Nav>
-            </Col>
-            <Col md={5}>
-              <span className="float-end me-1">
+            </Nav>
+          </Col>
+          <Col md={5}>
+            <span className="float-end me-1">
               {
                 _.map(toolbaritems, (x) => { return <ToolbarButton key={x[0]} label={x[0]} setShow={x[1]} /> })
               }
-              </span>
-            </Col>
+            </span>
+          </Col>
         </Row>
         <Tab.Content>
           <Outlet context={[toolbaritems, setToolbaritems]}/>
