@@ -103,7 +103,7 @@ class Approve extends React.Component {
     super(props);
     this.state = {
       showNewFacMdl: false,
-      showActions: props.req.approvalstatus == "NotActedOn"
+      showActions: props.req.approvalstatus == "NotActedOn" && !props.showmine
     }
 
     this.rejectRequest = (event) => {
@@ -263,7 +263,7 @@ class RequestsRow extends Component {
         <Col md={4}><RequestDetails req={this.props.req} /></Col>
         <Col md={3}>{this.props.req.notes}</Col>
         <Col md={1}><ApprovalStatus  req={this.props.req}/></Col>
-        <Col md={1}><Approve req={this.props.req} approve={this.props.approve} reject={this.props.reject} /></Col>
+        <Col md={1}><Approve req={this.props.req} approve={this.props.approve} reject={this.props.reject} showmine={this.props.showmine} /></Col>
       </Row>
     )
   }
@@ -289,7 +289,7 @@ class RequestsTable extends Component {
       </Row>
       {
         _.map(this.props.requests, (r) => { return (
-        <RequestsRow key={r.Id} req={r} approve={this.props.approve} reject={this.props.reject} />
+        <RequestsRow key={r.Id} req={r} approve={this.props.approve} reject={this.props.reject} showmine={this.props.showmine}/>
       )})}
       </Container>
      )
@@ -321,7 +321,7 @@ export default function Requests(props) {
     <>
     <Container fluid id="requests">
      <ErrorMsgModal show={showErr} setShow={setShowErr} title={errTitle} message={errMessage}/>
-     <RequestsTable requests={data.requests} approve={approve} reject={reject}/>
+     <RequestsTable requests={data.requests} approve={approve} reject={reject} showmine={props.showmine}/>
     </Container>
     </>
   );
