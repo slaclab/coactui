@@ -118,38 +118,38 @@ class ReqNewRepo extends Component {
           <Modal.Title>Request new repo</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <InputGroup hasValidation>
-            <Row>
-              <Col md={3}><Form.Label className="px-2" >Repo name:</Form.Label></Col>
-              <Col>
-                <Form.Control type="text" placeholder="Enter name of the repo" onChange={this.setRepoName} isInvalid={this.state.reponameInvalid}/>
-                <Form.Control.Feedback type="invalid">Please enter a valid repo name</Form.Control.Feedback>
-              </Col>
-            </Row>
-          </InputGroup>
-          <InputGroup hasValidation>
-            <Row>
-              <Col md={3}><Form.Label className="px-2" >Facility:</Form.Label></Col>
-              <Col>
-                <Form.Control required as="select" type="select" onChange={this.setFacility} isInvalid={this.state.facilityInvalid}>
-                <option value="">Please select a facility</option>
-                {
-                  _.map(this.props.facilities, function(x){ return ( <option key={x} value={x}>{x}</option> ) })
-                }
-                </Form.Control>
-                <Form.Control.Feedback type="invalid">Please select a facility</Form.Control.Feedback>
-              </Col>
-            </Row>
-          </InputGroup>
-          <InputGroup hasValidation>
           <Row>
-            <Col md={3}><Form.Label className="px-2" >Principal:</Form.Label></Col>
-            <Col>
-              <Form.Control type="text" placeholder="Enter principal's userid" value={this.state.principal} onChange={this.setPrincipal} isInvalid={this.state.principalInvalid}/>
-              <Form.Control.Feedback type="invalid">Please enter a valud userid</Form.Control.Feedback>
-              </Col>
-            </Row>
-          </InputGroup>
+            <InputGroup hasValidation>
+                <Col md={3}><Form.Label className="px-2" >Repo name:</Form.Label></Col>
+                <Col>
+                  <Form.Control type="text" placeholder="Enter name of the repo" onChange={this.setRepoName} isInvalid={this.state.reponameInvalid}/>
+                  <Form.Control.Feedback type="invalid">Please enter a valid repo name</Form.Control.Feedback>
+                </Col>
+            </InputGroup>
+          </Row>
+          <Row>
+            <InputGroup hasValidation>
+                <Col md={3}><Form.Label className="px-2" >Facility:</Form.Label></Col>
+                <Col>
+                  <Form.Control required as="select" type="select" onChange={this.setFacility} isInvalid={this.state.facilityInvalid}>
+                  <option value="">Please select a facility</option>
+                  {
+                    _.map(this.props.facilities, function(x){ return ( <option key={x} value={x}>{x}</option> ) })
+                  }
+                  </Form.Control>
+                  <Form.Control.Feedback type="invalid">Please select a facility</Form.Control.Feedback>
+                </Col>
+            </InputGroup>
+          </Row>
+          <Row>
+            <InputGroup hasValidation>
+              <Col md={3}><Form.Label className="px-2" >Principal:</Form.Label></Col>
+              <Col>
+                <Form.Control type="text" placeholder="Enter principal's userid" value={this.state.principal} onChange={this.setPrincipal} isInvalid={this.state.principalInvalid}/>
+                <Form.Control.Feedback type="invalid">Please enter a valud userid</Form.Control.Feedback>
+                </Col>
+            </InputGroup>
+          </Row>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={this.handleClose}>
