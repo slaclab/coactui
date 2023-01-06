@@ -13,6 +13,7 @@ import Alert from 'react-bootstrap/Alert';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { TwoPrecFloat } from './tabs/widgets'
 
 
 const HOMEDETAILS = gql`
@@ -327,8 +328,8 @@ class UserStorage extends Component {
       <Row><Card.Subtitle title={this.props.storage.rootfolder}>{this.props.storage.purpose}</Card.Subtitle><hr/></Row>
       <Row>
         <Col>
-          <Row className="mx-2">Used {this.props.storage.usage.gigabytes} GB of {this.props.storage.gigabytes} GB</Row>
-          <Row className="mx-2">Used {this.props.storage.usage.inodes} files of {this.props.storage.inodes} max files</Row>
+          <Row className="mx-2">Used <TwoPrecFloat value={this.props.storage.usage.gigabytes}/> GB of {this.props.storage.gigabytes} GB</Row>
+          <Row className="mx-2">Used <TwoPrecFloat value={this.props.storage.usage.inodes}/> files of {this.props.storage.inodes} max files</Row>
         </Col>
         <Col md={3}>
           <Button className="my-2" variant="secondary" onClick={() => this.setState({showModal: true})}>Request more</Button>
