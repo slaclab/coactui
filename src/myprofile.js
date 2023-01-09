@@ -399,7 +399,8 @@ class UserDetails extends Component {
     this.showEppnModal = function() { props.setUpdtEppnShow(true) }
     this.showPrefEmailModal = function() { props.setUpdtPrefEmail(true) }
     this.showPublicHTML = function() { props.setEnblPublicHtml(true) }
-    this.publichtmlurl = "/~" + props.userdetails.username + "/public_html/";
+    this.publichtmlurl = "https://s3df.slac.stanford.edu/~" + props.userdetails.username + "/public_html/";
+    this.publichtmlfolder = _.find(this.props.userdetails.storages, ["purpose", "home"]) ? _.find(this.props.userdetails.storages, ["purpose", "home"])["rootfolder"] + "/public_html" : "<home>/public_html";
   }
   render() {
     return (
@@ -437,9 +438,9 @@ class UserDetails extends Component {
               </Card.Body>
             </Card>
           </Col>
-          <Col>
+          <Col className="me-2">
             <Row>
-              <Card>
+              <Card className="px-0">
                 <Card.Header>Storage</Card.Header>
                 <Card.Body>
                 {
@@ -449,10 +450,10 @@ class UserDetails extends Component {
               </Card>
             </Row>
             <Row>
-              <Card>
+              <Card className="px-0">
                 <Card.Header>Public HTML</Card.Header>
                 <Card.Body>
-                <Row className="mt-2"><Col>{this.props.userdetails.publichtml ? (<span>Your public HTML pages are viewable <a href={this.publichtmlurl}>here</a></span>) : "You have not turned on the public html space"}</Col>
+                <Row className="mt-2"><Col>{this.props.userdetails.publichtml ? (<span>Your public HTML pages are viewable here - <a href={this.publichtmlurl}>{this.publichtmlurl}</a>. You can edit your public HTML files here <code>{this.publichtmlfolder}</code></span>) : "You have not turned on the public html space"}</Col>
                 <Col md={3}>
                   {
                     this.props.userdetails.publichtml ? (<span></span>) : (<Button className="my-2" variant="secondary" onClick={this.showPublicHTML}>Request</Button>)
