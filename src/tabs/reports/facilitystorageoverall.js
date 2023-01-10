@@ -18,7 +18,6 @@ query report($storagename: String!, $purpose: String){
   reportFacilityStorage(storagename: $storagename, purpose: $purpose) {
     repo
     gigabytes
-    inodes
     purpose
   }
 }
@@ -36,9 +35,9 @@ export default function FacilityStorageOverall(props) {
 
   return (
     <Table bordered>
-      <thead><tr><th>Repo</th>{_.isNil(props.purpose) ? "" : <th>Purpose</th>}<th>Storage used (in TB)</th><th>Files used</th></tr></thead>
+      <thead><tr><th>Repo</th>{_.isNil(props.purpose) ? "" : <th>Purpose</th>}<th>Storage used (in TB)</th></tr></thead>
       <tbody>
-        { _.map(usage, (u) => { return (<tr key={u.repo}><td>{u.repo}</td>{_.isNil(props.purpose) ? "" : <td>{u.purpose}</td>}<td><TeraBytes value={u.gigabytes}/></td><td><InMillions value={u.inodes}/></td></tr>) }) }
+        { _.map(usage, (u) => { return (<tr key={u.repo}><td>{u.repo}</td>{_.isNil(props.purpose) ? "" : <td>{u.purpose}</td>}<td><TeraBytes value={u.gigabytes}/></td></tr>) }) }
       </tbody>
     </Table>
   );

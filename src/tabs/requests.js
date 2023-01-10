@@ -36,7 +36,6 @@ query Requests($fetchprocessed: Boolean, $showmine: Boolean){
     purpose
     slachours
     gigabytes
-    inodes
     notes
     approvalstatus
   }
@@ -191,7 +190,7 @@ class RequestDetails extends Component {
     if(this.props.req.reqtype == "UserStorageAllocation") {
       return (
         <ListGroup>
-          {_.map(["storagename", "purpose", "gigabytes", "inodes"], function(x){
+          {_.map(["storagename", "purpose", "gigabytes"], function(x){
             return(
               <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
             )
@@ -213,7 +212,7 @@ class RequestDetails extends Component {
     if(this.props.req.reqtype == "RepoStorageAllocation") {
       return (
         <ListGroup>
-          {_.map(["reponame", "storagename", "purpose", "gigabytes", "inodes"], function(x){
+          {_.map(["reponame", "storagename", "purpose", "gigabytes"], function(x){
             return(
               <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
             )

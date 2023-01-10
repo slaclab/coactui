@@ -49,7 +49,7 @@ class ReposTable extends Component {
       <div className="container-fluid text-center">
         <table className="table table-condensed table-striped table-bordered table-responsive">
           <thead>
-            <tr><th>Name</th><th>Facility</th><th>PI</th></tr>
+            <tr><th>Repo name</th><th>Facility</th><th>PI</th></tr>
           </thead>
           <tbody>
             { _.map(this.props.repos, (r) => { return (<ReposRows key={r.name} repo={r}/>) }) }

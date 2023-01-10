@@ -90,7 +90,7 @@ class ReposTable extends Component {
       <div className="container-fluid text-center table-responsive">
         <table className="table table-condensed table-striped table-bordered">
           <thead>
-            <tr><th>Name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th>Total compute used</th></tr>
+            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th>Total compute used</th></tr>
           </thead>
           { _.map(this.props.repos, (r) => { return (<ReposRows key={r.name} repo={r}/>) }) }
           </table>

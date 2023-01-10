@@ -26,10 +26,8 @@ query{
       start
       end
       gigabytes
-      inodes
       usage {
         gigabytes
-        inodes
       }
     }
   }
@@ -85,7 +83,7 @@ class ReposTable extends Component {
       <div className="container-fluid text-center table-responsive">
         <table className="table table-condensed table-striped table-bordered">
           <thead>
-            <tr><th>Name</th><th>Facility</th><th>PI</th><th>Purpose</th><th>Total storage allocation (GB)</th><th>Total storage used (GB)</th></tr>
+            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>Purpose</th><th>Total storage allocation (GB)</th><th>Total storage used (GB)</th></tr>
           </thead>
           { _.map(this.props.repos, (r) => { return (<ReposRows key={r.name} repo={r}/>) }) }
           </table>

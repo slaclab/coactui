@@ -33,12 +33,10 @@ query {
       Id
       purpose
       gigabytes
-      inodes
       storagename
       rootfolder
       usage {
         gigabytes
-        inodes
       }
     }
   }
@@ -260,16 +258,15 @@ class AddRemoveEPPNs extends Component {
 class StorageQuotaRequest extends Component {
   constructor(props) {
     super(props);
-    this.state = { gigabytes: props.storage.gigabytes, inodes: props.storage.inodes, notes: "", gigabytesinvalid: false, inodesinvalid: false
+    this.state = { gigabytes: props.storage.gigabytes, notes: "", gigabytesinvalid: false
     }
     this.handleClose = () => { this.props.setShow(false); }
     this.setgigabytes = (event) => { this.setState({ gigabytes: _.toNumber(event.target.value) }) }
-    this.setinodes = (event) => { this.setState({ inodes: _.toNumber(event.target.value) }) }
     this.setnotes = (event) => { this.setState({ notes: event.target.value }) }
 
     this.quotaRequest = () => {
       console.log(this.state);
-      this.props.requestQuota(this.props.storage.storagename, this.state.gigabytes, this.state.inodes, this.props.storage.purpose, this.state.notes);
+      this.props.requestQuota(this.props.storage.storagename, this.state.gigabytes, this.props.storage.purpose, this.state.notes);
       this.props.setShow(false);
     }
   }
@@ -286,14 +283,6 @@ class StorageQuotaRequest extends Component {
               <Form.Control className="my-2" type="text" value={this.state.gigabytes} placeholder="Please enter the storage requested in GB" onChange={this.setgigabytes} isInvalid={this.state.gigabytesinvalid}/>
               <InputGroup.Text className="my-2">GB</InputGroup.Text>
               <Form.Control.Feedback type="invalid">Please enter a valid gigabytes</Form.Control.Feedback>
-            </InputGroup>
-          </Row>
-          <Form.Text>You currently have {this.state.inodes} files</Form.Text>
-          <Row className="mb-3">
-            <InputGroup hasValidation>
-              <Form.Control className="my-2" type="text" value={this.state.inodes} placeholder="Please enter the inodes requested in files" onChange={this.setinodes} isInvalid={this.state.inodesinvalid}/>
-              <InputGroup.Text className="my-2">files</InputGroup.Text>
-              <Form.Control.Feedback type="invalid">Please enter a valid inodes</Form.Control.Feedback>
             </InputGroup>
           </Row>
           <Row className="mb-3">
@@ -329,7 +318,6 @@ class UserStorage extends Component {
       <Row>
         <Col>
           <Row className="mx-2">Used <TwoPrecFloat value={this.props.storage.usage.gigabytes}/> GB of {this.props.storage.gigabytes} GB</Row>
-          <Row className="mx-2">Used <TwoPrecFloat value={this.props.storage.usage.inodes}/> files of {this.props.storage.inodes} max files</Row>
         </Col>
         <Col md={3}>
           <Button className="my-2" variant="secondary" onClick={() => this.setState({showModal: true})}>Request more</Button>
@@ -501,9 +489,9 @@ export default function MyProfile() {
     setUpdtPrefEmail(false);
   };
 
-  const requestQuota = (storagename, gigabytes, inodes, purpose, notes) => {
+  const requestQuota = (storagename, gigabytes, purpose, notes) => {
     console.log("Putting in a request for changing the quota");
-    quotafn({ variables: { request: { reqtype: "UserStorageAllocation", storagename: storagename, gigabytes: gigabytes, inodes: inodes, purpose: purpose, notes: notes }}});
+    quotafn({ variables: { request: { reqtype: "UserStorageAllocation", storagename: storagename, gigabytes: gigabytes, purpose: purpose, notes: notes }}});
   };
 
   const enablePublicHTML = () => {
