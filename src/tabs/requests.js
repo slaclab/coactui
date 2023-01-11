@@ -233,7 +233,7 @@ class ApprovalStatus extends Component {
   render() {
     if(this.props.req.approvalstatus == "NotActedOn") {
       return (
-        <span>N/A</span>
+        <span>Pending</span>
       )
     }
     if(this.props.req.approvalstatus == "Rejected") {

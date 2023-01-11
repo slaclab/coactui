@@ -11,10 +11,10 @@ export default function RequestTypes() {
       mountOnEnter={true}
       unmountOnExit={true}
     >
-      <Tab key={"myrequests"} eventKey={"myrequests"} title={"My Requests"}>
+      <Tab key={"myrequests"} eventKey={"myrequests"} title={"My requests"}>
         <Requests showall={true} showmine={true}/>
       </Tab>
-      <Tab key={"pendingrequests"} eventKey={"pendingrequests"} title={"Pending Requests"}>
+      <Tab key={"pendingrequests"} eventKey={"pendingrequests"} title={"Requests requiring approval"}>
         <Requests showall={false} showmine={false}/>
       </Tab>
       <Tab key={"allrequests"} eventKey={"allrequests"} title={"All Requests"}>
