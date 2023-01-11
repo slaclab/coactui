@@ -7,6 +7,7 @@ import Container from 'react-bootstrap/Container';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import ListGroup from 'react-bootstrap/ListGroup';
+import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
 import Alert from 'react-bootstrap/Alert';
 import Form from 'react-bootstrap/Form';
@@ -48,8 +49,8 @@ mutation ApproveRequest($Id: String!){
 `;
 
 const REJECT_REQUEST_MUTATION = gql`
-mutation RejectRequest($Id: String!){
-  rejectRequest(id: $Id)
+mutation RejectRequest($Id: String!, $notes: String!){
+  rejectRequest(id: $Id, notes: $notes)
 }
 `;
 
@@ -95,6 +96,40 @@ class ConfirmStepsModal extends React.Component {
   }
 }
 
+class ReasonForRejectionModal extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { notes: "" }
+    this.setNotes = (event) => { this.setState({ notes: event.target.value }) }
+  }
+
+  render() {
+    return (
+      <Modal show={this.props.show} onHide={() => {this.props.setShow(false)}}>
+        <Modal.Header closeButton>
+          <Modal.Title>Explanation</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+        <Form>
+          <Row className="mb-3">
+            <InputGroup>
+              <Form.Control as="textarea" rows={3} value={this.state.notes} placeholder="Please add some explanation as to the reason for rejection" onChange={this.setNotes}/>
+            </InputGroup>
+          </Row>
+        </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => {this.props.setShow(false)}}>
+            Close
+          </Button>
+          <Button onClick={() => { this.props.setShow(false); this.props.actuallyRejectRequest(this.state.notes)}}>
+            Done
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    )
+  }
+}
 
 
 class Approve extends React.Component {
@@ -102,12 +137,18 @@ class Approve extends React.Component {
     super(props);
     this.state = {
       showNewFacMdl: false,
-      showActions: props.req.approvalstatus == "NotActedOn" && !props.showmine
+      showActions: props.req.approvalstatus == "NotActedOn" && !props.showmine,
+      showReasonForRejection: false
     }
 
-    this.rejectRequest = (event) => {
-      this.props.reject(props.req)
+    this.showHideReasonForRejection = (boolval) => {
+      this.setState({showReasonForRejection: boolval})
     }
+
+    this.actuallyRejectRequest = (notes) => {
+      this.props.reject(props.req, notes)
+    }
+
     this.actuallyApproveRequest = () => {
       this.props.approve(props.req)
     }
@@ -130,8 +171,9 @@ class Approve extends React.Component {
     return (
       <span>
         <ConfirmStepsModal show={this.state.showNewFacMdl} setShow={(st) => { this.setState({showNewFacMdl: st})}} title={"Manual steps for facility " + this.props.req.facilityname} actuallyApprove={this.actuallyApproveRequest} steps={["Run Wilko's script for creating a facility mountpoint", "Run Yee's script for creating facility specific partitions"]}/>
+        <ReasonForRejectionModal show={this.state.showReasonForRejection} setShow={this.showHideReasonForRejection} actuallyRejectRequest={this.actuallyRejectRequest}/>
         <Button className={cNm} onClick={this.approveRequest}><FontAwesomeIcon icon={faCheck}/></Button>
-        <Button variant="primary" onClick={this.rejectRequest}><FontAwesomeIcon icon={faMultiply}/></Button>
+        <Button variant="primary" onClick={() => { this.showHideReasonForRejection(true) }}><FontAwesomeIcon icon={faMultiply}/></Button>
       </span>
     )
   }
@@ -311,8 +353,8 @@ export default function Requests(props) {
   let approve = function(request, callWhenDone) {
     approveRequestMutation({ variables: { Id: request.Id }, onCompleted: callWhenDone, onError: (error) => { setErrMessage("Error when approving request " + error); setShowErr(true); }, refetchQueries: [ REQUESTS, 'Requests' ] });
   }
-  let reject = function(request, callWhenDone) {
-    rejectRequestMutation({ variables: { Id: request.Id }, onCompleted: callWhenDone, onError: (error) => { setErrMessage("Error when rejecting request " + error);  setShowErr(true); }, refetchQueries: [ REQUESTS, 'Requests' ] });
+  let reject = function(request, notes, callWhenDone) {
+    rejectRequestMutation({ variables: { Id: request.Id, notes: notes }, onCompleted: callWhenDone, onError: (error) => { setErrMessage("Error when rejecting request " + error);  setShowErr(true); }, refetchQueries: [ REQUESTS, 'Requests' ] });
   }
 
 
