@@ -49,8 +49,8 @@ mutation ToggleUserRole($reposinput: RepoInput!, $user: UserInput!, $group: Acce
 `;
 
 const NEW_USERGROUP_MUTATION = gql`
-mutation accessGroupCreate($grp: AccessGroupInput!){
-  accessGroupCreate(accessgroup: $grp){
+mutation accessGroupCreate($reposinput: RepoInput!, $grp: AccessGroupInput!){
+  accessGroupCreate(repo: $reposinput, accessgroup: $grp){
     name
     gidnumber
   }
@@ -262,7 +262,7 @@ export default function Groups() {
   }
 
   let createNewUserGroup = function(newusergroupname) {
-    newusergrpfn({ variables: { grp: { name: newusergroupname, repo: reponame, members: [] } }, refetchQueries: [ REPODETAILS, 'Repos' ], onError: (error) => { console.log("Error when creating new user group role " + error); } });
+    newusergrpfn({ variables: { reposinput: { name: reponame }, grp: { name: newusergroupname, repo: reponame, members: [] } }, refetchQueries: [ REPODETAILS, 'Repos' ], onError: (error) => { console.log("Error when creating new user group role " + error); } });
   }
 
   return (<GroupsTab repodata={repodata} groups={repodata.accessGroupObjs} allUsers={repodata.allUsers} amILeader={amILeader}
