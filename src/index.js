@@ -42,7 +42,7 @@ import { Link, Outlet, useParams } from "react-router-dom";
 const client = new ApolloClient({
   uri: process.env.REACT_APP_COACT_GRAPHQL_URI,
   cache: new InMemoryCache(),
-  headers: { coactimp: localStorage.getItem('imptk') }
+  headers: { coactimp: localStorage.getItem('imptk'), coactshowall: "true"==localStorage.getItem("showallrepos") }
 });
 
 const container = document.getElementById('root');

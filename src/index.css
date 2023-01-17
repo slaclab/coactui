@@ -10565,6 +10565,10 @@ ol, ul {
   color: rgb(255, 255, 255);
 }
 
+.navtoggle {
+  color: rgb(177, 4, 14);
+}
+
 .tbllbl {
   font-weight: bold;
 }

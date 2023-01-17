@@ -1,10 +1,10 @@
 import _ from "lodash";
-import { Nav, Navbar, NavDropdown, Modal, Form, Button, InputGroup } from 'react-bootstrap';
+import { Nav, Navbar, NavDropdown, Dropdown, Modal, Form, Button, InputGroup } from 'react-bootstrap';
 import { useQuery, gql } from "@apollo/client";
 import { NavLink } from "react-router-dom";
 import React, { Component, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faRocket, faUser, faUserNinja, faPersonCircleQuestion } from '@fortawesome/free-solid-svg-icons'
+import { faRocket, faUser, faUserNinja, faPersonCircleQuestion, faCheck } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from 'react-router-dom';
 import { submitOnEnter } from './tabs/widgets'
 
@@ -25,6 +25,7 @@ query whoami{
 
     //; window.open("https://vouch.slac.stanford.edu/logout")}>Log Out..</NavDropdown.Item>
 function logged_in( props ) {
+  let isCzarOrAdmin = props.isAdmin || props.isCzar;
   return(
      <>
      <Nav.Item className="navtxt">
@@ -34,6 +35,7 @@ function logged_in( props ) {
        <NavDropdown.Item href="https://vouch.slac.stanford.edu/logout">Log out...</NavDropdown.Item>
        <NavDropdown.Item className={props.isAdmin && !props.isImpersonating ? "" : "d-none"} onClick={props.impersonate}>Impersonate...</NavDropdown.Item>
        <NavDropdown.Item className={props.isImpersonating ? "" : "d-none"} onClick={props.stopImpersonation}>Stop impersonation</NavDropdown.Item>
+       <NavDropdown.Item className={isCzarOrAdmin ? "" : "d-none"} onClick={props.toggleShowAllRepos}>{ props.showAllRepos ? ( <span><span className="pe-1">Show all repos </span><FontAwesomeIcon className="navtoggle" icon={faCheck}/></span> ) : (<span>Show all repos</span> )} </NavDropdown.Item>
        <NavDropdown.Divider />
        <NavDropdown.Item as="span" onClick={() => { props.gotomyprofile() }}>My Profile</NavDropdown.Item>
      </NavDropdown>
@@ -132,6 +134,7 @@ export default function TopNavBar( props ) {
   let showFacs = false;
   let usernames = [];
   const [show, setShow] = useState(false);
+  const [showAllRepos, setShowAllRepos] = useState("true"==localStorage.getItem("showallrepos"));
   const { loading, error, data } = useQuery(USER);
   let navigate = useNavigate();
   let gotomyprofile = () => { navigate("/myprofile") }
@@ -158,6 +161,15 @@ export default function TopNavBar( props ) {
     window.location.reload(false);
   }
 
+  let toggleShowAllRepos = function() {
+    let showAllRepos = _.isNil(localStorage.getItem("showallrepos")) ? "false" : localStorage.getItem("showallrepos");
+    console.log("Current value of show all repos " + showAllRepos);
+    localStorage.setItem("showallrepos", showAllRepos=="true" ? "false" : "true");
+    console.log("Set show all repos to " + localStorage.getItem("showallrepos"));
+    setShowAllRepos(localStorage.getItem("showallrepos") == "true");
+    window.location.reload(false);
+  }
+
   return (
     <Navbar bg="primary" variant="dark" expand="lg">
       <Navbar.Brand className="ps-2"  onClick={() => { navigate("/") }}><FontAwesomeIcon icon={faRocket} size="lg"/> Coact</Navbar.Brand>
@@ -178,7 +190,10 @@ export default function TopNavBar( props ) {
         </Nav>
       </Navbar.Collapse>
       <Nav>
-				<UserDropDown logged_in_user={logged_in_user} isAdmin={isAdmin} isImpersonating={isImpersonating} impersonate={setShow} stopImpersonation={stopImpersonation} gotomyprofile={gotomyprofile}/>
+				<UserDropDown logged_in_user={logged_in_user} isAdmin={isAdmin} isCzar={isCzar}
+          isImpersonating={isImpersonating} impersonate={setShow} stopImpersonation={stopImpersonation}
+          showAllRepos={showAllRepos} toggleShowAllRepos={toggleShowAllRepos}
+          gotomyprofile={gotomyprofile}/>
       </Nav>
       <Impersonate show={show} setShow={setShow} usernames={usernames} impersonate={impersonate}/>
     </Navbar>
