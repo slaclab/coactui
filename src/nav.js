@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { Nav, Navbar, NavDropdown, Dropdown, Modal, Form, Button, InputGroup } from 'react-bootstrap';
-import { useQuery, gql } from "@apollo/client";
+import { useQuery, useLazyQuery, gql } from "@apollo/client";
 import { NavLink } from "react-router-dom";
 import React, { Component, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -17,11 +17,14 @@ query whoami{
     isCzar
     isImpersonating
   }
+}`;
+
+const USERNAMES = gql`
+query users {
   users {
     username
   }
 }`;
-
 
     //; window.open("https://vouch.slac.stanford.edu/logout")}>Log Out..</NavDropdown.Item>
 function logged_in( props ) {
@@ -46,6 +49,10 @@ function logged_in( props ) {
 class Impersonate extends Component {
   constructor(props) {
     super(props);
+    this.usernames = [];
+    this.loadUserNames = () => {
+      this.props.getUserNames({onCompleted: (users)=>{this.usernames = _.map(_.get(users, "users"), "username", [])}});
+    }
     this.state = { impname: "", impnameInvalid: false, errormsg: "" }
     this.handleClose = () => { this.props.setShow(false); }
     this.impersonate = () => {
@@ -54,8 +61,9 @@ class Impersonate extends Component {
         this.setState({ impnameInvalid: true, errormsg: "Please enter a valid username" });
         return;
       }
-      if(!_.includes(this.props.usernames, this.state.impname)) {
+      if(!_.includes(this.usernames, this.state.impname)) {
         this.setState({ impnameInvalid: true, errormsg: this.state.impname + " is not a valid username" });
+        console.log(this.usernames);
         return;
       }
 
@@ -74,7 +82,7 @@ class Impersonate extends Component {
 
   render() {
     return (
-      <Modal show={this.props.show} onHide={this.handleClose} onKeyPress={submitOnEnter(this.impersonate)}>
+      <Modal show={this.props.show} onHide={this.handleClose} onKeyPress={submitOnEnter(this.impersonate)} onEnter={this.loadUserNames}>
         <Modal.Header closeButton>
           <Modal.Title>Impersonate user</Modal.Title>
         </Modal.Header>
@@ -136,6 +144,7 @@ export default function TopNavBar( props ) {
   const [show, setShow] = useState(false);
   const [showAllRepos, setShowAllRepos] = useState("true"==localStorage.getItem("showallrepos"));
   const { loading, error, data } = useQuery(USER);
+  const [getUserNames, { unloading, unerror, undata }] = useLazyQuery(USERNAMES);
   let navigate = useNavigate();
   let gotomyprofile = () => { navigate("/myprofile") }
 
@@ -146,7 +155,6 @@ export default function TopNavBar( props ) {
     isAdmin = data["whoami"].isAdmin;
     isCzar = data["whoami"].isCzar;
     showFacs = isAdmin || isCzar;
-    usernames = _.map(_.get(data, "users"), "username", []);
     isImpersonating = data["whoami"].isImpersonating;
   };
 
@@ -195,7 +203,7 @@ export default function TopNavBar( props ) {
           showAllRepos={showAllRepos} toggleShowAllRepos={toggleShowAllRepos}
           gotomyprofile={gotomyprofile}/>
       </Nav>
-      <Impersonate show={show} setShow={setShow} usernames={usernames} impersonate={impersonate}/>
+      <Impersonate show={show} setShow={setShow} getUserNames={getUserNames} impersonate={impersonate}/>
     </Navbar>
   );
 }
