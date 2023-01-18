@@ -56,11 +56,11 @@ class ReqUserAccount extends Component {
     return (
       <Modal show={this.props.show} onHide={this.handleClose} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Request an SDF account</Modal.Title>
+          <Modal.Title>Request an S3DF account</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Row className="mb-3">
-            <Form.Text>Enable your EPPN <span className="text-primary"><b>{this.props.eppn}</b></span> for the SDF</Form.Text>
+            <Form.Text>Enable your EPPN <span className="text-primary"><b>{this.props.eppn}</b></span> for the S3DF</Form.Text>
             <InputGroup hasValidation>
               <Form.Select name="facility" onChange={this.setFacility} isInvalid={this.state.facilityInvalid}>
                 <option value="">Please choose a facility</option>
@@ -114,9 +114,9 @@ export default function RegisterUser(props) {
       <>
       <div className="registeruser d-flex flex-column">
          <NoNavHeader/>
-         <h6 className="p-2">Hi <span className="text-primary">{fullname}</span>, welcome to Coact; the portal for using the SDF.</h6>
+         <h6 className="p-2">Hi <span className="text-primary">{fullname}</span>, welcome to Coact; the portal for using the S3DF.</h6>
          <div className="p-2 flex-grow-1">
-          Your request to enable the EPPN <span className="text-primary"><b>{eppn}</b></span> for SDF is still pending and will be acted upon soon.
+          Your request to enable the EPPN <span className="text-primary"><b>{eppn}</b></span> for S3DF is still pending and will be acted upon soon.
          </div>
          <Footer/>
       </div>
@@ -128,11 +128,11 @@ export default function RegisterUser(props) {
     <>
     <div className="registeruser d-flex flex-column">
       <NoNavHeader/>
-      <h6 className="p-2">Hi <span className="text-primary">{fullname}</span>, welcome to Coact; the portal for using the SDF.</h6>
+      <h6 className="p-2">Hi <span className="text-primary">{fullname}</span>, welcome to Coact; the portal for using the S3DF.</h6>
       <div className="p-2 flex-grow-1">
-        You don't seem to have an SDF account associated with your EPPN <span className="text-primary"><b>{eppn}</b></span>.
-        If you would like to request your account be enabled for SDF, please click here -
-        <button type="button" className="btn btn-primary" onClick={handleShow}>Enable my SDF account</button>
+        You don't seem to have an S3DF account associated with your EPPN <span className="text-primary"><b>{eppn}</b></span>.
+        If you would like to request your account be enabled for S3DF, please click here -
+        <button type="button" className="btn btn-primary" onClick={handleShow}>Enable my S3DF account</button>
       </div>
       <ReqUserAccount show={show} setShow={setShow} eppn={eppn} requestUserAccount={requestAccount} facilityNames={data.facilityNames} />
       <Footer/>
