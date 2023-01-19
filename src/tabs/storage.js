@@ -39,7 +39,7 @@ query Repos($reposinput: RepoInput!, $allocationid: MongoId!, $datayear: Int!){
 `;
 
 const REPO_STORAGE_ALLOCATION_REQUEST = gql`
-mutation repoStorageAllocationRequest($request: SDFRequestInput!){
+mutation repoStorageAllocationRequest($request: CoactRequestInput!){
   repoStorageAllocationRequest(request: $request){
     Id
   }

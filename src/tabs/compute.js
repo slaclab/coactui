@@ -72,7 +72,7 @@ mutation UpdateUserAllocation($reposinput: RepoInput!, $data: [UserAllocationInp
 `;
 
 const REPO_COMPUTE_ALLOCATION_REQUEST = gql`
-mutation repoComputeAllocationRequest($request: SDFRequestInput!){
+mutation repoComputeAllocationRequest($request: CoactRequestInput!){
   repoComputeAllocationRequest(request: $request){
     Id
   }
