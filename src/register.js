@@ -27,7 +27,7 @@ query facilityNames {
 
 
 const REQUEST_USERACCOUNT_MUTATION = gql`
-mutation newSDFAccountRequest($request: SDFRequestInput!){
+mutation newSDFAccountRequest($request: CoactRequestInput!){
   newSDFAccountRequest(request: $request){
     Id
   }
