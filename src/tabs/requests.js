@@ -13,7 +13,7 @@ import Alert from 'react-bootstrap/Alert';
 import Form from 'react-bootstrap/Form';
 import Fade from 'react-bootstrap/Fade';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faMultiply, faQuestion } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faMultiply, faQuestion, faRefresh } from '@fortawesome/free-solid-svg-icons'
 import { DateTimeDisp, ErrorMsgModal } from "./widgets";
 
 
@@ -51,6 +51,12 @@ mutation ApproveRequest($Id: String!){
 const REJECT_REQUEST_MUTATION = gql`
 mutation RejectRequest($Id: String!, $notes: String!){
   rejectRequest(id: $Id, notes: $notes)
+}
+`;
+
+const REFIRE_REQUEST_MUTATION = gql`
+mutation RefireRequest($Id: String!){
+  refireRequest(id: $Id)
 }
 `;
 
@@ -152,6 +158,11 @@ class Approve extends React.Component {
     this.actuallyApproveRequest = () => {
       this.props.approve(props.req)
     }
+
+    this.actuallyRefireRequest = () => {
+      this.props.refire(props.req)
+    }
+
     this.approveRequest = (event) => {
       if(this.props.req.reqtype== "NewFacility") {
         this.setState({showNewFacMdl: true});
@@ -166,6 +177,13 @@ class Approve extends React.Component {
     if(_.includes(["NewFacility"], this.props.req.reqtype)) { cNm = "rqManual mx-1"; }
 
     if(!this.state.showActions) {
+      if(!this.props.showmine && _.includes(["Approved", "Incomplete", "Completed"], this.props.req.approvalstatus)) {
+        return (
+          <span>
+            <Button className={"rqAuto mx-1"} onClick={this.actuallyRefireRequest}><FontAwesomeIcon icon={faRefresh}/></Button>
+          </span>
+        )
+      }
       return null;
     }
     return (
@@ -304,7 +322,7 @@ class RequestsRow extends Component {
         <Col md={4}><RequestDetails req={this.props.req} /></Col>
         <Col md={3}>{this.props.req.notes}</Col>
         <Col md={1}><ApprovalStatus  req={this.props.req}/></Col>
-        <Col md={1}><Approve req={this.props.req} approve={this.props.approve} reject={this.props.reject} showmine={this.props.showmine} /></Col>
+        <Col md={1}><Approve req={this.props.req} approve={this.props.approve} reject={this.props.reject} refire={this.props.refire} showmine={this.props.showmine} /></Col>
       </Row>
     )
   }
@@ -330,7 +348,7 @@ class RequestsTable extends Component {
       </Row>
       {
         _.map(this.props.requests, (r) => { return (
-        <RequestsRow key={r.Id} req={r} approve={this.props.approve} reject={this.props.reject} showmine={this.props.showmine}/>
+        <RequestsRow key={r.Id} req={r} approve={this.props.approve} reject={this.props.reject} refire={this.props.refire} showmine={this.props.showmine}/>
       )})}
       </Container>
      )
@@ -341,6 +359,7 @@ export default function Requests(props) {
   const { loading, error, data } = useQuery(REQUESTS, { variables: { fetchprocessed: props.showall, showmine: props.showmine } }, { fetchPolicy: 'no-cache', nextFetchPolicy: 'no-cache'});
   const [ approveRequestMutation ] = useMutation(APPROVE_REQUEST_MUTATION);
   const [ rejectRequestMutation ] = useMutation(REJECT_REQUEST_MUTATION);
+  const [ refireRequestMutation ] = useMutation(REFIRE_REQUEST_MUTATION);
 
   const [showErr, setShowErr] = useState(false);
   const [errTitle, setErrTitle] = useState("Error processing request");
@@ -356,13 +375,17 @@ export default function Requests(props) {
   let reject = function(request, notes, callWhenDone) {
     rejectRequestMutation({ variables: { Id: request.Id, notes: notes }, onCompleted: callWhenDone, onError: (error) => { setErrMessage("Error when rejecting request " + error);  setShowErr(true); }, refetchQueries: [ REQUESTS, 'Requests' ] });
   }
+  let refire = function(request) {
+    console.log("Refiring..");
+    refireRequestMutation({ variables: { Id: request.Id }, onError: (error) => { setErrMessage("Error refiring request " + error);  setShowErr(true); }, refetchQueries: [ REQUESTS, 'Requests' ] });
+  }
 
 
   return (
     <>
     <Container fluid id="requests">
      <ErrorMsgModal show={showErr} setShow={setShowErr} title={errTitle} message={errMessage}/>
-     <RequestsTable requests={data.requests} approve={approve} reject={reject} showmine={props.showmine}/>
+     <RequestsTable requests={data.requests} approve={approve} reject={reject} refire={refire} showmine={props.showmine}/>
     </Container>
     </>
   );
