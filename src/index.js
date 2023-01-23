@@ -33,6 +33,9 @@ import ReposComputeListView from "./tabs/reposcompute";
 import ReposStorageListView from "./tabs/reposstorage";
 import ReposUsersListView from "./tabs/reposusers";
 import ReposGroupsListView from "./tabs/reposgroups";
+import UserAuditTrail from "./tabs/useraudit";
+import ReposAuditListView from "./tabs/reposaudit";
+import RepoAuditTrail from "./tabs/repoaudit";
 import './index.css';
 import { Footer } from "./tabs/widgets";
 import { Nav } from 'react-bootstrap';
@@ -90,6 +93,7 @@ function App() {
           <Route exact path="facilities" element={<Facilities />}/>
           <Route exact path="facilities/:facilityname" element={<Facility />}/>
           <Route exact path="myprofile" element={<MyProfile />}/>
+          <Route exact path="myaudittrail" element={<UserAuditTrail type={"User"} />}/>
           <Route exact path="requests" element={<RequestTypes/>}/>
           <Route exact path="clusterusage/:clustername" element={<ClustersTabs />} />
           <Route exact path="storageusage/:storagename" element={<StorageTabs />} />
@@ -103,6 +107,8 @@ function App() {
             <Route exact path={`users/:name`} element = { <Users />} />
             <Route exact path={`groups`} element = { <ReposGroupsListView/> } />
             <Route exact path={`groups/:name`} element = { <Groups /> } />
+            <Route exact path={`audit`} element = { <ReposAuditListView/>} />
+            <Route exact path={`audit/:name`} element = { <RepoAuditTrail />} />
           </Route>
         </Routes>
         </BrowserRouter>

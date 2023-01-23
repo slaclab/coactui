@@ -1,5 +1,6 @@
 import React, { Component, useState } from "react";
 import { useQuery, useMutation, gql } from "@apollo/client";
+import { NavLink } from "react-router-dom";
 import _ from "lodash";
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
@@ -450,6 +451,13 @@ class UserDetails extends Component {
                 </Row>
                 </Card.Body>
               </Card>
+              <Row>
+                <Card className="px-0">
+                  <Card.Header>Audit Trail</Card.Header>
+                  <Card.Body>Click <NavLink to={"/myaudittrail"}>here</NavLink> to see a history of changes to this user account.
+                  </Card.Body>
+                </Card>
+              </Row>
             </Row>
           </Col>
         </Row>
