@@ -75,8 +75,8 @@ mutation userUpdate($user: UserInput!){
 `;
 
 const QUOTA_REQUEST = gql`
-mutation userQuotaRequest($request: CoactRequestInput!){
-  userQuotaRequest(request: $request){
+mutation requestUserQuota($request: CoactRequestInput!){
+  requestUserQuota(request: $request){
     Id
   }
 }

@@ -42,7 +42,7 @@ query Repos($reposinput: RepoInput){
 
 const TOGGLE_GROUPMEMBERSHIP_MUTATION = gql`
 mutation ToggleUserRole($reposinput: RepoInput!, $user: UserInput!, $group: AccessGroupInput!){
-  toggleGroupMembership(repo: $reposinput, user: $user, group: $group){
+  repoToggleGroupMembership(repo: $reposinput, user: $user, group: $group){
     name
   }
 }

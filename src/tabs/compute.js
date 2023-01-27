@@ -65,15 +65,15 @@ query Repos($reposinput: RepoInput, $allocationid: MongoId!){
 
 const ALLOCATION_MUTATION = gql`
 mutation UpdateUserAllocation($reposinput: RepoInput!, $data: [UserAllocationInput!]!){
-  updateUserAllocation(repo: $reposinput, data: $data){
+  repoUpdateUserAllocation(repo: $reposinput, data: $data){
     name
   }
 }
 `;
 
 const REPO_COMPUTE_ALLOCATION_REQUEST = gql`
-mutation repoComputeAllocationRequest($request: CoactRequestInput!){
-  repoComputeAllocationRequest(request: $request){
+mutation requestRepoComputeAllocation($request: CoactRequestInput!){
+  requestRepoComputeAllocation(request: $request){
     Id
   }
 }
@@ -317,7 +317,7 @@ class ComputeTab extends React.Component {
 export default function Compute() {
   let params = useParams(), reponame = params.name, allocationid = params.allocationid, datayear = dayjs().year();
   const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame }, allocationid: allocationid } });
-  const [ updateUserAllocation, { allocdata, allocloading, allocerror }] = useMutation(ALLOCATION_MUTATION);
+  const [ repoUpdateUserAllocation, { allocdata, allocloading, allocerror }] = useMutation(ALLOCATION_MUTATION);
   const [ repocmpallocfn, { repocmpallocdata, repocmpallocloading, repocmpallocerror }] = useMutation(REPO_COMPUTE_ALLOCATION_REQUEST);
   const [ allocMdlShow, setAllocMdlShow] = useState(false);
   const [ toolbaritems, setToolbaritems ] = useOutletContext();
@@ -330,7 +330,7 @@ export default function Compute() {
 
   let changeAllocation = (username, allocation_percent, onSuccess, onError) => {
     console.log("Changing allocation for user " + username + " to " + _.toNumber(allocation_percent));
-    updateUserAllocation({ variables: { reposinput: { name: reponame }, data: [ {
+    repoUpdateUserAllocation({ variables: { reposinput: { name: reponame }, data: [ {
       allocationid: allocationid,
       username: username,
       percent: _.toNumber(allocation_percent)

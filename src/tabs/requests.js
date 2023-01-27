@@ -44,19 +44,19 @@ query Requests($fetchprocessed: Boolean, $showmine: Boolean){
 
 const APPROVE_REQUEST_MUTATION = gql`
 mutation ApproveRequest($Id: String!){
-  approveRequest(id: $Id)
+  requestApprove(id: $Id)
 }
 `;
 
 const REJECT_REQUEST_MUTATION = gql`
 mutation RejectRequest($Id: String!, $notes: String!){
-  rejectRequest(id: $Id, notes: $notes)
+  requestReject(id: $Id, notes: $notes)
 }
 `;
 
 const REFIRE_REQUEST_MUTATION = gql`
 mutation RefireRequest($Id: String!){
-  refireRequest(id: $Id)
+  requestRefire(id: $Id)
 }
 `;
 
@@ -163,7 +163,7 @@ class Approve extends React.Component {
       this.props.refire(props.req)
     }
 
-    this.approveRequest = (event) => {
+    this.requestApprove = (event) => {
       if(this.props.req.reqtype== "NewFacility") {
         this.setState({showNewFacMdl: true});
         return;
@@ -190,7 +190,7 @@ class Approve extends React.Component {
       <span>
         <ConfirmStepsModal show={this.state.showNewFacMdl} setShow={(st) => { this.setState({showNewFacMdl: st})}} title={"Manual steps for facility " + this.props.req.facilityname} actuallyApprove={this.actuallyApproveRequest} steps={["Run Wilko's script for creating a facility mountpoint", "Run Yee's script for creating facility specific partitions"]}/>
         <ReasonForRejectionModal show={this.state.showReasonForRejection} setShow={this.showHideReasonForRejection} actuallyRejectRequest={this.actuallyRejectRequest}/>
-        <Button className={cNm} onClick={this.approveRequest}><FontAwesomeIcon icon={faCheck}/></Button>
+        <Button className={cNm} onClick={this.requestApprove}><FontAwesomeIcon icon={faCheck}/></Button>
         <Button variant="primary" onClick={() => { this.showHideReasonForRejection(true) }}><FontAwesomeIcon icon={faMultiply}/></Button>
       </span>
     )
@@ -357,9 +357,9 @@ class RequestsTable extends Component {
 
 export default function Requests(props) {
   const { loading, error, data } = useQuery(REQUESTS, { variables: { fetchprocessed: props.showall, showmine: props.showmine } }, { fetchPolicy: 'no-cache', nextFetchPolicy: 'no-cache'});
-  const [ approveRequestMutation ] = useMutation(APPROVE_REQUEST_MUTATION);
-  const [ rejectRequestMutation ] = useMutation(REJECT_REQUEST_MUTATION);
-  const [ refireRequestMutation ] = useMutation(REFIRE_REQUEST_MUTATION);
+  const [ requestApproveMutation ] = useMutation(APPROVE_REQUEST_MUTATION);
+  const [ requestRejectMutation ] = useMutation(REJECT_REQUEST_MUTATION);
+  const [ requestRefireMutation ] = useMutation(REFIRE_REQUEST_MUTATION);
 
   const [showErr, setShowErr] = useState(false);
   const [errTitle, setErrTitle] = useState("Error processing request");
@@ -370,14 +370,14 @@ export default function Requests(props) {
   console.log(data);
 
   let approve = function(request, callWhenDone) {
-    approveRequestMutation({ variables: { Id: request.Id }, onCompleted: callWhenDone, onError: (error) => { setErrMessage("Error when approving request " + error); setShowErr(true); }, refetchQueries: [ REQUESTS, 'Requests' ] });
+    requestApproveMutation({ variables: { Id: request.Id }, onCompleted: callWhenDone, onError: (error) => { setErrMessage("Error when approving request " + error); setShowErr(true); }, refetchQueries: [ REQUESTS, 'Requests' ] });
   }
   let reject = function(request, notes, callWhenDone) {
-    rejectRequestMutation({ variables: { Id: request.Id, notes: notes }, onCompleted: callWhenDone, onError: (error) => { setErrMessage("Error when rejecting request " + error);  setShowErr(true); }, refetchQueries: [ REQUESTS, 'Requests' ] });
+    requestRejectMutation({ variables: { Id: request.Id, notes: notes }, onCompleted: callWhenDone, onError: (error) => { setErrMessage("Error when rejecting request " + error);  setShowErr(true); }, refetchQueries: [ REQUESTS, 'Requests' ] });
   }
   let refire = function(request) {
     console.log("Refiring..");
-    refireRequestMutation({ variables: { Id: request.Id }, onError: (error) => { setErrMessage("Error refiring request " + error);  setShowErr(true); }, refetchQueries: [ REQUESTS, 'Requests' ] });
+    requestRefireMutation({ variables: { Id: request.Id }, onError: (error) => { setErrMessage("Error refiring request " + error);  setShowErr(true); }, refetchQueries: [ REQUESTS, 'Requests' ] });
   }
 
 

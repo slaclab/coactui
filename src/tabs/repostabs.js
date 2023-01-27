@@ -28,15 +28,15 @@ query{
 
 
 const REQUEST_REPOMEMBERSHIP_MUTATION = gql`
-mutation repoMembershipRequest($request: CoactRequestInput!){
-  repoMembershipRequest(request: $request){
+mutation requestRepoMembership($request: CoactRequestInput!){
+  requestRepoMembership(request: $request){
     Id
   }
 }
 `;
 const REQUEST_NEWREPO_MUTATION = gql`
-mutation newRepoRequest($request: CoactRequestInput!){
-  newRepoRequest(request: $request){
+mutation requestNewRepo($request: CoactRequestInput!){
+  requestNewRepo(request: $request){
     Id
   }
 }

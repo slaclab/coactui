@@ -43,7 +43,7 @@ query Repos($reposinput: RepoInput){
 
 const TOGGLE_ROLE_MUTATION = gql`
 mutation ToggleUserRole($reposinput: RepoInput!, $user: UserInput!){
-  toggleUserRole(repo: $reposinput, user: $user){
+  repoToggleUserRole(repo: $reposinput, user: $user){
     name
     leaders
   }
@@ -52,7 +52,7 @@ mutation ToggleUserRole($reposinput: RepoInput!, $user: UserInput!){
 
 const ADD_USER_MUTATION = gql`
 mutation AddUserToRepo($reposinput: RepoInput!, $user: UserInput!) {
-  addUserToRepo(repo: $reposinput, user: $user) {
+  repoAddUser(repo: $reposinput, user: $user) {
     name
   }
 }
@@ -60,7 +60,7 @@ mutation AddUserToRepo($reposinput: RepoInput!, $user: UserInput!) {
 
 const REMOVE_USER_MUTATION = gql`
 mutation AddUserToRepo($reposinput: RepoInput!, $user: UserInput!) {
-  removeUserFromRepo(repo: $reposinput, user: $user) {
+  repoRemoveUser(repo: $reposinput, user: $user) {
     name
   }
 }
@@ -90,7 +90,7 @@ class ManageRoleAction extends React.Component {
     this.handleRoleChange = (event) => {
       let donefn = (data) => {
         console.log("Done function...");
-        let leaders = _.get(data, "toggleUserRole.leaders", []);
+        let leaders = _.get(data, "repoToggleUserRole.leaders", []);
         let is_leader = _.includes(leaders, user.username);
         let maximal_role = is_leader ? "Leader" : "User";
         this.setState({ is_leader: is_leader, maximal_role: maximal_role })
