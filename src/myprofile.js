@@ -45,8 +45,8 @@ query {
 `;
 
 const CHANGE_USER_SHELL_MUTATION = gql`
-mutation changeUserShell($newshell: String!){
-  changeUserShell(newshell: $newshell){
+mutation userChangeShell($newshell: String!){
+  userChangeShell(newshell: $newshell){
     username
     shell
   }
@@ -137,13 +137,13 @@ class ChangeUserShell extends Component {
     super(props);
     this.state = { shell: props.userdetails.shell, shellInvalid: false }
     this.handleClose = () => { this.props.setShow(false); }
-    this.changeUserShell = () => {
+    this.userChangeShell = () => {
       console.log(this.state.shell);
       if(_.isEmpty(this.state.shell)) {
         this.setState({ shellInvalid: true });
         return;
       }
-      this.props.changeUserShell(this.state.shell);
+      this.props.userChangeShell(this.state.shell);
       this.props.setShow(false);
     }
     this.setShell = (event) => { this.setState({ shell: event.target.value }) }
@@ -175,7 +175,7 @@ class ChangeUserShell extends Component {
           <Button variant="secondary" onClick={this.handleClose}>
             Close
           </Button>
-          <Button variant="primary" onClick={this.changeUserShell}>
+          <Button variant="primary" onClick={this.userChangeShell}>
             Change Shell
           </Button>
         </Modal.Footer>
@@ -480,7 +480,7 @@ export default function MyProfile() {
   const [updtPrefEmail, setUpdtPrefEmail] = useState(false);
   const [enblPublicHtml, setEnblPublicHtml] = useState(false);
 
-  const changeUserShell = (newshell) => {
+  const userChangeShell = (newshell) => {
     console.log("Changing shell to " + newshell);
     chgShellfn({ variables: { newshell: newshell }, refetchQueries: [ HOMEDETAILS, 'whoami' ]});
     setChgShellShow(false);
@@ -516,7 +516,7 @@ export default function MyProfile() {
 
   return (
     <>
-      <ChangeUserShell show={chgShellShow} setShow={setChgShellShow} userdetails={data["whoami"]} changeUserShell={changeUserShell} />
+      <ChangeUserShell show={chgShellShow} setShow={setChgShellShow} userdetails={data["whoami"]} userChangeShell={userChangeShell} />
       <AddRemoveEPPNs show={updtEppnShow} setShow={setUpdtEppnShow} userdetails={data["whoami"]} updateEppns={updateEppns} />
       <ChangePreferredEmail show={updtPrefEmail} setShow={setUpdtPrefEmail} userdetails={data["whoami"]} changePreferredEmail={changePreferredEmail} />
       <RequestPublicHTML show={enblPublicHtml} setShow={setEnblPublicHtml} userdetails={data["whoami"]} enablePublicHTML={enablePublicHTML} />
