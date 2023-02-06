@@ -306,8 +306,19 @@ class ApprovalStatus extends Component {
         <span>Yes</span>
       )
     }
+    if(this.props.req.approvalstatus == "Completed") {
+      return (
+        <span>Completed</span>
+      )
+    }
+    if(this.props.req.approvalstatus == "Incomplete") {
+      return (
+        <span>In progress</span>
+      )
+    }
   }
 }
+
 
 class RequestsRow extends Component {
   constructor(props) {
