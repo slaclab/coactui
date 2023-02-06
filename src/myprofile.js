@@ -321,7 +321,7 @@ class UserStorage extends Component {
           <Row className="mx-2">Used <TwoPrecFloat value={this.props.storage.usage.gigabytes}/> GB of {this.props.storage.gigabytes} GB</Row>
         </Col>
         <Col md={3}>
-          <Button className="my-2" variant="secondary" onClick={() => this.setState({showModal: true})}>Request more</Button>
+          <Button disabled={true} className="my-2" variant="secondary" onClick={() => this.setState({showModal: true})}>Request more</Button>
         </Col>
       </Row>
       <StorageQuotaRequest show={this.state.showModal} setShow={this.setShowModal} userdetails={this.props.userdetails} storage={this.props.storage} requestQuota={this.props.requestQuota} />
@@ -406,7 +406,7 @@ class UserDetails extends Component {
                 <hr/>
                 <Row><Col md={3}><span className="tbllbl">Preferred Email</span></Col><Col md={5}>{this.props.userdetails.preferredemail}</Col><Col><Button variant="secondary" onClick={this.showPrefEmailModal}>Change</Button></Col></Row>
                 <hr/>
-                <Row><Col md={3}><span className="tbllbl">Shell</span></Col><Col md={5}>{this.props.userdetails.shell}</Col><Col><Button variant="secondary" onClick={this.showUserShellModal}>Change my shell</Button></Col></Row>
+                <Row><Col md={3}><span className="tbllbl">Shell</span></Col><Col md={5}>{this.props.userdetails.shell}</Col><Col><Button disabled={true} variant="secondary" onClick={this.showUserShellModal}>Change my shell</Button></Col></Row>
                 <hr/>
                 <Col>
                   <Row><Card.Subtitle>EPPNs</Card.Subtitle></Row>
@@ -445,7 +445,7 @@ class UserDetails extends Component {
                 <Row className="mt-2"><Col>{this.props.userdetails.publichtml ? (<span>Your public HTML pages are viewable here - <a href={this.publichtmlurl}>{this.publichtmlurl}</a>. You can edit your public HTML files here <code>{this.publichtmlfolder}</code></span>) : "You have not turned on the public html space"}</Col>
                 <Col md={3}>
                   {
-                    this.props.userdetails.publichtml ? (<span></span>) : (<Button className="my-2" variant="secondary" onClick={this.showPublicHTML}>Request</Button>)
+                    this.props.userdetails.publichtml ? (<span></span>) : (<Button disabled={true} className="my-2" variant="secondary" onClick={this.showPublicHTML}>Request</Button>)
                   }
                 </Col>
                 </Row>
