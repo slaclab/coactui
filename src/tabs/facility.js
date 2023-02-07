@@ -1,15 +1,18 @@
-import { useQuery, useMutation, gql } from "@apollo/client";
+import { useQuery, useMutation, useLazyQuery, gql } from "@apollo/client";
 import _ from "lodash";
 import React, { Component, useState } from 'react';
-import { Link, Outlet, NavLink, useParams } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
-import Navbar from 'react-bootstrap/Navbar';
-import Nav from 'react-bootstrap/Nav';
-import { DateDisp, TeraBytes } from './widgets';
+import Modal from 'react-bootstrap/Modal';
+import ModalHeader from 'react-bootstrap/ModalHeader';
+import ModalBody from 'react-bootstrap/ModalBody';
+import ModalFooter from 'react-bootstrap/ModalFooter';
+import { SearchAndAdd } from "./widgets";
+import { TeraBytes } from './widgets';
 
 const FACILITYDETAILS = gql`
 query Facility($facilityinput: FacilityInput){
@@ -32,6 +35,29 @@ query Facility($facilityinput: FacilityInput){
       allocated
       used
     }
+  }
+}
+`;
+
+const USERNAMES = gql`
+query users {
+  users {
+    username
+  }
+}`;
+
+const ADD_CZAR_MUTATION = gql`
+mutation facilityAddCzar($facilityinput: FacilityInput!, $user: UserInput!) {
+  facilityAddCzar(facility: $facilityinput, user: $user) {
+    name
+  }
+}
+`;
+
+const REMOVE_CZAR_MUTATION = gql`
+mutation facilityRemoveCzar($facilityinput: FacilityInput!, $user: UserInput!) {
+  facilityRemoveCzar(facility: $facilityinput, user: $user) {
+    name
   }
 }
 `;
@@ -109,9 +135,40 @@ class FacilityStoragePurchases extends Component {
   }
 }
 
+
+class AddRemoveCzar extends Component {
+  constructor(props) {
+    super(props);
+    this.usernames = [];
+    this.loadUserNames = () => {
+      this.props.getUserNames({onCompleted: (users)=>{this.usernames = _.map(_.get(users, "users"), "username", [])}});
+    }
+  }
+
+  render() {
+    return (
+      <Modal show={this.props.showModal} onEnter={this.loadUserNames}>
+        <ModalHeader>
+          Search for users and add/remove them to/from as czars for this facility.
+        </ModalHeader>
+        <ModalBody>
+          <SearchAndAdd label="Username" alloptions={this.usernames} selected={this.props.facility.czars} onSelDesel={this.props.onSelDesel}/>
+        </ModalBody>
+        <ModalFooter>
+          <Button onClick={() => {this.props.setShowModal(false)}}>
+            Done
+          </Button>
+        </ModalFooter>
+    </Modal>
+    );
+  }
+}
+
+
 class FacilityDetails extends Component {
   constructor(props) {
     super(props);
+    this.state = { showCzarModal: false }
   }
 
   render() {
@@ -135,7 +192,7 @@ class FacilityDetails extends Component {
                 {
                   _.map(this.props.facility.czars, (z) => { return (<li key={z}>{z}</li>) })
                 }
-                </ul></Col><Col><Button variant="secondary">Add/Remove Czars</Button></Col>
+                </ul></Col><Col><Button variant="secondary" onClick={() => { this.setState({showCzarModal: true})}}>Add/Remove Czars</Button></Col>
                 </Row>
               </Card.Body>
             </Card>
@@ -153,6 +210,7 @@ class FacilityDetails extends Component {
         <Row>
           <FacilityComputePurchases facility={this.props.facility}/>
           <FacilityStoragePurchases facility={this.props.facility}/>
+          <AddRemoveCzar facility={this.props.facility} getUserNames={this.props.getUserNames} onSelDesel={this.props.onSelDesel} showModal={this.state.showCzarModal} setShowModal={(val) => { this.setState({showCzarModal: val})} }/>
         </Row>
       </Container>
     )
@@ -168,6 +226,22 @@ class RequestNewFacility extends Component {
 export default function Facility(props) {
   //let params = useParams(), facilityname = params.facilityname;
   const { loading, error, data } = useQuery(FACILITYDETAILS, { variables: { facilityinput: { name: props.facilityname }}},  { errorPolicy: 'all'} );
+  const [getUserNames, { unloading, unerror, undata }] = useLazyQuery(USERNAMES);
+  const [ addCzarMutation ] = useMutation(ADD_CZAR_MUTATION);
+  const [ removeCzarMutation ] = useMutation(REMOVE_CZAR_MUTATION);
+
+
+  let addRemoveCzar = function(username, selected) {
+    if(selected) {
+      console.log("Adding user " + username + " as a czar to facility " + facility);
+      addCzarMutation({ variables: { facilityinput: { name: props.facilityname }, user: { username: username } }, refetchQueries: [ FACILITYDETAILS, 'Facility' ], onError: (error) => { console.log("Error when adding czar " + error); } });
+    } else {
+      console.log("Removing user " + username + " as a czar from facility " + facility);
+      removeCzarMutation({ variables: { facilityinput: { name: props.facilityname }, user: { username: username } }, refetchQueries: [ FACILITYDETAILS, 'Facility' ], onError: (error) => { console.log("Error when removing czar " + error); } });
+    }
+  }
+
+
 
   if (loading) return <p>Loading...</p>;
 //  if (error) return <p>Error :</p>;
@@ -176,6 +250,6 @@ export default function Facility(props) {
   let facility = data.facility;
 
   return (<div>
-    <FacilityDetails facility={facility}/>
+    <FacilityDetails facility={facility} getUserNames={getUserNames} onSelDesel={addRemoveCzar} />
   </div>);
 }
