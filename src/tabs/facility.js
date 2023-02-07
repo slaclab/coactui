@@ -11,6 +11,8 @@ import Modal from 'react-bootstrap/Modal';
 import ModalHeader from 'react-bootstrap/ModalHeader';
 import ModalBody from 'react-bootstrap/ModalBody';
 import ModalFooter from 'react-bootstrap/ModalFooter';
+import Form from 'react-bootstrap/Form';
+import InputGroup from 'react-bootstrap/InputGroup';
 import { SearchAndAdd } from "./widgets";
 import { TeraBytes } from './widgets';
 
@@ -62,6 +64,19 @@ mutation facilityRemoveCzar($facilityinput: FacilityInput!, $user: UserInput!) {
 }
 `;
 
+const REQUEST_USERACCOUNT_MUTATION = gql`
+mutation requestNewSDFAccount($request: CoactRequestInput!){
+  requestNewSDFAccount(request: $request){
+    Id
+  }
+}
+`;
+
+const APPROVE_REQUEST_MUTATION = gql`
+mutation ApproveRequest($Id: String!){
+  requestApprove(id: $Id)
+}
+`;
 
 class FacilityComputePurchases extends Component {
   constructor(props) {
@@ -136,6 +151,69 @@ class FacilityStoragePurchases extends Component {
 }
 
 
+class RegisterNewUser extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { registrationmessage : "Please enter a valid email", eppn: "", eppnInvalid: false, eppnInvalidMsg: "" };
+    this.usernames = [];
+    this.loadUserNames = () => {
+      this.props.getUserNames({onCompleted: (users)=>{this.usernames = _.map(_.get(users, "users"), "username", [])}});
+    }
+    this.setEppn = (event) => { this.setState({ eppn: event.target.value})}
+    this.closeModal = () => { 
+      this.setState({ eppn: "", eppnInvalid: false, eppnInvalidMsg: ""});
+      this.props.setShowModal(false) 
+    }
+    this.setError = (error) => { this.setState({ eppnInvalid: true, eppnInvalidMsg: error })}
+    this.registerUser = () => {
+      if(_.isEmpty(this.state.eppn)) {
+        this.setState({ eppnInvalid: true, eppnInvalidMsg: "Please enter a valid email address"})
+        return
+      }
+      const validateEmail = (email) => {
+        return email.match(
+          /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
+      };
+      if(!validateEmail(this.state.eppn)) {
+        this.setState({ eppnInvalid: true, eppnInvalidMsg: "Please enter a valid email address"})
+        return
+      }
+
+      const username = this.state.eppn.split("@")[0];
+      if(_.includes(this.usernames, username)) {
+        this.setState({ eppnInvalid: true, eppnInvalidMsg: "The user account " + this.state.eppn + " is already being used"})
+        return
+      }
+      this.props.requestUserAccount(this.state.eppn, this.closeModal, this.setError );
+    }
+  }
+
+  render() {
+    return (
+      <Modal show={this.props.showModal} onEnter={this.loadUserNames}>
+        <ModalHeader>
+          Register an new S3DF account.
+        </ModalHeader>
+        <ModalBody>
+          <Form.Text>{this.state.registrationmessage}</Form.Text>
+          <InputGroup hasValidation>
+            <Form.Control type="email" placeholder="Username" onChange={this.setEppn} isInvalid={this.state.eppnInvalid}/>
+            <Form.Control.Feedback type="invalid">{this.state.eppnInvalidMsg}</Form.Control.Feedback>
+          </InputGroup>
+
+
+        </ModalBody>
+        <ModalFooter>
+          <Button onClick={this.closeModal}>Close</Button>
+          <Button onClick={this.registerUser}>Register</Button>
+        </ModalFooter>
+    </Modal>
+    );
+  }
+}
+
+
 class AddRemoveCzar extends Component {
   constructor(props) {
     super(props);
@@ -168,7 +246,7 @@ class AddRemoveCzar extends Component {
 class FacilityDetails extends Component {
   constructor(props) {
     super(props);
-    this.state = { showCzarModal: false }
+    this.state = { showCzarModal: false, showRegisterUserModal: false }
   }
 
   render() {
@@ -179,8 +257,15 @@ class FacilityDetails extends Component {
             <Card>
               <Card.Header>Details</Card.Header>
               <Card.Body>
-                <Row><Col md={3}><span className="tbllbl">Name</span></Col><Col>{this.props.facility.name}</Col></Row>
-                <Row><Col md={3}><span className="tbllbl">Description</span></Col><Col>{this.props.facility.description}</Col></Row>
+                <Row>
+                  <Col md={9}>
+                    <Row><Col md={3}><span className="tbllbl">Name</span></Col><Col>{this.props.facility.name}</Col></Row>
+                    <Row><Col md={3}><span className="tbllbl">Description</span></Col><Col>{this.props.facility.description}</Col></Row>
+                  </Col>
+                  <Col md={3}>
+                    <Button variant="secondary" onClick={() => { this.setState({showRegisterUserModal: true})}}>Register new users</Button>
+                  </Col>
+                </Row>
               </Card.Body>
             </Card>
           </Col>
@@ -211,6 +296,7 @@ class FacilityDetails extends Component {
           <FacilityComputePurchases facility={this.props.facility}/>
           <FacilityStoragePurchases facility={this.props.facility}/>
           <AddRemoveCzar facility={this.props.facility} getUserNames={this.props.getUserNames} onSelDesel={this.props.onSelDesel} showModal={this.state.showCzarModal} setShowModal={(val) => { this.setState({showCzarModal: val})} }/>
+          <RegisterNewUser facility={this.props.facility} getUserNames={this.props.getUserNames} showModal={this.state.showRegisterUserModal} setShowModal={(val) => { this.setState({showRegisterUserModal: val})} } requestUserAccount={this.props.requestUserAccount }/>
         </Row>
       </Container>
     )
@@ -229,6 +315,8 @@ export default function Facility(props) {
   const [getUserNames, { unloading, unerror, undata }] = useLazyQuery(USERNAMES);
   const [ addCzarMutation ] = useMutation(ADD_CZAR_MUTATION);
   const [ removeCzarMutation ] = useMutation(REMOVE_CZAR_MUTATION);
+  const [ requestUserAccount, { uudata, uuloading, uuerror }] = useMutation(REQUEST_USERACCOUNT_MUTATION);
+  const [ requestApproveMutation ] = useMutation(APPROVE_REQUEST_MUTATION);
 
 
   let addRemoveCzar = function(username, selected) {
@@ -241,6 +329,24 @@ export default function Facility(props) {
     }
   }
 
+  const requestAccount = (eppn, callWhenDone, onError) => {
+    const username = eppn.split("@")[0];
+    console.log("Account requested for eppn " + eppn + " in facility "  + props.facilityname + " with preferred username " + username);
+    requestUserAccount({ variables: { 
+      request: { reqtype: "UserAccount", eppn: eppn, preferredUserName: username, "facilityname": props.facilityname}}, 
+      onCompleted: (requestObj) => {
+        console.log(requestObj);
+        requestApproveMutation({
+          variables: { Id: requestObj["requestNewSDFAccount"]["Id"] },
+          onCompleted: callWhenDone(),
+          onError: (error) => { console.log(error); onError(error.errormessage)}
+        });
+      },
+      onError: (error) => { onError(error.errormessage)},
+      refetchQueries: [ USERNAMES, "users" ]
+    });
+  };
+
 
 
   if (loading) return <p>Loading...</p>;
@@ -250,6 +356,6 @@ export default function Facility(props) {
   let facility = data.facility;
 
   return (<div>
-    <FacilityDetails facility={facility} getUserNames={getUserNames} onSelDesel={addRemoveCzar} />
+    <FacilityDetails facility={facility} getUserNames={getUserNames} onSelDesel={addRemoveCzar} requestUserAccount={requestAccount}/>
   </div>);
 }
