@@ -72,12 +72,6 @@ mutation requestNewSDFAccount($request: CoactRequestInput!){
 }
 `;
 
-const APPROVE_REQUEST_MUTATION = gql`
-mutation ApproveRequest($Id: String!){
-  requestApprove(id: $Id)
-}
-`;
-
 class FacilityComputePurchases extends Component {
   constructor(props) {
     super(props);
@@ -316,7 +310,6 @@ export default function Facility(props) {
   const [ addCzarMutation ] = useMutation(ADD_CZAR_MUTATION);
   const [ removeCzarMutation ] = useMutation(REMOVE_CZAR_MUTATION);
   const [ requestUserAccount, { uudata, uuloading, uuerror }] = useMutation(REQUEST_USERACCOUNT_MUTATION);
-  const [ requestApproveMutation ] = useMutation(APPROVE_REQUEST_MUTATION);
 
 
   let addRemoveCzar = function(username, selected) {
@@ -333,15 +326,8 @@ export default function Facility(props) {
     const username = eppn.split("@")[0];
     console.log("Account requested for eppn " + eppn + " in facility "  + props.facilityname + " with preferred username " + username);
     requestUserAccount({ variables: { 
-      request: { reqtype: "UserAccount", eppn: eppn, preferredUserName: username, "facilityname": props.facilityname}}, 
-      onCompleted: (requestObj) => {
-        console.log(requestObj);
-        requestApproveMutation({
-          variables: { Id: requestObj["requestNewSDFAccount"]["Id"] },
-          onCompleted: callWhenDone(),
-          onError: (error) => { console.log(error); onError(error.errormessage)}
-        });
-      },
+      request: { reqtype: "UserAccount", eppn: eppn, preferredUserName: username, "facilityname": props.facilityname, "approvalstatus": "PreApproved"}}, 
+      onCompleted: callWhenDone(),
       onError: (error) => { onError(error.errormessage)},
       refetchQueries: [ USERNAMES, "users" ]
     });

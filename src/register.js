@@ -21,6 +21,12 @@ query facilityNames {
     isRegistrationPending
     eppn
     fullname
+    requestObj {
+      Id
+      approvalstatus
+      preferredUserName
+      eppn
+    }
   }
 }
 `;
@@ -33,6 +39,13 @@ mutation requestNewSDFAccount($request: CoactRequestInput!){
   }
 }
 `;
+
+const APPROVE_REQUEST_MUTATION = gql`
+mutation ApproveRequest($Id: String!){
+  requestApprovePreApproved(id: $Id)
+}
+`;
+
 
 class ReqUserAccount extends Component {
   constructor(props) {
@@ -82,6 +95,7 @@ class ReqUserAccount extends Component {
 export default function RegisterUser(props) {
   const { loading, error, data } = useQuery(FACNAMES);
   const [ requestUserAccount, { uudata, uuloading, uuerror }] = useMutation(REQUEST_USERACCOUNT_MUTATION);
+  const [ requestApproveMutation ] = useMutation(APPROVE_REQUEST_MUTATION);
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -95,6 +109,7 @@ export default function RegisterUser(props) {
   let registrationPending = _.get(data, "amIRegistered.isRegistrationPending", false);
   let isRegistered = _.get(data, "amIRegistered.isRegistered", false);
   let fullname = _.get(data, "amIRegistered.fullname", "");
+  let isRegistrationPreapproved = _.get(data, "amIRegistered.requestObj.approvalstatus", "") == "PreApproved";
 
   const requestAccount = (selectedFacility) => {
     const preferredUserName = _.split(eppn, "@")[0];
@@ -110,6 +125,33 @@ export default function RegisterUser(props) {
   }
 
   if (registrationPending) {
+    if(isRegistrationPreapproved) {    
+      let preferredUserName = _.get(data, "amIRegistered.requestObj.preferredUserName", ""), reqid = _.get(data, "amIRegistered.requestObj.Id", "");
+      if (!_.isEmpty(preferredUserName) && eppn==_.get(data, "amIRegistered.requestObj.eppn", "") && !_.isEmpty(reqid)) {
+        let approve = function() {
+          requestApproveMutation({ 
+            variables: { Id: reqid }, 
+            onCompleted: () => { setTimeout(() => { window.location.href = "myprofile" }, 5000)}, 
+            onError: (error) => { console.log("Error when approving request " + error); }, 
+            refetchQueries: [ FACNAMES, 'amIRegistered' ] });
+        }
+  
+        return (
+          <>
+          <div className="registeruser d-flex flex-column">
+             <NoNavHeader/>
+             <h6 className="p-2">Hi <span className="text-primary">{fullname}</span>, welcome to Coact; the portal for using the S3DF.</h6>
+             <div className="p-2 flex-grow-1">
+              Your request to enable the EPPN <span className="text-primary"><b>{eppn}</b></span> using the username <b>{preferredUserName}</b> for the S3DF is pre-approved. 
+              To complete the request, please click here <Button variant="secondary" onClick={approve}>Complete Registration</Button>
+             </div>
+             <Footer/>
+          </div>
+          </>
+        );
+      }
+    }
+
     return (
       <>
       <div className="registeruser d-flex flex-column">
