@@ -36,6 +36,8 @@ import ReposGroupsListView from "./tabs/reposgroups";
 import UserAuditTrail from "./tabs/useraudit";
 import ReposAuditListView from "./tabs/reposaudit";
 import RepoAuditTrail from "./tabs/repoaudit";
+import RequestTypesTab from "./tabs/requesttypes";
+import Requests from "./tabs/requests";
 import './index.css';
 import { Footer } from "./tabs/widgets";
 import { Nav } from 'react-bootstrap';
@@ -65,6 +67,7 @@ query {
 function App() {
   console.log("starting app....");
   const [reposActiveTab, setReposActiveTab] = useState("");
+  const [requestsActiveTab, setRequestsActiveTab] = useState("");
   const { loading, error, data } = useQuery(HOMEDETAILS, { errorPolicy: 'all'} );
   if (loading) return <p>Loading...</p>;
   // if (error) return <p>Error!</p>;
@@ -94,7 +97,6 @@ function App() {
           <Route exact path="facilities/:facilityname" element={<Facility />}/>
           <Route exact path="myprofile" element={<MyProfile />}/>
           <Route exact path="myaudittrail" element={<UserAuditTrail type={"User"} />}/>
-          <Route exact path="requests" element={<RequestTypes/>}/>
           <Route exact path="clusterusage/:clustername" element={<ClustersTabs />} />
           <Route exact path="storageusage/:storagename" element={<StorageTabs />} />
           <Route exact path="storageusage/:storagename/purpose/:purpose" element={<StorageTabs />} />
@@ -109,6 +111,11 @@ function App() {
             <Route exact path={`groups/:name`} element = { <Groups /> } />
             <Route exact path={`audit`} element = { <ReposAuditListView/>} />
             <Route exact path={`audit/:name`} element = { <RepoAuditTrail />} />
+          </Route>
+          <Route exact path={`requests`} element={<RequestTypesTab requestsActiveTab={requestsActiveTab} setRequestsActiveTab={setRequestsActiveTab} />}>
+            <Route exact path={`myrequests`} element={<Requests showall={true} showmine={true} />} />
+            <Route exact path={`pending`} element={<Requests showall={false} showmine={false} />} />
+            <Route exact path={`all`} element={<Requests showall={true} showmine={false} />} />
           </Route>
         </Routes>
         </BrowserRouter>

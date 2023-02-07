@@ -1,25 +1,36 @@
+import _ from "lodash";
+import { Link, Outlet } from "react-router-dom";
 import Tab from 'react-bootstrap/Tab';
-import Tabs from 'react-bootstrap/Tabs';
-import Requests from "../tabs/requests";
+import Nav from 'react-bootstrap/Nav';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 
-export default function RequestTypes() {
+export default function RequestTypesTab(props) {
+  if(_.isEmpty(props.requestsActiveTab)) {
+    const tabFromUrl = window.location.pathname.match(/requests\/(\w+)/)[1];
+    console.log("Setting active tab to " + tabFromUrl);
+    props.setRequestsActiveTab(tabFromUrl);
+  }
   return (<div id="requesttypes">
-    <Tabs
-      defaultActiveKey={"myrequests"}
-      id="requests-tab"
-      className="mb-3"
-      mountOnEnter={true}
-      unmountOnExit={true}
-    >
-      <Tab key={"myrequests"} eventKey={"myrequests"} title={"My requests"}>
-        <Requests showall={true} showmine={true}/>
-      </Tab>
-      <Tab key={"pendingrequests"} eventKey={"pendingrequests"} title={"Requests requiring approval"}>
-        <Requests showall={false} showmine={false}/>
-      </Tab>
-      <Tab key={"allrequests"} eventKey={"allrequests"} title={"All Requests"}>
-        <Requests showall={true} showmine={false}/>
-      </Tab>
-    </Tabs>
+    <Tab.Container activeKey={props.requestsActiveTab} onSelect={(selKey) => { props.setRequestsActiveTab(selKey); }} >
+        <Row id="requeststabs">
+          <Col>
+            <Nav variant="tabs">
+              <Nav.Item>
+                <Nav.Link eventKey="myrequests" as={Link} to={`myrequests`}>My requests</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="pending" as={Link} to={`pending`}>Pending requests</Nav.Link>
+              </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="all" as={Link} to={`all`}>All requests</Nav.Link>
+                </Nav.Item>
+              </Nav>
+            </Col>
+        </Row>
+        <Tab.Content>
+          <Outlet/>
+        </Tab.Content>
+    </Tab.Container>
   </div>);
 }
