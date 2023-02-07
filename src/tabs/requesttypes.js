@@ -6,11 +6,12 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
 export default function RequestTypesTab(props) {
-  if(_.isEmpty(props.requestsActiveTab)) {
+  if(_.isEmpty(props.requestsActiveTab) && /requests\/(\w+)/.test(window.location.pathname)) {
     const tabFromUrl = window.location.pathname.match(/requests\/(\w+)/)[1];
     console.log("Setting active tab to " + tabFromUrl);
     props.setRequestsActiveTab(tabFromUrl);
   }
+  
   return (<div id="requesttypes">
     <Tab.Container activeKey={props.requestsActiveTab} onSelect={(selKey) => { props.setRequestsActiveTab(selKey); }} >
         <Row id="requeststabs">
