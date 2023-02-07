@@ -81,7 +81,13 @@ function App() {
   const RedirectUrl = ({ url }) => {
     window.location.href = url;
     return <h5>Redirecting...</h5>;
-};
+  };
+
+  if(_.isEmpty(requestsActiveTab) && /requests\/(\w+)/.test(window.location.pathname)) {
+    const tabFromUrl = window.location.pathname.match(/requests\/(\w+)/)[1];
+    console.log("Setting active requests tab to " + tabFromUrl);
+    setRequestsActiveTab(tabFromUrl);
+  }
 
   return (
     <div id="mainContainer">
@@ -113,9 +119,9 @@ function App() {
             <Route exact path={`audit/:name`} element = { <RepoAuditTrail />} />
           </Route>
           <Route exact path={`requests`} element={<RequestTypesTab requestsActiveTab={requestsActiveTab} setRequestsActiveTab={setRequestsActiveTab} />}>
-            <Route exact path={`myrequests`} element={<Requests showall={true} showmine={true} />} />
-            <Route exact path={`pending`} element={<Requests showall={false} showmine={false} />} />
-            <Route exact path={`all`} element={<Requests showall={true} showmine={false} />} />
+            <Route exact path={`myrequests`} element={<Requests showall={true} showmine={true} setRequestsActiveTab={setRequestsActiveTab} />} />
+            <Route exact path={`pending`} element={<Requests showall={false} showmine={false} setRequestsActiveTab={setRequestsActiveTab} />} />
+            <Route exact path={`all`} element={<Requests showall={true} showmine={false} setRequestsActiveTab={setRequestsActiveTab} />} />
           </Route>
         </Routes>
         </BrowserRouter>

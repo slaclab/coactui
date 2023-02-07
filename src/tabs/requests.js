@@ -345,6 +345,10 @@ class RequestsTable extends Component {
     super(props);
   }
 
+  componentWillUnmount() {
+    this.props.setRequestsActiveTab("");
+  }
+
   render() {
     return (
       <Container fluid className="rqsttbl">
@@ -396,7 +400,7 @@ export default function Requests(props) {
     <>
     <Container fluid id="requests">
      <ErrorMsgModal show={showErr} setShow={setShowErr} title={errTitle} message={errMessage}/>
-     <RequestsTable requests={data.requests} approve={approve} reject={reject} refire={refire} showmine={props.showmine}/>
+     <RequestsTable requests={data.requests} approve={approve} reject={reject} refire={refire} showmine={props.showmine} setRequestsActiveTab={props.setRequestsActiveTab}/>
     </Container>
     </>
   );
