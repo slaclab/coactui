@@ -13,7 +13,7 @@ import Facility from "../tabs/facility";
 
 const FACILITYDETAILS = gql`
 query {
-  facilities {
+  facilitiesIManage {
     name
   }
 }
@@ -38,7 +38,7 @@ export default function Facilities() {
   }
 
   console.log(data);
-  let facilities = data.facilities;
+  let facilities = data.facilitiesIManage;
   let firstFacility = _.get(facilities, "[0].name", "");
 
   return (<div id="facilities">
