@@ -154,8 +154,8 @@ export default function TopNavBar( props ) {
     logged_in_user = data["whoami"].username;
     isAdmin = data["whoami"].isAdmin;
     isCzar = data["whoami"].isCzar;
-    showFacs = isAdmin || isCzar;
     isImpersonating = data["whoami"].isImpersonating;
+    showFacs = (isAdmin && !isImpersonating) || isCzar;
   };
 
   let impersonate = function(impname) {
