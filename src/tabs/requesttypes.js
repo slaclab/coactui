@@ -12,13 +12,13 @@ export default function RequestTypesTab(props) {
           <Col>
             <Nav variant="tabs">
               <Nav.Item>
-                <Nav.Link eventKey="myrequests" as={Link} to={`myrequests`}>My requests</Nav.Link>
+                <Nav.Link eventKey="myrequests" as={Link} to={`myrequests`}>My Requests</Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="pending" as={Link} to={`pending`}>Pending requests</Nav.Link>
+                <Nav.Link eventKey="pending" as={Link} to={`pending`}>Pending Requests</Nav.Link>
               </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="all" as={Link} to={`all`}>All requests</Nav.Link>
+                  <Nav.Link eventKey="all" as={Link} to={`all`}>All Requests</Nav.Link>
                 </Nav.Item>
               </Nav>
             </Col>
