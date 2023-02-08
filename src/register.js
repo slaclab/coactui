@@ -69,7 +69,7 @@ class ReqUserAccount extends Component {
     return (
       <Modal show={this.props.show} onHide={this.handleClose} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Request an S3DF account</Modal.Title>
+          <Modal.Title>Request a S3DF account</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Row className="mb-3">
