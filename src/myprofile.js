@@ -318,7 +318,7 @@ class UserStorage extends Component {
       <Row><Card.Subtitle title={this.props.storage.rootfolder}>{this.props.storage.purpose}</Card.Subtitle><hr/></Row>
       <Row>
         <Col>
-          <Row className="mx-2">Used <TwoPrecFloat value={this.props.storage.usage.gigabytes}/> GB of {this.props.storage.gigabytes} GB</Row>
+          <Row className="mx-2">Quota: {this.props.storage.gigabytes} GB</Row>
         </Col>
         <Col md={3}>
           <Button disabled={true} className="my-2" variant="secondary" onClick={() => this.setState({showModal: true})}>Request more</Button>
