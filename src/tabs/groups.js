@@ -11,7 +11,6 @@ import ModalFooter from 'react-bootstrap/ModalFooter';
 import Form from 'react-bootstrap/Form';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { SearchAndAdd } from "./widgets";
 import { Formik } from 'formik';
 import * as yup from 'yup';
 

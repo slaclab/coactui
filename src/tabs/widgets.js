@@ -83,6 +83,47 @@ export class SearchAndAdd extends React.Component {
   }
 }
 
+
+// props 1) getmatches Function with callback with a list of matches for passed in srchtext - ideal for useLazyQuery. 2) selected - those that are currently selected. 3) onSelDesel - function to process selection/deselection.
+export class ServerSideSearchAndAdd extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { selected: this.props.selected, matches: [  ] }
+
+    this.handleTyping = (event) => {
+      let srchtxt = event.target.value;
+      if(srchtxt.length > 2) {
+        this.props.getmatches(srchtxt, (matches) => { this.setState({ matches: _.map(matches, (x) => { return {"label": x, "selected": _.includes(this.state.selected, x)}  }) }); });
+      }
+    }
+
+    this.checkUncheck = (event) => {
+      let selkey = event.target.dataset.selkey;
+      console.log(selkey + " has value " + event.target.checked);
+      this.props.onSelDesel(selkey, event.target.checked);
+      let newselected = event.target.checked ? _.union(this.state.selected, [selkey]) : _.without(this.state.selected, selkey);
+      let newmatches = _.map(this.state.matches, (x) => { return {"label": x["label"], "selected": _.includes(newselected, x["label"])}  });
+      this.setState({ selected: newselected, matches: newmatches});
+    }
+  }
+
+  render() {
+    return(
+      <div className="table-responsive">
+        <Form.Group className="mb-3">
+          <Form.Label className="pe-2">{this.props.label}</Form.Label>
+          <Form.Control type="text" placeholder={"Please type in a " + _.toLower(this.props.label)} onChange={this.handleTyping}/>
+        </Form.Group>
+        <table className="table table-condensed table-striped table-bordered">
+          <thead><tr><th>{this.props.label}</th><th>Select</th></tr></thead>
+          <tbody>{ _.map(this.state.matches, (u) => { return (<tr key={u.label}><td>{u.label}</td><td><input type="checkbox" data-selkey={u.label} checked={!!u.selected} onChange={this.checkUncheck}/></td></tr>) }) }</tbody>
+        </table>
+      </div>
+    );
+  }
+}
+
+
 export function NoNavHeader() { // Use for pages that do have a navbar on top.
   return (
     <Navbar bg="primary" variant="dark" expand="lg">

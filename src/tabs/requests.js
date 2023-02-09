@@ -316,6 +316,11 @@ class ApprovalStatus extends Component {
         <span>In progress</span>
       )
     }
+    if(this.props.req.approvalstatus == "PreApproved") {
+      return (
+        <span>PreApproved</span>
+      )
+    }
   }
 }
 
