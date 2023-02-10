@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useLazyQuery, gql } from "@apollo/client";
 import { Link, useParams, useOutletContext } from "react-router-dom";
-import { ServerSideSearchAndAdd } from "./widgets";
+import { SearchAndAdd } from "./widgets";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
@@ -157,7 +157,7 @@ class UsersTab extends React.Component {
               Search for users and add/remove them to/from this repo.
             </ModalHeader>
             <ModalBody>
-              <ServerSideSearchAndAdd label="Username" getmatches={this.getusernamematches}  selected={_.map(this.props.users, "username")} onSelDesel={this.props.onSelDesel}/>
+              <SearchAndAdd label="Username" getmatches={this.getusernamematches}  selected={_.map(this.props.users, "username")} onSelDesel={this.props.onSelDesel}/>
             </ModalBody>
             <ModalFooter>
               <Button onClick={this.hideModal}>

@@ -13,7 +13,7 @@ import ModalBody from 'react-bootstrap/ModalBody';
 import ModalFooter from 'react-bootstrap/ModalFooter';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
-import { ServerSideSearchAndAdd } from "./widgets";
+import { SearchAndAdd } from "./widgets";
 import { TeraBytes } from './widgets';
 
 const FACILITYDETAILS = gql`
@@ -291,7 +291,7 @@ class AddRemoveCzar extends Component {
           Search for users and add/remove them to/from as czars for this facility.
         </ModalHeader>
         <ModalBody>
-          <ServerSideSearchAndAdd label="Username" getmatches={this.getusernamematches} selected={this.props.facility.czars} onSelDesel={this.props.onSelDesel}/>
+          <SearchAndAdd label="Username" getmatches={this.getusernamematches} selected={this.props.facility.czars} onSelDesel={this.props.onSelDesel}/>
         </ModalBody>
         <ModalFooter>
           <Button onClick={() => {this.props.setShowModal(false)}}>
