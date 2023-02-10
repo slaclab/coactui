@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useQuery, useMutation, gql } from "@apollo/client";
+import { useQuery, useMutation, useLazyQuery, gql } from "@apollo/client";
 import { Link, useParams, useOutletContext } from "react-router-dom";
-import { SearchAndAdd } from "./widgets";
+import { ServerSideSearchAndAdd } from "./widgets";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
@@ -35,11 +35,15 @@ query Repos($reposinput: RepoInput){
   whoami {
     username
   }
-  users(filter:{}){
-    username
-  }
 }
 `;
+
+const USERMATCHINGUSERNAME = gql`
+query usersMatchingUserName($regex: String!) {
+  usersMatchingUserName(regex: $regex) {
+    username
+  }
+}`;
 
 const TOGGLE_ROLE_MUTATION = gql`
 mutation ToggleUserRole($reposinput: RepoInput!, $user: UserInput!){
@@ -123,6 +127,16 @@ class UsersTab extends React.Component {
     this.hideModal = () => {
       this.props.setShowModal(false);
     }
+
+    this.getusernamematches = (srchtxt, onCompleted) => {
+      this.props.getUsersMatchingUserName({
+        variables: { regex: srchtxt},
+        onCompleted: (data) => {
+          let matches = _.map(_.get(data, "usersMatchingUserName", []), "username");
+          onCompleted(matches);
+        }
+      })
+    }
   }
 
   componentDidMount() {
@@ -143,7 +157,7 @@ class UsersTab extends React.Component {
               Search for users and add/remove them to/from this repo.
             </ModalHeader>
             <ModalBody>
-              <SearchAndAdd label="Username" alloptions={this.props.allusernames} selected={_.map(this.props.users, "username")} onSelDesel={this.props.onSelDesel}/>
+              <ServerSideSearchAndAdd label="Username" getmatches={this.getusernamematches}  selected={_.map(this.props.users, "username")} onSelDesel={this.props.onSelDesel}/>
             </ModalBody>
             <ModalFooter>
               <Button onClick={this.hideModal}>
@@ -199,6 +213,7 @@ class UsersTab extends React.Component {
 export default function Users(props) {
   let params = useParams(), reponame = params.name;
   const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame } } });
+  const [ getUsersMatchingUserName ] = useLazyQuery(USERMATCHINGUSERNAME);
 
   const [ toggleRoleMutation ] = useMutation(TOGGLE_ROLE_MUTATION);
   const [ addUserMutation ] = useMutation(ADD_USER_MUTATION);
@@ -211,7 +226,7 @@ export default function Users(props) {
   let repodata = data.repos[0], logged_in_user=data.whoami["username"];
   console.log(repodata);
 
-  let leaders = _.get(repodata, "leaders", []), allusers = _.cloneDeep(_.get(repodata, "allUsers", [])), principal = _.get(repodata, "principal"), allusernames = _.map(_.get(data, "users"), "username");
+  let leaders = _.get(repodata, "leaders", []), allusers = _.cloneDeep(_.get(repodata, "allUsers", [])), principal = _.get(repodata, "principal");
   let has_manage_roles_privilege = _.includes(_.concat(leaders, [principal]), logged_in_user);
   _.each(allusers, x => {
     x["is_pi"] = x["username"] === principal;
@@ -237,7 +252,7 @@ export default function Users(props) {
     }
   }
 
-  return (<UsersTab repodata={repodata} users={allusers} allusernames={allusernames}
+  return (<UsersTab repodata={repodata} users={allusers} getUsersMatchingUserName={getUsersMatchingUserName}
     onToggleRole={toggleRole} onSelDesel={addRemoveUser} amILeader={amILeader}
     showModal={showAddUserModal} setShowModal={setShowAddUserModal}
     toolbaritems={toolbaritems} setToolbaritems={setToolbaritems}

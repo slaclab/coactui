@@ -286,7 +286,7 @@ class AddRemoveCzar extends Component {
 
   render() {
     return (
-      <Modal show={this.props.showModal} onEnter={this.loadUserNames}>
+      <Modal show={this.props.showModal}>
         <ModalHeader>
           Search for users and add/remove them to/from as czars for this facility.
         </ModalHeader>
