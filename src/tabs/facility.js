@@ -231,11 +231,11 @@ class RegisterNewUser extends Component {
     this.setEppn = (event) => { 
       this.setState({ eppn: event.target.value, eppnInvalid: false, eppnInvalidMsg: ""}, this.validate)
     }
-    this.closeModal = () => { 
+    this.closeModal = () => {
       this.setState({ eppn: "", eppnInvalid: false, eppnInvalidMsg: ""});
       this.props.setShowModal(false) 
     }
-    this.setError = (error) => { this.setState({ eppnInvalid: true, eppnInvalidMsg: error })}
+    this.setError = (error) => { console.log("Error!!!!!!"); console.log(error.message); this.setState({ eppnInvalid: true, eppnInvalidMsg: error.message })}
     this.registerUser = () => {
       this.validate().then((data) =>{
         console.log(data);
@@ -393,11 +393,10 @@ export default function Facility(props) {
   const requestAccount = (eppn, callWhenDone, onError) => {
     const username = eppn.split("@")[0];
     console.log("Account requested for eppn " + eppn + " in facility "  + props.facilityname + " with preferred username " + username);
-    requestUserAccount({ variables: { 
-      request: { reqtype: "UserAccount", eppn: eppn, preferredUserName: username, "facilityname": props.facilityname, "approvalstatus": "PreApproved"}}, 
-      onCompleted: callWhenDone(),
-      onError: (error) => { onError(error.errormessage)}
-    });
+    requestUserAccount({ variables: { request: { reqtype: "UserAccount", eppn: eppn, preferredUserName: username, "facilityname": props.facilityname, "approvalstatus": "PreApproved"}}, 
+      onCompleted: (data) => { console.log(data); callWhenDone(data)},
+      onError: (error) => { console.log(error); onError(error)}
+    }).catch(err => { console.log(err); onError(err)});
   };
 
 
