@@ -226,7 +226,15 @@ class GroupsTab extends React.Component {
                     </tr>
                   </thead>
                   <tbody>{
-                    _.map(this.state.usrswithsels, (u) => { return (<tr key={u.name}><td>{u.name} <input type="checkbox" data-selkey={u.name} checked={!!u.selected} onChange={this.checkUncheck}/></td><td>{u.uidNumber}</td></tr>) })
+                    _.map(this.state.usrswithsels, (u) => { 
+                      let grpmemsel = <input type="checkbox" data-selkey={u.name} checked={!!u.selected} onChange={this.checkUncheck}/>;
+                      if(this.props.amILeader) {
+                        return (<tr key={u.name}><td>{u.name} {grpmemsel}</td><td>{u.uidNumber}</td></tr>)
+                      } else {
+                        return (<tr key={u.name}><td>{u.name}</td><td>{u.uidNumber}</td></tr>);
+                      }
+                      
+                    })
                   }
                   </tbody>
                 </table>
