@@ -315,8 +315,8 @@ class ComputeTab extends React.Component {
 }
 
 export default function Compute() {
-  let params = useParams(), reponame = params.name, allocationid = params.allocationid, datayear = dayjs().year();
-  const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame }, allocationid: allocationid } });
+  let params = useParams(), reponame = params.name, facilityname = params.facility, allocationid = params.allocationid, datayear = dayjs().year();
+  const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame, facility: facilityname }, allocationid: allocationid } });
   const [ repoUpdateUserAllocation, { allocdata, allocloading, allocerror }] = useMutation(ALLOCATION_MUTATION);
   const [ repocmpallocfn, { repocmpallocdata, repocmpallocloading, repocmpallocerror }] = useMutation(REPO_COMPUTE_ALLOCATION_REQUEST);
   const [ allocMdlShow, setAllocMdlShow] = useState(false);
@@ -330,7 +330,7 @@ export default function Compute() {
 
   let changeAllocation = (username, allocation_percent, onSuccess, onError) => {
     console.log("Changing allocation for user " + username + " to " + _.toNumber(allocation_percent));
-    repoUpdateUserAllocation({ variables: { reposinput: { name: reponame }, data: [ {
+    repoUpdateUserAllocation({ variables: { reposinput: { name: reponame, facility: facilityname }, data: [ {
       allocationid: allocationid,
       username: username,
       percent: _.toNumber(allocation_percent)
@@ -339,7 +339,7 @@ export default function Compute() {
 
   let requestChangeAllocation = function(qosname, newSlacHours, notes) {
     console.log("Adding a request to change allocation to " + newSlacHours);
-    repocmpallocfn({ variables: { request: { reqtype: "RepoComputeAllocation", reponame: reponame, clustername: repodata.computeAllocation.clustername, qosname: qosname, slachours: _.toNumber(newSlacHours), notes: notes }}});
+    repocmpallocfn({ variables: { request: { reqtype: "RepoComputeAllocation", reponame: reponame, facilityname: repodata.facility, clustername: repodata.computeAllocation.clustername, qosname: qosname, slachours: _.toNumber(newSlacHours), notes: notes }}});
   }
 
   return (<ComputeTab repodata={repodata} onAllocationChange={changeAllocation}

@@ -15,7 +15,9 @@ import { TwoPrecFloat } from "./widgets";
 const REPOS = gql`
 query{
   myRepos {
+    Id
     name
+    facility
     principal
     facilityObj {
       name
@@ -48,6 +50,7 @@ class ReposRows extends Component {
   constructor(props) {
     super(props);
     this.reponame = props.repo.name;
+    this.facility =props.repo.facility;
   }
   render() {
     var first = true;
@@ -58,18 +61,18 @@ class ReposRows extends Component {
       if(first) {
         first = false;
         return (
-          <tr key={this.reponame+a.clustername} data-name={this.reponame}>
+          <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame}>
             <td rowSpan={rows} className="vmid">{this.reponame}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.facilityObj.name}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
-            <td><NavLink to={"/repos/compute/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink></td>
+            <td><NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink></td>
             <td>{totalAllocatedHours}</td>
             <td><TwoPrecFloat value={totalUsedHours}/></td>
           </tr>)
         } else {
           return (
-            <tr key={this.reponame+a.clustername} data-name={this.reponame}>
-              <td><NavLink to={"/repos/compute/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink></td>
+            <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame}>
+              <td><NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink></td>
               <td>{totalAllocatedHours}</td>
               <td><TwoPrecFloat value={totalUsedHours}/></td>
             </tr>)
@@ -92,7 +95,7 @@ class ReposTable extends Component {
           <thead>
             <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th>Total compute used</th></tr>
           </thead>
-          { _.map(this.props.repos, (r) => { return (<ReposRows key={r.name} repo={r}/>) }) }
+          { _.map(this.props.repos, (r) => { return (<ReposRows key={r.facility+"_"+r.name} repo={r}/>) }) }
           </table>
         </div>
       </>

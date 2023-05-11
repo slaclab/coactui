@@ -159,8 +159,8 @@ class StorageTab extends React.Component {
 }
 
 export default function Storage() {
-  let params = useParams(), reponame = params.name, allocationid = params.allocationid, datayear = dayjs().year();
-  const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame }, allocationid: allocationid, datayear: datayear} });
+  let params = useParams(), reponame = params.name, facilityname = params.facility, allocationid = params.allocationid, datayear = dayjs().year();
+  const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame, facility: facilityname }, allocationid: allocationid, datayear: datayear} });
   const [ repostgallocfn, { repostgallocdata, repostgallocloading, repostgallocerror }] = useMutation(REPO_STORAGE_ALLOCATION_REQUEST);
 
   const [ allocMdlShow, setAllocMdlShow] = useState(false);
@@ -176,6 +176,7 @@ export default function Storage() {
     console.log("Adding a request to change allocation to " + newGigabytes);
     repostgallocfn({ variables: { request: { reqtype: "RepoStorageAllocation",
       reponame: repodata.name,
+      facilityname: repodata.facility,
       allocationid: allocationid,
       purpose: repodata.storageAllocation.purpose,
       storagename: repodata.storageAllocation.storagename,

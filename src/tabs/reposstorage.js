@@ -14,11 +14,10 @@ import ListGroup from 'react-bootstrap/ListGroup';
 const REPOS = gql`
 query{
   myRepos {
+    Id
     name
+    facility
     principal
-    facilityObj {
-      name
-    }
     currentStorageAllocations {
       Id
       storagename
@@ -43,6 +42,7 @@ class ReposRows extends Component {
   constructor(props) {
     super(props);
     this.reponame = props.repo.name;
+    this.facilityname = props.repo.facility;
   }
   render() {
     var first = true;
@@ -51,18 +51,18 @@ class ReposRows extends Component {
       if(first) {
         first = false;
         return (
-          <tr key={this.reponame+a.storagename+a.purpose} data-name={this.reponame}>
+          <tr key={this.facilityname+this.reponame+a.storagename+a.purpose} data-name={this.reponame}>
             <td rowSpan={rows} className="vmid">{this.reponame}</td>
-            <td rowSpan={rows} className="vmid">{this.props.repo.facilityObj.name}</td>
+            <td rowSpan={rows} className="vmid">{this.props.repo.facility}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
-            <td><NavLink to={"/repos/storage/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.purpose}</NavLink></td>
+            <td><NavLink to={"/repos/storage/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.purpose}</NavLink></td>
             <td>{a.gigabytes}</td>
             <td>{a.usage.gigabytes}</td>
           </tr>)
         } else {
           return (
-            <tr key={this.reponame+a.storagename+a.purpose} data-name={this.reponame}>
-              <td><NavLink to={"/repos/storage/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.purpose}</NavLink></td>
+            <tr key={this.facilityname+this.reponame+a.storagename+a.purpose} data-name={this.reponame}>
+              <td><NavLink to={"/repos/storage/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.purpose}</NavLink></td>
               <td>{a.gigabytes}</td>
               <td>{a.usage.gigabytes}</td>
             </tr>)
@@ -85,7 +85,7 @@ class ReposTable extends Component {
           <thead>
             <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>Purpose</th><th>Total storage allocation (GB)</th><th>Total storage used (GB)</th></tr>
           </thead>
-          { _.map(this.props.repos, (r) => { return (<ReposRows key={r.name} repo={r}/>) }) }
+          { _.map(this.props.repos, (r) => { return (<ReposRows key={r.facility+"_"+r.name} repo={r}/>) }) }
           </table>
         </div>
       </>

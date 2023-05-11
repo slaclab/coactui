@@ -12,7 +12,6 @@ const REPOAUDIT = gql`
 query repoAuditTrails($repo: RepoInput!){
   repoAuditTrails(repo: $repo) {
     type
-    name
     action
     actedby
     actedat
@@ -46,8 +45,8 @@ class AuditTable extends Component {
 }
 
 export default function RepoAuditTrail() {
-  let params = useParams(), reponame = params.name;
-  const { loading, error, data } = useQuery(REPOAUDIT, { variables: { repo: { name: reponame } } }, { fetchPolicy: 'no-cache', nextFetchPolicy: 'no-cache'});
+  let params = useParams(), reponame = params.name, facilityname = params.facility;
+  const { loading, error, data } = useQuery(REPOAUDIT, { variables: { repo: { name: reponame, facility: facilityname } } }, { fetchPolicy: 'no-cache', nextFetchPolicy: 'no-cache'});
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;

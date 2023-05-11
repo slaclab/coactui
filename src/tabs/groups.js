@@ -18,6 +18,7 @@ import * as yup from 'yup';
 const REPODETAILS = gql`
 query Repos($reposinput: RepoInput){
   repos(filter:$reposinput) {
+    Id
     name
     facility
     principal
@@ -249,8 +250,8 @@ class GroupsTab extends React.Component {
 
 
 export default function Groups() {
-  let params = useParams(), reponame = params.name;
-  const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame } } });
+  let params = useParams(), reponame = params.name, facilityname = params.facility;;
+  const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame, facility: facilityname } } });
   const [ toggleGrpMutation] = useMutation(TOGGLE_GROUPMEMBERSHIP_MUTATION);
   const [ newusergrpfn, { newusergrpdata, newusergrploading, newusergrperror }] = useMutation(NEW_USERGROUP_MUTATION);
   const [showAddGroupModal, setShowAddGroupModal] = useState(false);
@@ -265,11 +266,11 @@ export default function Groups() {
 
 
   let toggleUserMembershipForGroup = function(username, groupname) {
-    toggleGrpMutation({ variables: { reposinput: { name: reponame }, user: { username: username }, group: { name: groupname } }, refetchQueries: [ REPODETAILS, 'Repos' ], onError: (error) => { console.log("Error when toggling role " + error); } });
+    toggleGrpMutation({ variables: { reposinput: { name: reponame, facility: facilityname }, user: { username: username }, group: { name: groupname } }, refetchQueries: [ REPODETAILS, 'Repos' ], onError: (error) => { console.log("Error when toggling role " + error); } });
   }
 
   let createNewUserGroup = function(newusergroupname) {
-    newusergrpfn({ variables: { reposinput: { name: reponame }, grp: { name: newusergroupname, repo: reponame, members: [] } }, refetchQueries: [ REPODETAILS, 'Repos' ], onError: (error) => { console.log("Error when creating new user group role " + error); } });
+    newusergrpfn({ variables: { reposinput: { name: reponame, facility: facilityname }, grp: { name: newusergroupname, repoid: repodata["Id"], members: [] } }, refetchQueries: [ REPODETAILS, 'Repos' ], onError: (error) => { console.log("Error when creating new user group role " + error); } });
   }
 
   return (<GroupsTab repodata={repodata} groups={repodata.accessGroupObjs} allUsers={repodata.allUsers} amILeader={amILeader}

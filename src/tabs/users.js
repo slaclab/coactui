@@ -211,8 +211,8 @@ class UsersTab extends React.Component {
 
 
 export default function Users(props) {
-  let params = useParams(), reponame = params.name;
-  const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame } } });
+  let params = useParams(), reponame = params.name, facilityname = params.facility;
+  const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame, facility: facilityname } } });
   const [ getUsersMatchingUserName ] = useLazyQuery(USERMATCHINGUSERNAME);
 
   const [ toggleRoleMutation ] = useMutation(TOGGLE_ROLE_MUTATION);
@@ -239,16 +239,16 @@ export default function Users(props) {
 
   let toggleRole = function(username, callWhenDone) {
     console.log("Toggling role for user " + username);
-    toggleRoleMutation({ variables: { reposinput: { name: reponame }, user: { username: username } }, onCompleted: callWhenDone, onError: (error) => { console.log("Error when toggling role " + error); } });
+    toggleRoleMutation({ variables: { reposinput: { name: reponame, facility: facilityname }, user: { username: username } }, onCompleted: callWhenDone, onError: (error) => { console.log("Error when toggling role " + error); } });
   }
 
   let addRemoveUser = function(username, selected) {
     if(selected) {
       console.log("Adding user " + username + " to the repo " + reponame);
-      addUserMutation({ variables: { reposinput: { name: reponame }, user: { username: username } }, refetchQueries: [ REPODETAILS, 'Repos' ], onError: (error) => { console.log("Error when toggling role " + error); } });
+      addUserMutation({ variables: { reposinput: { name: reponame, facility: facilityname }, user: { username: username } }, refetchQueries: [ REPODETAILS, 'Repos' ], onError: (error) => { console.log("Error when toggling role " + error); } });
     } else {
       console.log("Removing user " + username + " from the repo " + reponame);
-      removeUserMutation({ variables: { reposinput: { name: reponame }, user: { username: username } }, refetchQueries: [ REPODETAILS, 'Repos' ], onError: (error) => { console.log("Error when toggling role " + error); } });
+      removeUserMutation({ variables: { reposinput: { name: reponame, facility: facilityname }, user: { username: username } }, refetchQueries: [ REPODETAILS, 'Repos' ], onError: (error) => { console.log("Error when toggling role " + error); } });
     }
   }
 

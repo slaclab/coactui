@@ -108,15 +108,15 @@ function App() {
           <Route exact path="storageusage/:storagename/purpose/:purpose" element={<StorageTabs />} />
           <Route exact path="repos" element={<RepoTabs reposActiveTab={reposActiveTab} setReposActiveTab={setReposActiveTab} />}>
             <Route exact path={`compute`} element={ <ReposComputeListView/> }/>
-            <Route exact path={`compute/:name/allocation/:allocationid`} element={ <Compute/> }/>
+            <Route exact path={`compute/:facility/:name/allocation/:allocationid`} element={ <Compute/> }/>
             <Route exact path={`storage`} element={ <ReposStorageListView/> } />
-            <Route exact path={`storage/:name/allocation/:allocationid`} element={ <Storage/> }/>
+            <Route exact path={`storage/:facility/:name/allocation/:allocationid`} element={ <Storage/> }/>
             <Route exact path={`users`} element = { <ReposUsersListView/>} />
-            <Route exact path={`users/:name`} element = { <Users />} />
+            <Route exact path={`users/:facility/:name`} element = { <Users />} />
             <Route exact path={`groups`} element = { <ReposGroupsListView/> } />
-            <Route exact path={`groups/:name`} element = { <Groups /> } />
+            <Route exact path={`groups/:facility/:name`} element = { <Groups /> } />
             <Route exact path={`audit`} element = { <ReposAuditListView/>} />
-            <Route exact path={`audit/:name`} element = { <RepoAuditTrail />} />
+            <Route exact path={`audit/:facility/:name`} element = { <RepoAuditTrail />} />
           </Route>
           <Route exact path={`requests`} element={<RequestTypesTab requestsActiveTab={requestsActiveTab} setRequestsActiveTab={setRequestsActiveTab} />}>
             <Route exact path={`myrequests`} element={<Requests showall={true} showmine={true} setRequestsActiveTab={setRequestsActiveTab} />} />

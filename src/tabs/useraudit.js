@@ -12,7 +12,6 @@ const REPOS = gql`
 query{
   userAuditTrails {
     type
-    name
     action
     actedby
     actedat

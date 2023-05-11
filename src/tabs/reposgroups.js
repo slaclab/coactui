@@ -30,7 +30,7 @@ class ReposRows extends Component {
   render() {
       return (
         <tr key={this.props.repo.name}>
-          <td className="vmid"><NavLink to={"/repos/groups/"+this.props.repo.name}>{this.props.repo.name}</NavLink></td>
+          <td className="vmid"><NavLink to={"/repos/groups/"+this.props.repo.facility+"/"+this.props.repo.name}>{this.props.repo.name}</NavLink></td>
           <td className="vmid">{this.props.repo.facility}</td>
           <td className="vmid">{this.props.repo.principal}</td>
         </tr>
@@ -52,7 +52,7 @@ class ReposTable extends Component {
             <tr><th>Repo name</th><th>Facility</th><th>PI</th></tr>
           </thead>
           <tbody>
-            { _.map(this.props.repos, (r) => { return (<ReposRows key={r.name} repo={r}/>) }) }
+            { _.map(this.props.repos, (r) => { return (<ReposRows key={r.facility+"_"+r.name} repo={r}/>) }) }
           </tbody>
         </table>
       </div>
