@@ -8,6 +8,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { Navigate } from "react-router-dom";
+import Alert from 'react-bootstrap/Alert';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRocket, faPerson, faPersonCircleQuestion } from '@fortawesome/free-solid-svg-icons'
 import { NoNavHeader, Footer } from "./tabs/widgets";
@@ -26,6 +27,8 @@ query facilityNames {
       approvalstatus
       preferredUserName
       eppn
+      facilityname
+      notes
     }
   }
 }
@@ -58,10 +61,11 @@ class ReqUserAccount extends Component {
         return;
       }
 
-      this.props.requestUserAccount(selFac);
-      this.props.setShow(false);
+      this.props.requestUserAccount(selFac, 
+        () => { this.props.setShow(false); }, 
+        (errormsg) => { if(errormsg.message.includes('requests already exists')) { this.setState({showError: true, errorMessage: "A request already exists and is pending for this facility"}) } else { this.setState({showError: true, errorMessage: errormsg.message})}});
     }
-    this.state = { facility: "", facilityInvalid: false }
+    this.state = { facility: "", facilityInvalid: false, showError: false, errorMessage: "" }
     this.setFacility = (event) => { this.setState({ facility: event.target.value }); }
   }
 
@@ -74,6 +78,7 @@ class ReqUserAccount extends Component {
         <Modal.Body>
           <Row className="mb-3">
             <Form.Text>Enable your EPPN <span className="text-primary"><b>{this.props.eppn}</b></span> for the S3DF</Form.Text>
+            <Alert className={this.state.showError ? "" : "d-none"} variant={'warning'}>{this.state.errorMessage}</Alert>
             <InputGroup hasValidation>
               <Form.Select name="facility" onChange={this.setFacility} isInvalid={this.state.facilityInvalid}>
                 <option value="">Please choose a facility</option>
@@ -110,12 +115,17 @@ export default function RegisterUser(props) {
   let isRegistered = _.get(data, "amIRegistered.isRegistered", false);
   let fullname = _.get(data, "amIRegistered.fullname", "");
   let isRegistrationPreapproved = _.get(data, "amIRegistered.requestObj.approvalstatus", "") == "PreApproved";
+  let isRegistrationRejected = _.get(data, "amIRegistered.requestObj.approvalstatus", "") == "Rejected";
+  let notes = _.get(data, "amIRegistered.requestObj.notes", "");
+  
 
-  const requestAccount = (selectedFacility) => {
+  const requestAccount = (selectedFacility, onSuccess, onError) => {
     const preferredUserName = _.split(eppn, "@")[0];
     console.log("Account requested for eppn " + eppn + " in facility "  + selectedFacility + " with preferred username " + preferredUserName);
-    requestUserAccount({ variables: { request: { reqtype: "UserAccount", eppn: eppn, preferredUserName: preferredUserName, "facilityname": selectedFacility }}, refetchQueries: [ FACNAMES, 'amIRegistered' ]});
-    setShow(false);
+    requestUserAccount({ variables: { request: { reqtype: "UserAccount", eppn: eppn, preferredUserName: preferredUserName, "facilityname": selectedFacility }}, 
+      onCompleted: () => { onSuccess() },
+      onError: (error) => { onError(error)},
+      refetchQueries: [ FACNAMES, 'amIRegistered' ]});
   };
 
   if(isRegistered) {
@@ -150,6 +160,25 @@ export default function RegisterUser(props) {
           </>
         );
       }
+    }
+
+    if(isRegistrationRejected) {
+      return (
+        <>
+        <div className="registeruser d-flex flex-column">
+          <NoNavHeader/>
+          <h6 className="p-2">Hi <span className="text-primary">{fullname}</span>, welcome to Coact; the portal for using the S3DF.</h6>
+          <div className="p-2 flex-grow-1">
+            Your previous request for a user account for <span className="text-primary"><b>{eppn}</b></span> has not been approved.
+            If you would like to try again, please click here -
+            <button type="button" className="btn btn-primary" onClick={handleShow}>Enable my S3DF account</button>
+            <div><i>{notes}</i></div>
+          </div>
+          <ReqUserAccount show={show} setShow={setShow} eppn={eppn} requestUserAccount={requestAccount} facilityNames={data.facilityNames} />
+          <Footer/>
+        </div>
+        </>
+      )    
     }
 
     return (

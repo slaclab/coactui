@@ -187,44 +187,6 @@ class RegisterNewUser extends Component {
           return;
         }
       }));
-      validations.push(new Promise(resolve => {
-        if(!this.state.eppn.includes("@")) {
-          resolve(false);
-          return;    
-        }
-        console.log("Checking for EPPN " + this.state.eppn);
-        this.props.getUserForEPPN({variables: { eppn: this.state.eppn }, fetchPolicy: 'network-only', 
-          onCompleted: (data) => {
-            console.log(data);
-            if(!_.isEmpty(_.get(data, "getuserforeppn.username", ""))) {
-              this.setState({ eppnInvalid: true, eppnInvalidMsg: "An existing user account is already mapped to " + this.state.eppn}, () => { resolve(false); return; })
-            } else {
-              resolve(true);
-              return;  
-            }
-        }})
-      }))
-      validations.push(new Promise(resolve => {
-        if(!this.state.eppn.includes("@")) {
-          resolve(false);
-          return;    
-        }
-        const username = this.state.eppn.split("@")[0];
-        console.log("Checking for username " + username);
-        this.props.getUsersMatchingUserName({
-          variables: { regex: "^" + username + "$"},
-          fetchPolicy: 'network-only',
-          onCompleted: (data) => {
-            console.log(data);
-            if(!_.isEmpty(_.get(data, "usersMatchingUserName", []))) {
-              this.setState({ eppnInvalid: true, eppnInvalidMsg: "The user account " + username + " is already being used"}, () => { resolve(false); return; })
-            } else {
-              resolve(true);
-              return;  
-            }
-          }
-        })
-      }))
       return Promise.all(validations);
     }
     
