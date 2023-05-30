@@ -32,6 +32,7 @@ query Repos($reposinput: RepoInput, $allocationid: MongoId!){
       clustername
       start
       end
+      computerequirement
       qoses {
         name
         slachours
@@ -150,6 +151,8 @@ class TopTab extends React.Component {
           <td><TwoPrecFloat value={this.available_slachours}/></td>
           <th><label>Remaining %</label></th>
           <td><TwoPrecFloat value={this.remaining_percent}/></td>
+          <th><label>Compute Requirement</label></th>
+          <td>{this.props.repodata.computeAllocation.computerequirement}</td>
         </tr>
       </tbody>
       </Table>
