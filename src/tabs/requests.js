@@ -180,7 +180,14 @@ class Approve extends React.Component {
       if(!this.props.showmine && _.includes(["Approved", "Incomplete", "Completed"], this.props.req.approvalstatus)) {
         return (
           <span>
-            <Button className={"rqAuto mx-1"} onClick={this.actuallyRefireRequest}><FontAwesomeIcon icon={faRefresh}/></Button>
+            <Button title="Refire this request" className={"rqAuto mx-1"} onClick={this.actuallyRefireRequest}><FontAwesomeIcon icon={faRefresh}/></Button>
+          </span>
+        )
+      }
+      if(!this.props.showmine && _.includes(["PreApproved"], this.props.req.approvalstatus)) {
+        return (
+          <span>
+            <Button title="Mark this request as being approved" className={"rqAuto mx-1"} onClick={this.requestApprove}><FontAwesomeIcon icon={faCheck}/></Button>
           </span>
         )
       }
