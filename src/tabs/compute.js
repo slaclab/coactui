@@ -165,18 +165,29 @@ class TopTab extends React.Component {
       comprequpclass: (this.props.isAdminOrCzar && _.includes(["Normal", "OffShift"], this.props.repodata.computeAllocation.computerequirement)) ? "text-warning px-2" : "d-none",
       compreqdownclass: (this.props.isAdminOrCzar && _.includes(["OnShift", "OffShift"], this.props.repodata.computeAllocation.computerequirement)) ? "text-warning px-2" : "d-none"
     }
+
+    this.reallyChangeComputeRequirement = (newcomp) => { 
+      props.changeComputeRequirement(newcomp, () => { 
+        this.setState({
+          compRequirement: newcomp,
+          compreqclass: this.props.isAdminOrCzar ? "float-end" : "d-none",
+          comprequpclass: (this.props.isAdminOrCzar && _.includes(["Normal", "OffShift"], newcomp)) ? "text-warning px-2" : "d-none",
+          compreqdownclass: (this.props.isAdminOrCzar && _.includes(["OnShift", "OffShift"], newcomp)) ? "text-warning px-2" : "d-none"    
+        })
+      });
+    }
     this.upComputeReq = () => { 
       if(this.state.compRequirement == "Normal") {
-        props.changeComputeRequirement("OffShift");
+        this.reallyChangeComputeRequirement("OffShift");
       } else if(this.state.compRequirement == "OffShift") {
-        props.changeComputeRequirement("OnShift");
+        this.reallyChangeComputeRequirement("OnShift");
       }
     }
     this.downComputeReq = () => { 
       if(this.state.compRequirement == "OnShift") {
-        props.changeComputeRequirement("OffShift");
+        this.reallyChangeComputeRequirement("OffShift");
       } else if(this.state.compRequirement == "OffShift") {
-        props.changeComputeRequirement("Normal");
+        this.reallyChangeComputeRequirement("Normal");
       }
     }
   }
@@ -395,28 +406,18 @@ export default function Compute() {
     repocmpallocfn({ variables: { request: { reqtype: "RepoComputeAllocation", reponame: reponame, facilityname: repodata.facility, clustername: repodata.computeAllocation.clustername, qosname: qosname, slachours: _.toNumber(newSlacHours), notes: notes }}});
   }
 
-  const wait = (ms) => new Promise((res) => setTimeout(res, ms))
-  const delayRefetchedQuery = async (observableQuery) => {
-    await wait(5000)
-    console.log("Refetching repo data");
-    //observableQuery.refetch()
-    window.location.reload();
-  }
-
-  let requestAndApproveChangeComputeRequirement = function(newCompRequirement) {
+  let requestAndApproveChangeComputeRequirement = function(newCompRequirement, callWhenComplete) {
     console.log("Changing compute requirement to " + newCompRequirement);
     repoChangeComputeRequirement(
       { variables: { request: { reqtype: "RepoChangeComputeRequirement", reponame: reponame, facilityname: repodata.facility, clustername: repodata.computeAllocation.clustername, computerequirement: newCompRequirement }},
       onCompleted: (data) => {
         console.log(data);
         let id = data["requestRepoChangeComputeRequirement"]["Id"]
-        approveRequest({ variables: { Id: id }, refetchQueries: [ REPODETAILS ], onQueryUpdated: delayRefetchedQuery });
+        approveRequest({ variables: { Id: id }, refetchQueries: [ REPODETAILS ], onCompleted: callWhenComplete });
       }
     });
 
   }
-
-
 
   return (<ComputeTab repodata={repodata} onAllocationChange={changeAllocation}
     allocMdlShow={allocMdlShow} setAllocMdlShow={setAllocMdlShow} requestChangeAllocation={requestChangeAllocation}
