@@ -224,7 +224,7 @@ class RequestDetails extends Component {
     if(this.props.req.reqtype == "RepoMembership") {
       return (
         <ListGroup>
-          {_.map(["username", "reponame"], function(x){
+          {_.map(["username", "reponame", "facilityname"], function(x){
             return(
               <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
             )

@@ -45,7 +45,7 @@ mutation requestNewRepo($request: CoactRequestInput!){
 class ReqRepMembership extends Component {
   constructor(props) {
     super(props);
-    this.state = { reponame: "", reponameInvalid: false }
+    this.state = { reponame: "", reponameInvalid: false, facility: "", facilityInvalid: false }
     this.handleClose = () => { this.props.setShow(false); }
     this.requestRepoMembership = () => {
       console.log(this.state.reponame);
@@ -53,10 +53,16 @@ class ReqRepMembership extends Component {
         this.setState({ reponameInvalid: true });
         return;
       }
-      this.props.requestRepoMembership(this.state.reponame);
+      if(_.isEmpty(this.state.facility)) {
+        this.setState({ facilityInvalid: true });
+        return;
+      }
+      this.props.requestRepoMembership(this.state.reponame, this.state.facility);
       this.props.setShow(false);
     }
     this.setRepoName = (event) => { this.setState({ reponame: event.target.value }) }
+    this.setFacility = (event) => { this.setState({ facility: event.target.value }) }
+
   }
   render() {
     return (
@@ -64,11 +70,30 @@ class ReqRepMembership extends Component {
         <Modal.Header closeButton>
           <Modal.Title>Request membership in repo</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Request membership in this repo for {this.props.username}
-          <InputGroup hasValidation>
-            <Form.Control type="text" placeholder="Enter name of the repo" onChange={this.setRepoName} isInvalid={this.state.reponameInvalid}/>
-            <Form.Control.Feedback type="invalid">Please enter a valid repo name. If you do not know the reponame, please ask your PI for the name.</Form.Control.Feedback>
-          </InputGroup>
+        <Modal.Body>
+          <Row>
+            <Col md={2}><Form.Label className="px-2" >Repo:</Form.Label></Col>
+            <Col>
+              <InputGroup hasValidation>
+                <Form.Control type="text" placeholder="Enter name of the repo" onChange={this.setRepoName} isInvalid={this.state.reponameInvalid}/>
+                <Form.Control.Feedback type="invalid">Please enter a valid repo name. If you do not know the reponame, please ask your PI for the name.</Form.Control.Feedback>
+              </InputGroup>
+            </Col>
+          </Row>
+          <Row>
+            <InputGroup hasValidation>
+                <Col md={3}><Form.Label className="px-2" >Facility:</Form.Label></Col>
+                <Col>
+                  <Form.Control required as="select" type="select" onChange={this.setFacility} isInvalid={this.state.facilityInvalid}>
+                  <option value="">Please select a facility</option>
+                  {
+                    _.map(this.props.facilities, function(x){ return ( <option key={x} value={x}>{x}</option> ) })
+                  }
+                  </Form.Control>
+                  <Form.Control.Feedback type="invalid">Please select a facility</Form.Control.Feedback>
+                </Col>
+            </InputGroup>
+          </Row>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={this.handleClose}>
@@ -181,9 +206,9 @@ export default function RepoTabs(props) {
   let username = _.get(data, "whoami.username");
   let facilities = _.map(_.get(data, "facilities"), "name");
 
-  const requestRepoMembership = (reponame) => {
-    console.log("Repo membership requested for repo " + reponame);
-    repomemnrshipfn({ variables: { request: { reqtype: "RepoMembership", reponame: reponame }}});
+  const requestRepoMembership = (reponame, facilityname) => {
+    console.log("Repo membership requested for repo " + reponame + " in facility" + facilityname);
+    repomemnrshipfn({ variables: { request: { reqtype: "RepoMembership", reponame: reponame, facilityname: facilityname }}});
     setRepMemShow(false);
   };
 
@@ -225,7 +250,7 @@ export default function RepoTabs(props) {
         <Tab.Content>
           <Outlet context={[toolbaritems, setToolbaritems]}/>
         </Tab.Content>
-        <ReqRepMembership show={repMemShow} setShow={setRepMemShow} username={username} requestRepoMembership={requestRepoMembership} />
+        <ReqRepMembership show={repMemShow} setShow={setRepMemShow} username={username} requestRepoMembership={requestRepoMembership} facilities={facilities} />
         <ReqNewRepo show={newRepShow} setShow={setNewRepShow} username={username} requestNewRepo={requestNewRepo}  facilities={facilities}/>
     </Tab.Container>);
 }
