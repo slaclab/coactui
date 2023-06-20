@@ -215,7 +215,7 @@ class RequestDetails extends Component {
         <ListGroup>
           {_.map(["eppn", "preferredUserName", "facilityname"], function(x){
             return(
-              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
             )
           })}
         </ListGroup>
@@ -226,7 +226,7 @@ class RequestDetails extends Component {
         <ListGroup>
           {_.map(["username", "reponame", "facilityname"], function(x){
             return(
-              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
             )
           })}
         </ListGroup>
@@ -237,7 +237,7 @@ class RequestDetails extends Component {
         <ListGroup>
           {_.map(["reponame", "facilityname", "principal"], function(x){
             return(
-              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
             )
           })}
         </ListGroup>
@@ -248,7 +248,7 @@ class RequestDetails extends Component {
         <ListGroup>
           {_.map(["facilityname"], function(x){
             return(
-              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
             )
           })}
         </ListGroup>
@@ -259,7 +259,7 @@ class RequestDetails extends Component {
         <ListGroup>
           {_.map(["storagename", "purpose", "gigabytes"], function(x){
             return(
-              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
             )
           })}
         </ListGroup>
@@ -270,7 +270,7 @@ class RequestDetails extends Component {
         <ListGroup>
           {_.map(["reponame", "clustername", "qosname", "slachours"], function(x){
             return(
-              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
             )
           })}
         </ListGroup>
@@ -281,12 +281,24 @@ class RequestDetails extends Component {
         <ListGroup>
           {_.map(["reponame", "storagename", "purpose", "gigabytes"], function(x){
             return(
-              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
             )
           })}
         </ListGroup>
       )
     }
+    if(this.props.req.reqtype == "RepoChangeComputeRequirement") {
+      return (
+        <ListGroup>
+          {_.map(["reponame", "facilityname", "computerequirement"], function(x){
+            return(
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
+            )
+          })}
+        </ListGroup>
+      )
+    }
+
     return (
       <span>Details!!!</span>
     )
