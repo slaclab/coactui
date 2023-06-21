@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { NavLink } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
-import React, { Component, useState } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Row from "react-bootstrap/Row";
@@ -12,14 +12,16 @@ import Modal from 'react-bootstrap/Modal';
 import Alert from 'react-bootstrap/Alert';
 import Form from 'react-bootstrap/Form';
 import Fade from 'react-bootstrap/Fade';
+import Card from 'react-bootstrap/Card';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faMultiply, faQuestion, faRefresh } from '@fortawesome/free-solid-svg-icons'
 import { DateTimeDisp, ErrorMsgModal } from "./widgets";
+import dayjs from "dayjs";
 
 
 const REQUESTS = gql`
-query Requests($fetchprocessed: Boolean, $showmine: Boolean){
-  requests(fetchprocessed: $fetchprocessed, showmine: $showmine) {
+query Requests($fetchprocessed: Boolean, $showmine: Boolean, $filter: CoactRequestFilter){
+  requests(fetchprocessed: $fetchprocessed, showmine: $showmine, filter: $filter) {
     Id
     reqtype
     requestedby
@@ -42,6 +44,12 @@ query Requests($fetchprocessed: Boolean, $showmine: Boolean){
     canapprove
     canrefire
   }
+  myreposandfacility {
+    name
+    facility
+  }
+  requestTypes
+  requestStatuses
 }`;
 
 const APPROVE_REQUEST_MUTATION = gql`
@@ -321,32 +329,32 @@ class ApprovalStatus extends Component {
   render() {
     if(this.props.req.approvalstatus == "NotActedOn") {
       return (
-        <span>Pending</span>
+        <span title="A facility czar has not yet acted on this request">{this.props.req.approvalstatus}</span>
       )
     }
     if(this.props.req.approvalstatus == "Rejected") {
       return (
-        <span>No</span>
+        <span title="A facility czar has denied this request">{this.props.req.approvalstatus}</span>
       )
     }
     if(this.props.req.approvalstatus == "Approved") {
       return (
-        <span>Yes</span>
+        <span title="A facility czar has approved this request but the ansible scripts that actually make the changes have yet to run">{this.props.req.approvalstatus}</span>
       )
     }
     if(this.props.req.approvalstatus == "Completed") {
       return (
-        <span>Completed</span>
+        <span title="A facility czar has approved this request and the ansible scripts that actually make the changes have run successfully">{this.props.req.approvalstatus}</span>
       )
     }
     if(this.props.req.approvalstatus == "Incomplete") {
       return (
-        <span>In progress</span>
+        <span title="A facility czar has approved this request and the ansible scripts that actually make the changes have run but have reported errors">{this.props.req.approvalstatus}</span>
       )
     }
     if(this.props.req.approvalstatus == "PreApproved") {
       return (
-        <span>PreApproved</span>
+        <span title="This request has already been approved and is awaiting some user action. This action will be completed the next time the user logs into the system">{this.props.req.approvalstatus}</span>
       )
     }
   }
@@ -391,7 +399,7 @@ class RequestsTable extends Component {
         <Col md={1}>At</Col>
         <Col md={4}>Details</Col>
         <Col md={3}>Notes</Col>
-        <Col md={1}>Approved</Col>
+        <Col md={1}>Request Status</Col>
         <Col md={1}>Actions</Col>
       </Row>
       {
@@ -403,8 +411,129 @@ class RequestsTable extends Component {
   }
 }
 
+class RequestFilters extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      allfacilities: _.sortBy(_.uniq(_.map(props.repofacs, "facility"))),
+      allrepos: _.sortBy(_.uniq(_.map(props.repofacs, "name"))),
+      selectablerepos: _.sortBy(_.uniq(_.map(props.repofacs, "name"))),
+      timewindow: ""
+    }
+
+    this.setApprovalStatus = (event) => {
+      this.props.applyFilter("approvalstatus", event.target.value);
+    }
+    this.setRequestType = (event) => {
+      this.props.applyFilter("reqtype", event.target.value);
+    }
+    this.setFacility = (event) => { 
+      this.setState({selectablerepos: _.sortBy(_.uniq(_.map(_.filter(props.repofacs, ["facility", event.target.value]), "name")))})
+      this.props.applyFilter("facilityname", event.target.value);
+    }
+    this.setRepo = (event) => { 
+      this.props.applyFilter("reponame", event.target.value);
+    }
+    this.setForUser = (event) => {
+      console.log(event.target.value);
+      this.props.applyFilter("foruser", event.target.value);
+    }
+    this.setTimeWindow = (event) => {
+      console.log(event.target.value);
+      this.setState({timewindow: event.target.value})
+      let today = dayjs();
+      switch(event.target.value) {
+        case "LastDay":
+          this.props.setTimeWindow(event.target.value, today.subtract(1, 'day'), today);
+          break;
+        case "LastWeek":
+          this.props.setTimeWindow(event.target.value, today.subtract(1, 'week'), today);
+          break;
+        case "LastMonth":
+          this.props.setTimeWindow(event.target.value, today.subtract(1, 'month'), today);
+          break;
+        case "LastYear":
+          this.props.setTimeWindow(event.target.value, today.subtract(1, 'year'), today);
+          break;
+        default:
+          this.props.setTimeWindow(event.target.value, null, null);
+          break;
+      }    
+    }
+  }
+
+  render() {
+    return (
+      <Card>
+        <Card.Body>
+          <Form>
+            <Row>
+            <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>Status</Form.Label>
+                  <Form.Select name="approvalstatus" value={this.props.filter.approvalstatus} onChange={this.setApprovalStatus}>
+                    { _.map(this.props.requestStatuses, (q) => { return (<option key={q} value={q}>{q}</option>)}) }
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group className="mb-3">
+                <Form.Label>Type</Form.Label>
+                  <Form.Select name="reqtype" value={this.props.filter.reqtype} onChange={this.setRequestType}>
+                    <option value="">Please choose a request type</option>
+                    { _.map(this.props.requestTypes, (q) => { return (<option key={q} value={q}>{q}</option>)}) }
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>Facility</Form.Label>
+                  <Form.Select name="facilityname" value={this.props.filter.facilityname} onChange={this.setFacility}>
+                    <option value="">Please choose a facility</option>
+                    { _.map(this.state.allfacilities, (q) => { return (<option key={q} value={q}>{q}</option>)}) }
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>Repo</Form.Label>
+                  <Form.Select name="reponame" value={this.props.filter.reponame} onChange={this.setRepo}>
+                    <option value="">Please choose a repo</option>
+                    { _.map(this.state.selectablerepos, (q) => { return (<option key={q} value={q}>{q}</option>)}) }
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>For user</Form.Label>
+                  <Form.Control type="text" placeholder="Username regex; eg jlenn.*" defaultValue={this.props.filter.foruser} onBlur={this.setForUser}/>
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>Time</Form.Label>
+                  <Form.Select name="timewindow" value={this.props.timeWindowLabel} onChange={this.setTimeWindow}>
+                    <option key="" value="">Please choose a time window</option>
+                    <option key="LastDay" value="LastDay">LastDay</option>
+                    <option key="LastWeek" value="LastWeek">LastWeek</option>
+                    <option key="LastMonth" value="LastMonth">LastMonth</option>
+                    <option key="LastYear" value="LastYear">LastYear</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+          </Form>
+        </Card.Body>
+      </Card>
+    )
+  }
+}
+
+
 export default function Requests(props) {
-  const { loading, error, data } = useQuery(REQUESTS, { variables: { fetchprocessed: props.showall, showmine: props.showmine } }, { fetchPolicy: 'no-cache', nextFetchPolicy: 'no-cache'});
+  const [filter, setFilter] = useState( { approvalstatus: "NotActedOn" } );
+
+  const { loading, error, data, refetch } = useQuery(REQUESTS, { variables: { fetchprocessed: props.showall, showmine: props.showmine, filter: filter } }, { fetchPolicy: 'no-cache', nextFetchPolicy: 'no-cache'});
   const [ requestApproveMutation ] = useMutation(APPROVE_REQUEST_MUTATION);
   const [ requestRejectMutation ] = useMutation(REJECT_REQUEST_MUTATION);
   const [ requestRefireMutation ] = useMutation(REFIRE_REQUEST_MUTATION);
@@ -412,6 +541,9 @@ export default function Requests(props) {
   const [showErr, setShowErr] = useState(false);
   const [errTitle, setErrTitle] = useState("Error processing request");
   const [errMessage, setErrMessage] = useState("");
+  const [twlabel, setTwlabel] = useState("");
+
+  useEffect(() => { refetch(filter).then(console.log(data))});
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;
@@ -428,12 +560,43 @@ export default function Requests(props) {
     requestRefireMutation({ variables: { Id: request.Id }, onError: (error) => { setErrMessage("Error refiring request " + error);  setShowErr(true); }, refetchQueries: [ REQUESTS, 'Requests' ] });
   }
 
+  let applyFilter = function(attrname, attrvalue) {
+    console.log("Applying filter " + attrname + " with val " + attrvalue);
+    setFilter((currfilt) => {
+      if(attrvalue == '') {
+        currfilt[attrname] = null;
+      } else {
+        currfilt[attrname] = attrvalue;
+      }
+      return {...currfilt};
+    })
+  }
+
+  let setTimeWindow = function(lbl, begin, end) {
+    console.log("Setting the time window to " + lbl);
+    setTwlabel(lbl);
+    setFilter((currfilt) => {
+      if(begin == null) {
+        delete currfilt["windowbegin"];
+      } else {
+        currfilt["windowbegin"] = begin.toISOString();
+      }
+      if(end == null) {
+        delete currfilt["windowend"];
+      } else {
+        currfilt["windowend"] = end.toISOString();
+      }
+      return {...currfilt};
+    })
+  } 
+
 
   return (
     <>
     <Container fluid id="requests">
-     <ErrorMsgModal show={showErr} setShow={setShowErr} title={errTitle} message={errMessage}/>
-     <RequestsTable requests={data.requests} approve={approve} reject={reject} refire={refire} showmine={props.showmine} setRequestsActiveTab={props.setRequestsActiveTab}/>
+      <RequestFilters filter={filter} applyFilter={applyFilter} timeWindowLabel={twlabel} setTimeWindow={setTimeWindow} requestTypes={data.requestTypes} requestStatuses={data.requestStatuses} repofacs={data.myreposandfacility}/>
+      <ErrorMsgModal show={showErr} setShow={setShowErr} title={errTitle} message={errMessage}/>
+      <RequestsTable requests={data.requests} approve={approve} reject={reject} refire={refire} showmine={props.showmine} setRequestsActiveTab={props.setRequestsActiveTab}/>
     </Container>
     </>
   );

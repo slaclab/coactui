@@ -157,6 +157,7 @@ class UsersTab extends React.Component {
               Search for users and add/remove them to/from this repo.
             </ModalHeader>
             <ModalBody>
+              <div className="mb-2">We use regex matches; so patterns like <code>mar.*</code> can be used.</div>
               <SearchAndAdd label="Username" getmatches={this.getusernamematches}  selected={_.map(this.props.users, "username")} onSelDesel={this.props.onSelDesel}/>
             </ModalBody>
             <ModalFooter>

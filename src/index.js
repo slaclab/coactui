@@ -36,7 +36,6 @@ import ReposGroupsListView from "./tabs/reposgroups";
 import UserAuditTrail from "./tabs/useraudit";
 import ReposAuditListView from "./tabs/reposaudit";
 import RepoAuditTrail from "./tabs/repoaudit";
-import RequestTypesTab from "./tabs/requesttypes";
 import Requests from "./tabs/requests";
 import './index.css';
 import { Footer } from "./tabs/widgets";
@@ -118,11 +117,7 @@ function App() {
             <Route exact path={`audit`} element = { <ReposAuditListView/>} />
             <Route exact path={`audit/:facility/:name`} element = { <RepoAuditTrail />} />
           </Route>
-          <Route exact path={`requests`} element={<RequestTypesTab requestsActiveTab={requestsActiveTab} setRequestsActiveTab={setRequestsActiveTab} />}>
-            <Route exact path={`myrequests`} element={<Requests showall={true} showmine={true} setRequestsActiveTab={setRequestsActiveTab} />} />
-            <Route exact path={`pending`} element={<Requests showall={false} showmine={false} setRequestsActiveTab={setRequestsActiveTab} />} />
-            <Route exact path={`all`} element={<Requests showall={true} showmine={false} setRequestsActiveTab={setRequestsActiveTab} />} />
-          </Route>
+          <Route exact path={`requests`} element={<Requests showall={true} showmine={false} setRequestsActiveTab={setRequestsActiveTab} />} />
         </Routes>
         </BrowserRouter>
       </div>

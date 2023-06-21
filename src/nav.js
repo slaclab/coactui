@@ -191,7 +191,7 @@ export default function TopNavBar( props ) {
             </Nav.Link>
           </Nav.Item>
           <Nav.Item>
-            <Nav.Link as={NavLink} to="/requests/myrequests"  disabled={logged_in_user ? false : true}>
+            <Nav.Link as={NavLink} to="/requests"  disabled={logged_in_user ? false : true}>
               Requests
             </Nav.Link>
           </Nav.Item>
