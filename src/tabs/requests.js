@@ -39,6 +39,8 @@ query Requests($fetchprocessed: Boolean, $showmine: Boolean){
     gigabytes
     notes
     approvalstatus
+    canapprove
+    canrefire
   }
 }`;
 
@@ -175,12 +177,19 @@ class Approve extends React.Component {
   render() {
     let cNm = "rqAuto mx-1";
     if(_.includes(["NewFacility"], this.props.req.reqtype)) { cNm = "rqManual mx-1"; }
+    let actionCNm = "", refireCNm = "";
+    if(!this.props.req.canapprove) {
+      actionCNm =  " d-none";
+    }
+    if(!this.props.req.canrefire) {
+      refireCNm =  " d-none";
+    }
 
     if(!this.state.showActions) {
       if(!this.props.showmine && _.includes(["Approved", "Incomplete", "Completed"], this.props.req.approvalstatus)) {
         return (
           <span>
-            <Button title="Refire this request" className={"rqAuto mx-1"} onClick={this.actuallyRefireRequest}><FontAwesomeIcon icon={faRefresh}/></Button>
+            <Button title="Refire this request" className={"rqAuto mx-1" + refireCNm} onClick={this.actuallyRefireRequest}><FontAwesomeIcon icon={faRefresh}/></Button>
           </span>
         )
       }
@@ -197,8 +206,8 @@ class Approve extends React.Component {
       <span>
         <ConfirmStepsModal show={this.state.showNewFacMdl} setShow={(st) => { this.setState({showNewFacMdl: st})}} title={"Manual steps for facility " + this.props.req.facilityname} actuallyApprove={this.actuallyApproveRequest} steps={["Run Wilko's script for creating a facility mountpoint", "Run Yee's script for creating facility specific partitions"]}/>
         <ReasonForRejectionModal show={this.state.showReasonForRejection} setShow={this.showHideReasonForRejection} actuallyRejectRequest={this.actuallyRejectRequest}/>
-        <Button className={cNm} onClick={this.requestApprove}><FontAwesomeIcon icon={faCheck}/></Button>
-        <Button variant="primary" onClick={() => { this.showHideReasonForRejection(true) }}><FontAwesomeIcon icon={faMultiply}/></Button>
+        <Button className={cNm + actionCNm} onClick={this.requestApprove}><FontAwesomeIcon icon={faCheck}/></Button>
+        <Button className={actionCNm} variant="primary" onClick={() => { this.showHideReasonForRejection(true) }}><FontAwesomeIcon icon={faMultiply}/></Button>
       </span>
     )
   }
@@ -351,7 +360,7 @@ class RequestsRow extends Component {
   render() {
     return (
       <Row data-id={this.props.req.Id}>
-        <Col md={1}>{this.props.req.reqtype}</Col>
+        <Col className="text-truncate" md={1}>{this.props.req.reqtype}</Col>
         <Col md={1}>{this.props.req.requestedby}</Col>
         <Col md={1}><DateTimeDisp value={this.props.req.timeofrequest}/></Col>
         <Col md={4}><RequestDetails req={this.props.req} /></Col>
