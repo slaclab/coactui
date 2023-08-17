@@ -20,6 +20,7 @@ const WHOAMI = gql`
 query{
   whoami {
     username
+    facilities
   }
   facilities {
     name
@@ -205,6 +206,7 @@ export default function RepoTabs(props) {
 
   let username = _.get(data, "whoami.username");
   let facilities = _.map(_.get(data, "facilities"), "name");
+  let myfacilities = _.get(data, "whoami.facilities");
 
   const requestRepoMembership = (reponame, facilityname) => {
     console.log("Repo membership requested for repo " + reponame + " in facility" + facilityname);
@@ -250,7 +252,7 @@ export default function RepoTabs(props) {
         <Tab.Content>
           <Outlet context={[toolbaritems, setToolbaritems]}/>
         </Tab.Content>
-        <ReqRepMembership show={repMemShow} setShow={setRepMemShow} username={username} requestRepoMembership={requestRepoMembership} facilities={facilities} />
-        <ReqNewRepo show={newRepShow} setShow={setNewRepShow} username={username} requestNewRepo={requestNewRepo}  facilities={facilities}/>
+        <ReqRepMembership show={repMemShow} setShow={setRepMemShow} username={username} requestRepoMembership={requestRepoMembership} facilities={myfacilities} />
+        <ReqNewRepo show={newRepShow} setShow={setNewRepShow} username={username} requestNewRepo={requestNewRepo}  facilities={myfacilities}/>
     </Tab.Container>);
 }
