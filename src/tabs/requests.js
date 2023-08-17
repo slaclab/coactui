@@ -472,6 +472,7 @@ class RequestFilters extends Component {
                 <Form.Group className="mb-3">
                   <Form.Label>Status</Form.Label>
                   <Form.Select name="approvalstatus" value={this.props.filter.approvalstatus} onChange={this.setApprovalStatus}>
+                    <option key="allst" value="">Please choose a status</option>
                     { _.map(this.props.requestStatuses, (q) => { return (<option key={q} value={q}>{q}</option>)}) }
                   </Form.Select>
                 </Form.Group>
@@ -564,7 +565,7 @@ export default function Requests(props) {
     console.log("Applying filter " + attrname + " with val " + attrvalue);
     setFilter((currfilt) => {
       if(attrvalue == '') {
-        currfilt[attrname] = null;
+        delete currfilt[attrname];
       } else {
         currfilt[attrname] = attrvalue;
       }
