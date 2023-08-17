@@ -14,7 +14,8 @@ import Alert from 'react-bootstrap/Alert';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark, faPlus } from '@fortawesome/free-solid-svg-icons'
-import { TwoPrecFloat } from './tabs/widgets'
+import { DateTimeDisp, TwoPrecFloat } from './tabs/widgets'
+
 
 
 const HOMEDETAILS = gql`
@@ -30,6 +31,7 @@ query {
     publichtml
     isAdmin
     groups
+    earliestCompletedUserAccountRegistration
     storages {
       Id
       purpose
@@ -403,6 +405,8 @@ class UserDetails extends Component {
                 <Row className="my-1"><Col md={3}><span className="tbllbl">Userid</span></Col><Col>{this.props.userdetails.username}</Col></Row>
                 <Row className="my-1"><Col md={3}><span className="tbllbl">UID</span></Col><Col>{this.props.userdetails.uidnumber}</Col></Row>
                 <Row className="my-1"><Col md={3}><span className="tbllbl">Name</span></Col><Col>{this.props.userdetails.fullname}</Col></Row>
+                <Row className="my-1"><Col md={3}><span className="tbllbl">User as of</span></Col><Col><DateTimeDisp value={this.props.userdetails.earliestCompletedUserAccountRegistration}/></Col></Row>
+                
                 <hr/>
                 <Row><Col md={3}><span className="tbllbl">Preferred Email</span></Col><Col md={5}>{this.props.userdetails.preferredemail}</Col><Col><Button variant="secondary" onClick={this.showPrefEmailModal}>Change</Button></Col></Row>
                 <hr/>
