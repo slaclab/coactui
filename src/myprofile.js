@@ -390,7 +390,7 @@ class UserDetails extends Component {
     this.showEppnModal = function() { props.setUpdtEppnShow(true) }
     this.showPrefEmailModal = function() { props.setUpdtPrefEmail(true) }
     this.showPublicHTML = function() { props.setEnblPublicHtml(true) }
-    this.publichtmlurl = "https://s3df.slac.stanford.edu/~" + props.userdetails.username + "/public_html/";
+    this.publichtmlurl = "https://s3df.slac.stanford.edu/people/" + props.userdetails.username;
     this.publichtmlfolder = _.find(this.props.userdetails.storages, ["purpose", "home"]) ? _.find(this.props.userdetails.storages, ["purpose", "home"])["rootfolder"] + "/public_html" : "<home>/public_html";
   }
   render() {
