@@ -20,6 +20,7 @@ const WHOAMI = gql`
 query{
   whoami {
     username
+    isAdmin
     facilities
   }
   facilities {
@@ -205,8 +206,9 @@ export default function RepoTabs(props) {
   if (error) return <p>Error :</p>;
 
   let username = _.get(data, "whoami.username");
+  let isadmin = _.get(data, "whoami.isAdmin", false);
   let facilities = _.map(_.get(data, "facilities"), "name");
-  let myfacilities = _.get(data, "whoami.facilities");
+  let myfacilities = isadmin ? facilities : _.get(data, "whoami.facilities");
 
   const requestRepoMembership = (reponame, facilityname) => {
     console.log("Repo membership requested for repo " + reponame + " in facility" + facilityname);
