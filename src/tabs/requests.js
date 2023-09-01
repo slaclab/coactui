@@ -472,7 +472,7 @@ class RequestFilters extends Component {
                 <Form.Group className="mb-3">
                   <Form.Label>Status</Form.Label>
                   <Form.Select name="approvalstatus" value={this.props.filter.approvalstatus} onChange={this.setApprovalStatus}>
-                    <option key="allst" value="">Please choose a status</option>
+                    <option key="allst" value="">All statuses</option>
                     { _.map(this.props.requestStatuses, (q) => { return (<option key={q} value={q}>{q}</option>)}) }
                   </Form.Select>
                 </Form.Group>
@@ -481,7 +481,7 @@ class RequestFilters extends Component {
                 <Form.Group className="mb-3">
                 <Form.Label>Type</Form.Label>
                   <Form.Select name="reqtype" value={this.props.filter.reqtype} onChange={this.setRequestType}>
-                    <option value="">Please choose a request type</option>
+                    <option value="">All request types</option>
                     { _.map(this.props.requestTypes, (q) => { return (<option key={q} value={q}>{q}</option>)}) }
                   </Form.Select>
                 </Form.Group>
@@ -490,7 +490,7 @@ class RequestFilters extends Component {
                 <Form.Group className="mb-3">
                   <Form.Label>Facility</Form.Label>
                   <Form.Select name="facilityname" value={this.props.filter.facilityname} onChange={this.setFacility}>
-                    <option value="">Please choose a facility</option>
+                    <option value="">All facilities</option>
                     { _.map(this.state.allfacilities, (q) => { return (<option key={q} value={q}>{q}</option>)}) }
                   </Form.Select>
                 </Form.Group>
@@ -499,7 +499,7 @@ class RequestFilters extends Component {
                 <Form.Group className="mb-3">
                   <Form.Label>Repo</Form.Label>
                   <Form.Select name="reponame" value={this.props.filter.reponame} onChange={this.setRepo}>
-                    <option value="">Please choose a repo</option>
+                    <option value="">All repos</option>
                     { _.map(this.state.selectablerepos, (q) => { return (<option key={q} value={q}>{q}</option>)}) }
                   </Form.Select>
                 </Form.Group>
