@@ -47,8 +47,8 @@ query {
 `;
 
 const CHANGE_USER_SHELL_MUTATION = gql`
-mutation userChangeShell($newshell: String!){
-  userChangeShell(newshell: $newshell){
+mutation requestUserChangeShell($request: CoactRequestInput!){
+  requestUserChangeShell(request: $request){
     username
     shell
   }
@@ -410,7 +410,7 @@ class UserDetails extends Component {
                 <hr/>
                 <Row><Col md={3}><span className="tbllbl">Preferred Email</span></Col><Col md={5}>{this.props.userdetails.preferredemail}</Col><Col><Button variant="secondary" onClick={this.showPrefEmailModal}>Change</Button></Col></Row>
                 <hr/>
-                <Row><Col md={3}><span className="tbllbl">Shell</span></Col><Col md={5}>{this.props.userdetails.shell}</Col><Col><Button disabled={true} variant="secondary" onClick={this.showUserShellModal}>Change my shell</Button></Col></Row>
+                <Row><Col md={3}><span className="tbllbl">Shell</span></Col><Col md={5}>{this.props.userdetails.shell}</Col><Col><Button variant="secondary" onClick={this.showUserShellModal}>Change my shell</Button></Col></Row>
                 <hr/>
                 <Col>
                   <Row><Card.Subtitle>EPPNs</Card.Subtitle></Row>
@@ -485,8 +485,8 @@ export default function MyProfile() {
   const [enblPublicHtml, setEnblPublicHtml] = useState(false);
 
   const userChangeShell = (newshell) => {
-    console.log("Changing shell to " + newshell);
-    chgShellfn({ variables: { newshell: newshell }, refetchQueries: [ HOMEDETAILS, 'whoami' ]});
+    console.log("Requesting a change to user shell to " + newshell);
+    chgShellfn({ variables: { request: { reqtype: "UserChangeShell", shell: newshell } }, refetchQueries: [ HOMEDETAILS, 'whoami' ]});
     setChgShellShow(false);
   };
 
