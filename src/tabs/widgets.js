@@ -26,7 +26,7 @@ export function ChargeFactor(props) {
 
 export function TeraBytes(props) {
   if(_.isNil(props.value)) return "N/A";
-  return (props.value/1024.0).toFixed(2);
+  return (props.value/1000.0).toFixed(2);
 }
 
 export function InMillions(props) {

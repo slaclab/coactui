@@ -15,6 +15,8 @@ import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { SearchAndAdd } from "./widgets";
 import { TeraBytes } from './widgets';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus, faEdit } from '@fortawesome/free-solid-svg-icons'
 
 const FACILITYDETAILS = gql`
 query Facility($facilityinput: FacilityInput){
@@ -38,6 +40,15 @@ query Facility($facilityinput: FacilityInput){
       used
     }
   }
+  whoami {
+    username
+    isAdmin
+  }
+  clusters {
+    name
+  }
+  storagenames
+  storagepurposes
 }
 `;
 
@@ -86,16 +97,153 @@ mutation requestNewSDFAccount($request: CoactRequestInput!){
 }
 `;
 
+const ADDUPDT_COMPUTE_PURCHASE = gql`
+mutation facilityAddUpdateComputePurchase($facilityinput: FacilityInput!, $clusterinput: ClusterInput!, $purchase: Float!) {
+  facilityAddUpdateComputePurchase(facility: $facilityinput, cluster: $clusterinput, purchase: $purchase){
+    Id
+  }
+}
+`
+const ADDUPDT_STORAGE_PURCHASE = gql`
+mutation facilityAddUpdateStoragePurchase($facilityinput: FacilityInput!, $purpose: String!, $storagename: String, $purchase: Float!) {
+  facilityAddUpdateStoragePurchase(facility: $facilityinput, purpose: $purpose, storagename: $storagename, purchase: $purchase){
+    Id
+  }
+}
+`
+
+
+
+class AddComputePurchase extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { clustername: "", currentPurchase: props.currentpurchase, clusterInvalid: false }
+    this.setPurchase = (event) => { this.setState({currentPurchase: event.target.value}) }
+    this.setCluster = (event) => {
+      let clustername = event.target.value;
+      if (_.isEmpty(clustername)) {
+        this.setState({clusterInvalid: true})
+        return
+      }
+      this.setState({clustername: clustername, clusterInvalid: false})
+    }
+    this.validateAndApply = () => {
+      if (_.isEmpty(this.state.clustername)) {
+        this.setState({clusterInvalid: true})
+        return
+      }
+      this.props.applyNewPurchase(this.state.clustername, this.state.currentPurchase);
+    }
+  }
+
+  render() {
+    let clusterswithoutpurchases = _.difference(_.map(this.props.clusters, "name"), _.map(this.props.facility.computepurchases, "clustername"));
+    if(_.isEmpty(clusterswithoutpurchases)) {
+      return (
+        <Modal show={this.props.showModal}>
+          <ModalHeader>
+            <div>This facility has purchased compute in all the existing clusters. Please edit the existing purchases.</div>
+          </ModalHeader>
+          <ModalBody>
+          </ModalBody>
+        <ModalFooter>
+          <Button onClick={() => {this.props.setShowModal(false)}}>
+            Close
+          </Button>
+        </ModalFooter>
+    </Modal>
+      )
+    }
+
+    return (
+      <Modal show={this.props.showModal}>
+        <ModalHeader>
+          <div>Add a new compute purchase for the facility <b className="text-primary">{this.props.facility.name}</b></div>
+        </ModalHeader>
+        <ModalBody>
+          <Row>
+            <InputGroup hasValidation>
+                <Col md={3}><Form.Label className="px-2" >Cluster:</Form.Label></Col>
+                <Col>
+                  <Form.Control required as="select" type="select" onChange={this.setCluster} isInvalid={this.state.clusterInvalid}>
+                  <option value="">Please select a cluster</option>
+                  {
+                    _.map(clusterswithoutpurchases, function(x){ return ( <option key={x} value={x}>{x}</option> ) })
+                  }
+                  </Form.Control>
+                  <Form.Control.Feedback type="invalid">Please select a cluster</Form.Control.Feedback>
+                </Col>
+            </InputGroup>
+          </Row>
+          <Row>
+            <Col md={2}><Form.Label className="px-2" >Purchase (in slachours):</Form.Label></Col>
+            <Col>
+              <InputGroup hasValidation>
+              <Form.Control type="number" onBlur={this.setPurchase} isInvalid={this.props.isError} defaultValue={this.props.currentpurchase}/>
+              <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
+          </InputGroup>
+            </Col>
+          </Row>
+        </ModalBody>
+        <ModalFooter>
+          <Button onClick={() => {this.props.setShowModal(false)}}>
+            Close
+          </Button>
+          <Button onClick={() => { this.validateAndApply() }}>
+            Done
+          </Button>
+        </ModalFooter>
+    </Modal>
+    );
+  }
+}
+
+class UpdateComputePurchase extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { currentPurchase: props.currentpurchase }
+    this.setPurchase = (event) => { this.setState({currentPurchase: event.target.value}) }
+  }
+
+  render() {
+    return (
+      <Modal show={this.props.showModal}>
+        <ModalHeader>
+          <div>Update the compute purchase for the facility <b className="text-primary">{this.props.facility.name}</b> on the cluster <b className="text-primary">{this.props.clustername}</b></div>
+        </ModalHeader>
+        <ModalBody>
+          <InputGroup hasValidation>
+            <Form.Control type="number" onBlur={this.setPurchase} isInvalid={this.props.isError} defaultValue={this.props.currentpurchase}/>
+            <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
+          </InputGroup>
+        </ModalBody>
+        <ModalFooter>
+          <Button onClick={() => {this.props.setShowModal(false)}}>
+            Close
+          </Button>
+          <Button onClick={() => { this.props.applyNewPurchase(this.props.clustername, this.state.currentPurchase) }}>
+            Done
+          </Button>
+        </ModalFooter>
+    </Modal>
+    );
+  }
+}
+
 class FacilityComputePurchases extends Component {
   constructor(props) {
     super(props);
+    this.state = { showAddModal: false, showUpdateModal: false, updateModalClusterName: "", updateModalCurrentPurchase: 0, modalError: false, modalErrorMessage: ""};
+    this.applyNewPurchase = (clustername, newPurchase) => {
+      this.props.addUpdateComputePurchase(clustername, newPurchase, () => {this.setState({showAddModal: false, showUpdateModal: false})}, (message) => { this.setState({modalError: true, modalErrorMessage: message})})
+    }
   }
 
   render() {
     return (
       <Col>
         <Card className="facrsc">
-          <Card.Header>Compute</Card.Header>
+          <Card.Header>Compute {this.props.isAdmin ? (<span className="px-1 text-warning" title="Add new compute purchase" onClick={() => { this.setState({showAddModal: true, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faPlus}/></span>) : (<span></span>)}</Card.Header>
           <Card.Body>
             <Row className="mb-2">
               <Col md={3}><span className="tbllbl">Cluster</span></Col>
@@ -104,10 +252,10 @@ class FacilityComputePurchases extends Component {
               <Col md={3}><span className="tbllbl">Used</span></Col>
             </Row>
             {
-              _.map(this.props.facility.computepurchases, (p) => { return (
+              _.map(_.sortBy(this.props.facility.computepurchases, "clustername"), (p) => { return (
                 <Row key={p.clustername} className="mb-2">
                   <Col md={3}><NavLink to={"/clusterusage/"+p.clustername} key={p.clustername}>{p.clustername}</NavLink></Col>
-                  <Col md={3}>{p.purchased}</Col>
+                  <Col md={3}>{p.purchased} {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased amount" onClick={() => { this.setState({showUpdateModal: true, updateModalClusterName: p.clustername, updateModalCurrentPurchase: p.purchased, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</Col>
                   <Col md={3}>{p.allocated}</Col>
                   <Col md={3}>{p.used.toFixed(2)}</Col>
                 </Row>
@@ -116,21 +264,171 @@ class FacilityComputePurchases extends Component {
             }
           </Card.Body>
         </Card>
+        <AddComputePurchase facility={this.props.facility} clusters={this.props.clusters} showModal={this.state.showAddModal} setShowModal={(val) => { this.setState({showAddModal: val})}} isError={this.state.modalError} errorMessage={this.state.modalErrorMessage} applyNewPurchase={this.applyNewPurchase} />
+        <UpdateComputePurchase facility={this.props.facility} showModal={this.state.showUpdateModal} setShowModal={(val) => { this.setState({showUpdateModal: val})}} clustername={this.state.updateModalClusterName} currentpurchase={this.state.updateModalCurrentPurchase} isError={this.state.modalError} errorMessage={this.state.modalErrorMessage} applyNewPurchase={this.applyNewPurchase}/>
       </Col>
     )
   }
 }
 
+
+class AddStoragePurchase extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { purpose: "", storagename: "", currentPurchase: props.currentpurchase, purposeInvalid: false, storagenameInvalid: false }
+    this.setPurchase = (event) => { this.setState({currentPurchase: event.target.value}) }
+    this.setPurpose = (event) => {
+      let purpose = event.target.value;
+      if (_.isEmpty(purpose)) {
+        this.setState({purposeInvalid: true})
+        return
+      }
+      this.setState({purpose: purpose, purposeInvalid: false})
+    }
+    this.setStorageName = (event) => {
+      let storagename = event.target.value;
+      if (_.isEmpty(storagename)) {
+        this.setState({storagenameInvalid: true})
+        return
+      }
+      this.setState({storagename: storagename, storagenameInvalid: false})
+    }
+
+    this.validateAndApply = () => {
+      if (_.isEmpty(this.state.purpose)) {
+        this.setState({purposeInvalid: true})
+        return
+      }
+      if (_.isEmpty(this.state.storagename)) {
+        this.setState({storagenameInvalid: true})
+        return
+      }
+      this.props.applyNewPurchase(this.state.purpose, this.state.storagename, this.state.currentPurchase);
+    }
+
+  }
+
+  render() {
+    let purposewithoutpurchase = _.difference(this.props.storagepurposes, _.map(this.props.facility.storagepurchases, "purpose"));
+    if(_.isEmpty(purposewithoutpurchase)) {
+      return (
+        <Modal show={this.props.showModal}>
+          <ModalHeader>
+            <div>This facility has purchased storage for all purposes. Please edit the existing purchases.</div>
+          </ModalHeader>
+          <ModalBody>
+          </ModalBody>
+        <ModalFooter>
+          <Button onClick={() => {this.props.setShowModal(false)}}>
+            Close
+          </Button>
+        </ModalFooter>
+    </Modal>
+      )
+    }
+    return (
+      <Modal show={this.props.showModal}>
+        <ModalHeader>
+          <div>Add a new storage purchase for the facility <b className="text-primary">{this.props.facility.name}</b></div>
+        </ModalHeader>
+        <ModalBody>
+          <Row>
+            <InputGroup hasValidation>
+                <Col md={3}><Form.Label className="px-2" >Purpose:</Form.Label></Col>
+                <Col>
+                  <Form.Control required as="select" type="select" onChange={this.setPurpose} isInvalid={this.state.purposeInvalid}>
+                  <option value="">Please select a purpose for this storage</option>
+                  {
+                    _.map(purposewithoutpurchase, function(x){ return ( <option key={x} value={x}>{x}</option> ) })
+                  }
+                  </Form.Control>
+                  <Form.Control.Feedback type="invalid">Please select a purpose</Form.Control.Feedback>
+                </Col>
+            </InputGroup>
+            <InputGroup hasValidation>
+                <Col md={3}><Form.Label className="px-2" >On storage:</Form.Label></Col>
+                <Col>
+                  <Form.Control required as="select" type="select" onChange={this.setStorageName} isInvalid={this.state.storagenameInvalid}>
+                  <option value="">Please select a storage</option>
+                  {
+                    _.map(this.props.storagenames, function(x){ return ( <option key={x} value={x}>{x}</option> ) })
+                  }
+                  </Form.Control>
+                  <Form.Control.Feedback type="invalid">Please select a storage</Form.Control.Feedback>
+                </Col>
+            </InputGroup>
+          </Row>
+          <Row>
+            <Col md={2}><Form.Label className="px-2" >Purchase (in Terabytes):</Form.Label></Col>
+            <Col>
+              <InputGroup hasValidation>
+              <Form.Control type="number" onBlur={this.setPurchase} isInvalid={this.props.isError} defaultValue={this.props.currentpurchase}/>
+              <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
+          </InputGroup>
+            </Col>
+          </Row>
+        </ModalBody>
+        <ModalFooter>
+          <Button onClick={() => {this.props.setShowModal(false)}}>
+            Close
+          </Button>
+          <Button onClick={() => { this.validateAndApply() }}>
+            Done
+          </Button>
+        </ModalFooter>
+    </Modal>
+    );
+  }
+}
+
+
+class UpdateStoragePurchase extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { currentPurchase: props.currentpurchase }
+    this.setPurchase = (event) => { this.setState({currentPurchase: event.target.value}) }
+  }
+
+  render() {
+    return (
+      <Modal show={this.props.showModal}>
+        <ModalHeader>
+          <div>Update the storage purchase for the facility <b className="text-primary">{this.props.facility.name}</b> for the purpose <b className="text-primary">{this.props.purpose}</b></div>
+        </ModalHeader>
+        <ModalBody>
+          <InputGroup hasValidation>
+            <Form.Control type="number" onBlur={this.setPurchase} isInvalid={this.props.isError} defaultValue={(this.props.currentpurchase/1000.0).toFixed(2)}/>
+            <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
+          </InputGroup>
+        </ModalBody>
+        <ModalFooter>
+          <Button onClick={() => {this.props.setShowModal(false)}}>
+            Close
+          </Button>
+          <Button onClick={() => { this.props.applyNewPurchase(this.props.purpose, this.props.storagename, this.state.currentPurchase) }}>
+            Done
+          </Button>
+        </ModalFooter>
+    </Modal>
+    );
+  }
+}
+
+
 class FacilityStoragePurchases extends Component {
   constructor(props) {
     super(props);
+    this.state = { showAddModal: false, showUpdateModal: false, updateModalPurpose: "", updateModalStorageName: "", updateModalCurrentPurchase: 0, modalError: false, modalErrorMessage: ""};
+    this.applyNewPurchase = (purpose, storagename, newPurchase) => {
+      this.props.addUpdateStoragePurchase(purpose, storagename, newPurchase, () => {this.setState({showAddModal: false, showUpdateModal: false})}, (message) => { this.setState({modalError: true, modalErrorMessage: message})})
+    }
   }
 
   render() {
     return (
       <Col>
         <Card className="facrsc">
-          <Card.Header>Storage</Card.Header>
+          <Card.Header>Storage {this.props.isAdmin ? (<span className="px-1 text-warning" title="Add new compute purchase" onClick={() => { this.setState({showAddModal: true, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faPlus}/></span>) : (<span></span>)}</Card.Header>
           <Card.Body>
             <Row className="mb-2">
               <Col md={3}><span className="tbllbl">Storage Class</span></Col>
@@ -140,11 +438,11 @@ class FacilityStoragePurchases extends Component {
               <Col md={2}><span className="tbllbl">Used (TB)</span></Col>
             </Row>
             {
-              _.map(this.props.facility.storagepurchases, (p) => { return (
+              _.map(_.sortBy(this.props.facility.storagepurchases, "purpose"), (p) => { return (
                 <Row key={p.storagename+p.purpose} className="mb-2">
                   <Col md={3}><NavLink to={"/storageusage/"+p.storagename} key={p.storagename}>{p.storagename}</NavLink></Col>
                   <Col md={3}><NavLink to={"/storageusage/"+p.storagename+"/purpose/"+p.purpose} key={p.storagename+p.purpose}>{p.purpose}</NavLink></Col>
-                  <Col md={2}><TeraBytes value={p.purchased}/></Col>
+                  <Col md={2}><TeraBytes value={p.purchased}/> {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased storage" onClick={() => { this.setState({showUpdateModal: true, updateModalPurpose: p.purpose, updateModalStorageName: p.storagename, updateModalCurrentPurchase: p.purchased, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</Col>
                   <Col md={2}><TeraBytes value={p.allocated}/></Col>
                   <Col md={2}><TeraBytes value={p.used}/></Col>
                 </Row>
@@ -153,6 +451,8 @@ class FacilityStoragePurchases extends Component {
             }
           </Card.Body>
         </Card>
+        <AddStoragePurchase facility={this.props.facility} storagenames={this.props.storagenames} storagepurposes = {this.props.storagepurposes} showModal={this.state.showAddModal} setShowModal={(val) => { this.setState({showAddModal: val})}} isError={this.state.modalError} errorMessage={this.state.modalErrorMessage} applyNewPurchase={this.applyNewPurchase}/>
+        <UpdateStoragePurchase facility={this.props.facility} showModal={this.state.showUpdateModal} setShowModal={(val) => { this.setState({showUpdateModal: val})}} purpose={this.state.updateModalPurpose} storagename={this.state.updateModalStorageName} currentpurchase={this.state.updateModalCurrentPurchase} isError={this.state.modalError} errorMessage={this.state.modalErrorMessage} applyNewPurchase={this.applyNewPurchase}/>
       </Col>
     )
   }
@@ -316,8 +616,8 @@ class FacilityDetails extends Component {
           </Col>
         </Row>
         <Row>
-          <FacilityComputePurchases facility={this.props.facility}/>
-          <FacilityStoragePurchases facility={this.props.facility}/>
+          <FacilityComputePurchases facility={this.props.facility} clusters={this.props.clusters} isAdmin={this.props.isAdmin} addUpdateComputePurchase={this.props.addUpdateComputePurchase}/>
+          <FacilityStoragePurchases facility={this.props.facility} storagenames={this.props.storagenames} storagepurposes={this.props.storagepurposes} isAdmin={this.props.isAdmin} addUpdateStoragePurchase={this.props.addUpdateStoragePurchase} />
           <AddRemoveCzar facility={this.props.facility} getUsersMatchingUserName={this.props.getUsersMatchingUserName} onSelDesel={this.props.onSelDesel} showModal={this.state.showCzarModal} setShowModal={(val) => { this.setState({showCzarModal: val})} }/>
           <RegisterNewUser facility={this.props.facility} getUsersMatchingUserName={this.props.getUsersMatchingUserName} getUserForEPPN={this.props.getUserForEPPN} showModal={this.state.showRegisterUserModal} setShowModal={(val) => { this.setState({showRegisterUserModal: val})} } requestUserAccount={this.props.requestUserAccount }/>
         </Row>
@@ -340,6 +640,8 @@ export default function Facility(props) {
   const [ addCzarMutation ] = useMutation(ADD_CZAR_MUTATION);
   const [ removeCzarMutation ] = useMutation(REMOVE_CZAR_MUTATION);
   const [ requestUserAccount ] = useMutation(REQUEST_USERACCOUNT_MUTATION);
+  const [ addUpdtComputePurchase ] = useMutation(ADDUPDT_COMPUTE_PURCHASE);
+  const [ addUpdtStoragePurchase ] = useMutation(ADDUPDT_STORAGE_PURCHASE);
 
 
   let addRemoveCzar = function(username, selected) {
@@ -361,6 +663,23 @@ export default function Facility(props) {
     }).catch(err => { console.log(err); onError(err)});
   };
 
+  let addUpdateComputePurchase = function(clustername, newPurchase, callWhenDone, onError) {
+    console.log("Updating compute for " + clustername + " to " + newPurchase);
+    addUpdtComputePurchase({ 
+      variables: { facilityinput: { name: props.facilityname }, clusterinput: { name: clustername }, purchase: _.toNumber(newPurchase) }, 
+      refetchQueries: [ FACILITYDETAILS, 'Facility' ], 
+      onCompleted: (data) => { callWhenDone(data)},
+      onError: (error) => { console.log(error); onError(error.message) } })
+  }
+
+  let addUpdateStoragePurchase = function(purpose, storagename, newPurchase, callWhenDone, onError) {
+    console.log("Updating storage for " + purpose + " to " + newPurchase + " on " + storagename);
+    addUpdtStoragePurchase({ 
+      variables: { facilityinput: { name: props.facilityname }, purpose: purpose, storagename: storagename, purchase: _.toNumber(newPurchase)*1000.0 }, 
+      refetchQueries: [ FACILITYDETAILS, 'Facility' ], 
+      onCompleted: (data) => { callWhenDone(data)},
+      onError: (error) => { console.log(error); onError(error.message) } })
+  }
 
 
   if (loading) return <p>Loading...</p>;
@@ -368,8 +687,14 @@ export default function Facility(props) {
 
   console.log(data);
   let facility = data.facility;
+  let isAdmin = data.whoami.isAdmin;
+  let clusters = data.clusters;
+  let storagenames = data.storagenames;
+  let storagepurposes = data.storagepurposes;
 
   return (<div>
-    <FacilityDetails facility={facility} getUserForEPPN={getUserForEPPN} onSelDesel={addRemoveCzar} requestUserAccount={requestAccount} getUsersMatchingUserName={getUsersMatchingUserName}/>
+    <FacilityDetails facility={facility} isAdmin={isAdmin} getUserForEPPN={getUserForEPPN} clusters={clusters} storagenames={storagenames} storagepurposes={storagepurposes}
+    onSelDesel={addRemoveCzar} requestUserAccount={requestAccount} getUsersMatchingUserName={getUsersMatchingUserName}
+    addUpdateComputePurchase={addUpdateComputePurchase} addUpdateStoragePurchase={addUpdateStoragePurchase}/>
   </div>);
 }
