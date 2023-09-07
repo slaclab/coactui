@@ -55,6 +55,16 @@ mutation requestUserChangeShell($request: CoactRequestInput!){
 }
 `;
 
+const CHANGE_PUBLIC_HTML_MUTATION = gql`
+mutation requestUserPublicHtml($request: CoactRequestInput!){
+  requestUserPublicHtml(request: $request){
+    username
+    publichtml
+  }
+}
+`;
+
+
 const USER_UPDATE_EPPN_MUTATION = gql`
 mutation userUpdateEppn($eppns: [String!]!){
   userUpdateEppn(eppns: $eppns){
@@ -336,18 +346,17 @@ class UserStorage extends Component {
 class RequestPublicHTML extends Component {
   constructor(props) {
     super(props);
-    this.state = { agreedToConditions: false, showErr: false }
+    this.state = { agreedToConditions: false, showErr: false, errorMsg: "" }
     this.handleClose = () => { this.props.setShow(false); }
     this.agreeToConditions = (event) => { console.log(event.target.checked); this.setState({ agreedToConditions: event.target.checked, showErr: false  }) }
     this.enablePublicHTML = () => {
       console.log(this.state.agreedToConditions);
       if(!this.state.agreedToConditions) {
-        this.setState({ showErr: true });
+        this.setState({ showErr: true, errorMsg: "Please agree to the terms and conditions to turn on your public HTML space." });
         return;
       }
 
-      this.props.enablePublicHTML(true);
-      this.props.setShow(false);
+      this.props.userChangePublicHtml(true, () => {this.props.setShow(false)}, (errorMessage) => { this.setState({showErr: true, errorMsg: errorMessage})});
     }
   }
   render() {
@@ -358,14 +367,13 @@ class RequestPublicHTML extends Component {
         </Modal.Header>
         <Modal.Body>
           <Row className="mb-3">
-            <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
+            <div><p>Publicly accessible content hosted in S3DF is subject to the <a href="https://www2.slac.stanford.edu/comp/slacwide/account/IT-057-Acceptable-Use-of-Information-Technology-Resources.pdf" target="_blank">SLAC Acceptable Use of Information Technology Resources Policy</a>.</p>
+            <p>For more details, please see the <a href="https://s3df.slac.stanford.edu/public/doc/#/service-compute?id=s3df-static-sites" target="_blank">S3DF documentation</a>.</p>
+            </div>
             <InputGroup className="mt-3" hasValidation>
               <InputGroup.Text>I agree to these terms and conditions</InputGroup.Text>
               <InputGroup.Checkbox value={this.state.agreedToConditions} onChange={this.agreeToConditions} isInvalid={this.state.showErr} />
-              <Alert show={this.state.showErr}>Please agree to the terms and conditions to turn on your public HTML space.</Alert>
+              <Alert show={this.state.showErr}>{this.state.errorMsg}</Alert>
             </InputGroup>
           </Row>
         </Modal.Body>
@@ -449,7 +457,7 @@ class UserDetails extends Component {
                 <Row className="mt-2"><Col>{this.props.userdetails.publichtml ? (<span>Your public HTML pages are viewable here - <a href={this.publichtmlurl}>{this.publichtmlurl}</a>. You can edit your public HTML files here <code>{this.publichtmlfolder}</code></span>) : "You have not turned on the public html space"}</Col>
                 <Col md={3}>
                   {
-                    this.props.userdetails.publichtml ? (<span></span>) : (<Button disabled={true} className="my-2" variant="secondary" onClick={this.showPublicHTML}>Request</Button>)
+                    this.props.userdetails.publichtml ? (<span></span>) : (<Button className="my-2" variant="secondary" onClick={this.showPublicHTML}>Request</Button>)
                   }
                 </Col>
                 </Row>
@@ -474,10 +482,11 @@ class UserDetails extends Component {
 
 export default function MyProfile() {
   const { loading, error, data } = useQuery(HOMEDETAILS, { errorPolicy: 'all'} );
-  const [ chgShellfn, { chgShelldata, chgShellloading, chgShellerror }] = useMutation(CHANGE_USER_SHELL_MUTATION);
-  const [ updtEppnfn, { updtEppndata, updtEppnloading, updtEppnerror }] = useMutation(USER_UPDATE_EPPN_MUTATION);
-  const [ updtUserfn, { updtUserdata, updtUserloading, updtUsererror }] = useMutation(USER_UPDATE_USER);
-  const [ quotafn, { quotadata, quotaloading, quotaerror }] = useMutation(QUOTA_REQUEST);
+  const [ chgShellfn ] = useMutation(CHANGE_USER_SHELL_MUTATION);
+  const [ updtEppnfn ] = useMutation(USER_UPDATE_EPPN_MUTATION);
+  const [ updtUserfn ] = useMutation(USER_UPDATE_USER);
+  const [ quotafn ] = useMutation(QUOTA_REQUEST);
+  const [ chgPublicHtml ] = useMutation(CHANGE_PUBLIC_HTML_MUTATION);
 
   const [chgShellShow, setChgShellShow] = useState(false);
   const [updtEppnShow, setUpdtEppnShow] = useState(false);
@@ -488,6 +497,14 @@ export default function MyProfile() {
     console.log("Requesting a change to user shell to " + newshell);
     chgShellfn({ variables: { request: { reqtype: "UserChangeShell", shell: newshell } }, refetchQueries: [ HOMEDETAILS, 'whoami' ]});
     setChgShellShow(false);
+  };
+
+  const userChangePublicHtml = (enable, callWhenDone, onError) => {
+    console.log("Requesting a change to  " + (enable ? "enable" : "disable")  + " public html");
+    chgPublicHtml({ variables: { request: { reqtype: "UserPublicHtml", publichtml: enable } }, 
+      onCompleted: (data) => { console.log(data); callWhenDone(data)},
+      onError: (error) => { console.log(error); onError(error.message)}, 
+      refetchQueries: [ HOMEDETAILS, 'whoami' ]});
   };
 
   const updateEppns = (neweppns, onerrorfunction) => {
@@ -506,13 +523,6 @@ export default function MyProfile() {
     quotafn({ variables: { request: { reqtype: "UserStorageAllocation", storagename: storagename, gigabytes: gigabytes, purpose: purpose, notes: notes }}});
   };
 
-  const enablePublicHTML = () => {
-    console.log("Enabling public HTML for user");
-    updtUserfn({ variables: { user: { Id: data["whoami"]["Id"], username: data["whoami"]["username"], publichtml: true } }, refetchQueries: [ HOMEDETAILS, 'whoami' ]});
-    setEnblPublicHtml(false);
-  };
-
-
   if (loading) return <p>Loading...</p>;
 //  if (error) return <p>Error :</p>;
 
@@ -523,7 +533,7 @@ export default function MyProfile() {
       <ChangeUserShell show={chgShellShow} setShow={setChgShellShow} userdetails={data["whoami"]} userChangeShell={userChangeShell} />
       <AddRemoveEPPNs show={updtEppnShow} setShow={setUpdtEppnShow} userdetails={data["whoami"]} updateEppns={updateEppns} />
       <ChangePreferredEmail show={updtPrefEmail} setShow={setUpdtPrefEmail} userdetails={data["whoami"]} changePreferredEmail={changePreferredEmail} />
-      <RequestPublicHTML show={enblPublicHtml} setShow={setEnblPublicHtml} userdetails={data["whoami"]} enablePublicHTML={enablePublicHTML} />
+      <RequestPublicHTML show={enblPublicHtml} setShow={setEnblPublicHtml} userdetails={data["whoami"]} userChangePublicHtml={userChangePublicHtml} />
       <UserDetails userdetails={data["whoami"]} setChgShellShow={setChgShellShow} setUpdtEppnShow={setUpdtEppnShow} setUpdtPrefEmail={setUpdtPrefEmail} setEnblPublicHtml={setEnblPublicHtml} requestQuota={requestQuota}/>
     </>
   );

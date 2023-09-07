@@ -40,6 +40,7 @@ query Requests($fetchprocessed: Boolean, $showmine: Boolean, $filter: CoactReque
     slachours
     gigabytes
     shell
+    publichtml
     notes
     approvalstatus
     canapprove
@@ -322,6 +323,17 @@ class RequestDetails extends Component {
           {_.map(["shell"], function(x){
             return(
               <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
+            )
+          })}
+        </ListGroup>
+      )
+    }
+    if(this.props.req.reqtype == "UserPublicHtml") {
+      return (
+        <ListGroup>
+          {_.map(["publichtml"], function(x){
+            return(
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.toString(_.get(req, x, false))}</span></ListGroup.Item>
             )
           })}
         </ListGroup>
