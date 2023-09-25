@@ -226,6 +226,9 @@ export default function RepoTabs(props) {
         <Row id="repotabs">
           <Col>
             <Nav variant="tabs" onSelect={(selKey) => { props.setReposActiveTab(selKey); }}>
+            <Nav.Item>
+                <Nav.Link eventKey="info" as={Link} to={`info`}>Info</Nav.Link>
+              </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="users" as={Link} to={`users`}>Users</Nav.Link>
               </Nav.Item>

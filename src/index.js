@@ -36,6 +36,7 @@ import ReposGroupsListView from "./tabs/reposgroups";
 import UserAuditTrail from "./tabs/useraudit";
 import ReposAuditListView from "./tabs/reposaudit";
 import RepoAuditTrail from "./tabs/repoaudit";
+import ReposInfoListView from "./tabs/reposinfo";
 import Requests from "./tabs/requests";
 import './index.css';
 import { Footer } from "./tabs/widgets";
@@ -65,7 +66,7 @@ query {
 
 function App() {
   console.log("starting app....");
-  const [reposActiveTab, setReposActiveTab] = useState("");
+  const [reposActiveTab, setReposActiveTab] = useState("info");
   const [requestsActiveTab, setRequestsActiveTab] = useState("");
   const { loading, error, data } = useQuery(HOMEDETAILS, { errorPolicy: 'all'} );
   if (loading) return <p>Loading...</p>;
@@ -116,6 +117,7 @@ function App() {
             <Route exact path={`groups/:facility/:name`} element = { <Groups /> } />
             <Route exact path={`audit`} element = { <ReposAuditListView/>} />
             <Route exact path={`audit/:facility/:name`} element = { <RepoAuditTrail />} />
+            <Route exact path={`info`} element = { <ReposInfoListView />} />
           </Route>
           <Route exact path={`requests`} element={<Requests showall={true} showmine={false} setRequestsActiveTab={setRequestsActiveTab} />} />
         </Routes>
