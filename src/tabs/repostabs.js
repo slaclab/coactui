@@ -3,7 +3,7 @@ import React, { Component, useState } from 'react';
 import { Link, Outlet } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import Tab from 'react-bootstrap/Tab';
-import Tabs from 'react-bootstrap/Tabs';
+import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Nav from 'react-bootstrap/Nav';
@@ -20,6 +20,7 @@ const WHOAMI = gql`
 query{
   whoami {
     username
+    eppns
     isAdmin
     facilities
   }
@@ -39,6 +40,14 @@ mutation requestRepoMembership($request: CoactRequestInput!){
 const REQUEST_NEWREPO_MUTATION = gql`
 mutation requestNewRepo($request: CoactRequestInput!){
   requestNewRepo(request: $request){
+    Id
+  }
+}
+`;
+
+const REQUEST_FACILTY_ACCESS_MUTATION = gql`
+mutation requestNewSDFAccount($request: CoactRequestInput!){
+  requestNewSDFAccount(request: $request){
     Id
   }
 }
@@ -191,24 +200,92 @@ class ReqNewRepo extends Component {
   }
 }
 
+
+class ReqFacilityAccess extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { facility: "", isError: false, errorMsg: "", isDone: false }
+    this.handleClose = () => { this.props.setShow(false); }
+    let timer = null;
+    this.requestFacilityAccess = () => {
+      console.log(this.state.facility);
+      if(_.isEmpty(this.state.facility)) {
+        this.setState({ isError: true, errorMsg: "Please choose a valid facility" });
+        return;
+      }
+      this.props.requestFacilityAccess(this.state.facility, 
+        () => { 
+          this.setState({isDone: true}); 
+          timer = setTimeout(() => this.props.setShow(false), 3000)
+        },
+        (error) => { 
+          this.setState({isError: true, errorMsg: error.message});
+        }
+      );
+    }
+    this.setFacility = (event) => { this.setState({ facility: event.target.value, isError: false, errorMsg: "" }) }
+
+  }
+  render() {
+    return (
+      <Modal show={this.props.show} onHide={this.handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Request access to facility</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {this.state.isDone ? <Alert key={"success"} variant={"success"}><p>A request for access to the facility <b>{this.state.facility}</b> has been made.</p><p>You should be able to access the resources in the facility once this has been approved.</p></Alert> : ""}
+          <Row>
+            <InputGroup hasValidation>
+                <Col md={3}><Form.Label className="px-2" >Facility:</Form.Label></Col>
+                <Col>
+                  <Form.Control required as="select" type="select" onChange={this.setFacility} isInvalid={this.state.isError}>
+                  <option value="">Please select a facility</option>
+                  {
+                    _.map(this.props.facilities, function(x){ return ( <option key={x} value={x}>{x}</option> ) })
+                  }
+                  </Form.Control>
+                  <Form.Control.Feedback type="invalid">{this.state.errorMsg}</Form.Control.Feedback>
+                </Col>
+            </InputGroup>
+          </Row>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={this.handleClose}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={this.requestFacilityAccess}>
+            Request Facility Access
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    )
+  }
+}
+
 export default function RepoTabs(props) {
   const { loading, error, data } = useQuery(WHOAMI);
   const [repMemShow, setRepMemShow] = useState(false);
   const [newRepShow, setNewRepShow] = useState(false);
+  const [facAccShow, setFacAccShow] = useState(false);
   const [toolbaritems, setToolbaritems] = useState([
+    ["Request Access to Facility", setFacAccShow ],
     ["Request Repo Membership", setRepMemShow ],
     ["Request New Repo", setNewRepShow ]
   ]);
-  const [ repomemnrshipfn, { rmdata, rmloading, rmerror }] = useMutation(REQUEST_REPOMEMBERSHIP_MUTATION);
-  const [ newrepofn, { nrdata, nrloading, nrerror }] = useMutation(REQUEST_NEWREPO_MUTATION);
+  const [ repomemnrshipfn ] = useMutation(REQUEST_REPOMEMBERSHIP_MUTATION);
+  const [ newrepofn ] = useMutation(REQUEST_NEWREPO_MUTATION);
+  const [ facaccessfn ] = useMutation(REQUEST_FACILTY_ACCESS_MUTATION);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;
+
+  console.log(data);
 
   let username = _.get(data, "whoami.username");
   let isadmin = _.get(data, "whoami.isAdmin", false);
   let facilities = _.map(_.get(data, "facilities"), "name");
   let myfacilities = isadmin ? facilities : _.get(data, "whoami.facilities");
+  let mymissingfacilties = _.difference(facilities, _.get(data, "whoami.facilities"));
 
   const requestRepoMembership = (reponame, facilityname) => {
     console.log("Repo membership requested for repo " + reponame + " in facility" + facilityname);
@@ -219,6 +296,13 @@ export default function RepoTabs(props) {
   const requestNewRepo = (repodetails) => {
     console.log("New repo requested Name: " + repodetails["reponame"] + " Facility: " + repodetails["facility"] + " Principal: " + repodetails["principal"]);
     newrepofn({ variables: { request: { reqtype: "NewRepo", reponame: repodetails.reponame, facilityname: repodetails.facility, principal: repodetails.principal }}});
+    setNewRepShow(false);
+  };
+
+  const requestFacilityAccess = (facility, onSuccess, onError) => {
+    console.log("Access requsted to facility " + facility);
+    facaccessfn({ variables: { request: { reqtype: "UserAccount", eppn: _.get(data, "whoami.eppns[0]", username + "@slac.stanford.edu"), preferredUserName: username, "facilityname": facility }}, 
+      onCompleted: onSuccess, onError: (error) => { onError(error)}});
     setNewRepShow(false);
   };
 
@@ -259,5 +343,6 @@ export default function RepoTabs(props) {
         </Tab.Content>
         <ReqRepMembership show={repMemShow} setShow={setRepMemShow} username={username} requestRepoMembership={requestRepoMembership} facilities={myfacilities} />
         <ReqNewRepo show={newRepShow} setShow={setNewRepShow} username={username} requestNewRepo={requestNewRepo}  facilities={myfacilities}/>
+        <ReqFacilityAccess show={facAccShow} setShow={setFacAccShow} username={username} requestFacilityAccess={requestFacilityAccess}  facilities={mymissingfacilties}/>
     </Tab.Container>);
 }
