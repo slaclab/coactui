@@ -418,7 +418,7 @@ class UserDetails extends Component {
                 <hr/>
                 <Row><Col md={3}><span className="tbllbl">Preferred Email</span></Col><Col md={5}>{this.props.userdetails.preferredemail}</Col><Col><Button variant="secondary" onClick={this.showPrefEmailModal}>Change</Button></Col></Row>
                 <hr/>
-                <Row><Col md={3}><span className="tbllbl">Shell</span></Col><Col md={5}>{this.props.userdetails.shell}</Col><Col><Button disabled={true} variant="secondary" onClick={this.showUserShellModal}>Change my shell</Button></Col></Row>
+                <Row><Col md={3}><span className="tbllbl">Shell</span></Col><Col md={5}>{this.props.userdetails.shell}</Col><Col><Button disabled={false} variant="secondary" onClick={this.showUserShellModal}>Change my shell</Button></Col></Row>
                 <hr/>
                 <Col>
                   <Row><Card.Subtitle>EPPNs</Card.Subtitle></Row>
