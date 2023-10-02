@@ -7,8 +7,6 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Fade from 'react-bootstrap/Fade';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUpLong, faDownLong } from '@fortawesome/free-solid-svg-icons'
 import { Link, useParams, useOutletContext } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import dayjs from "dayjs";
@@ -32,7 +30,6 @@ query Repos($reposinput: RepoInput, $allocationid: MongoId!){
       clustername
       start
       end
-      computerequirement
       qoses {
         name
         slachours
@@ -85,21 +82,11 @@ mutation requestRepoComputeAllocation($request: CoactRequestInput!){
 }
 `;
 
-const REQUEST_COMPUTE_REQUIREMENT_CHANGE = gql`
-mutation requestRepoChangeComputeRequirement($request: CoactRequestInput!){
-  requestRepoChangeComputeRequirement(request: $request){
-    Id
-  }
-}
-`;
-
 const APPROVE_REQUEST_MUTATION = gql`
 mutation ApproveRequest($Id: String!){
   requestApprove(id: $Id)
 }
 `;
-
-
 
 
 class User extends React.Component {
@@ -158,38 +145,6 @@ class TopTab extends React.Component {
     this.slachours_charged = _.sum(_.map(_.get(this.props.repodata.computeAllocation, "usage", []), "slachours"));
     this.available_slachours = this.current_allocation - this.slachours_charged;
     this.remaining_percent = (this.available_slachours/this.current_allocation)*100.0;
-    console.log("Rendering");
-    this.state = {
-      compRequirement: this.props.repodata.computeAllocation.computerequirement,
-      compreqclass: this.props.isAdminOrCzar ? "float-end" : "d-none",
-      comprequpclass: (this.props.isAdminOrCzar && _.includes(["Normal", "OffShift"], this.props.repodata.computeAllocation.computerequirement)) ? "text-warning px-2" : "d-none",
-      compreqdownclass: (this.props.isAdminOrCzar && _.includes(["OnShift", "OffShift"], this.props.repodata.computeAllocation.computerequirement)) ? "text-warning px-2" : "d-none"
-    }
-
-    this.reallyChangeComputeRequirement = (newcomp) => { 
-      props.changeComputeRequirement(newcomp, () => { 
-        this.setState({
-          compRequirement: newcomp,
-          compreqclass: this.props.isAdminOrCzar ? "float-end" : "d-none",
-          comprequpclass: (this.props.isAdminOrCzar && _.includes(["Normal", "OffShift"], newcomp)) ? "text-warning px-2" : "d-none",
-          compreqdownclass: (this.props.isAdminOrCzar && _.includes(["OnShift", "OffShift"], newcomp)) ? "text-warning px-2" : "d-none"    
-        })
-      });
-    }
-    this.upComputeReq = () => { 
-      if(this.state.compRequirement == "Normal") {
-        this.reallyChangeComputeRequirement("OffShift");
-      } else if(this.state.compRequirement == "OffShift") {
-        this.reallyChangeComputeRequirement("OnShift");
-      }
-    }
-    this.downComputeReq = () => { 
-      if(this.state.compRequirement == "OnShift") {
-        this.reallyChangeComputeRequirement("OffShift");
-      } else if(this.state.compRequirement == "OffShift") {
-        this.reallyChangeComputeRequirement("Normal");
-      }
-    }
   }
   render() {
     return (<Table striped bordered>
@@ -203,13 +158,6 @@ class TopTab extends React.Component {
           <td><TwoPrecFloat value={this.available_slachours}/></td>
           <th><label>Remaining %</label></th>
           <td><TwoPrecFloat value={this.remaining_percent}/></td>
-          <th><label>Compute Requirement</label></th>
-          <td>{this.state.compRequirement}
-            <span className={this.state.compreqclass}>
-              <span title="Bump down the compute requirement for this repo" className={this.state.compreqdownclass} onClick={this.downComputeReq}><FontAwesomeIcon icon={faDownLong}/></span>
-              <span title="Bump up the compute requirement for this repo" className={this.state.comprequpclass} onClick={this.upComputeReq}><FontAwesomeIcon icon={faUpLong}/></span>
-            </span>
-          </td>
         </tr>
       </tbody>
       </Table>
@@ -367,7 +315,7 @@ class ComputeTab extends React.Component {
         <Col className="text-center"><div className="sectiontitle">Resource usage for repo <span className="ref">{this.props.repodata.name}</span> on the <span className="ref">{this.props.repodata.computeAllocation.clustername}</span> cluster</div></Col>
         <Col></Col>
       </Row>
-      <TopTab repodata={this.props.repodata} isAdminOrCzar={this.props.isAdminOrCzar} changeComputeRequirement={this.props.changeComputeRequirement}/>
+      <TopTab repodata={this.props.repodata} isAdminOrCzar={this.props.isAdminOrCzar} />
       <MidChart repodata={this.props.repodata}/>
       <BottomTab repodata={this.props.repodata} onAllocationChange={this.props.onAllocationChange}/>
     </div>)
@@ -379,7 +327,6 @@ export default function Compute() {
   const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame, facility: facilityname }, allocationid: allocationid } });
   const [ repoUpdateUserAllocation, { allocdata, allocloading, allocerror }] = useMutation(ALLOCATION_MUTATION);
   const [ repocmpallocfn, { repocmpallocdata, repocmpallocloading, repocmpallocerror }] = useMutation(REPO_COMPUTE_ALLOCATION_REQUEST);
-  const [ repoChangeComputeRequirement, { rccD, rccL, rccE } ] = useMutation(REQUEST_COMPUTE_REQUIREMENT_CHANGE);
   const [ approveRequest, { arD, arL, arE } ] = useMutation(APPROVE_REQUEST_MUTATION);
   const [ allocMdlShow, setAllocMdlShow] = useState(false);
   const [ toolbaritems, setToolbaritems ] = useOutletContext();
@@ -406,21 +353,8 @@ export default function Compute() {
     repocmpallocfn({ variables: { request: { reqtype: "RepoComputeAllocation", reponame: reponame, facilityname: repodata.facility, clustername: repodata.computeAllocation.clustername, qosname: qosname, slachours: _.toNumber(newSlacHours), notes: notes }}});
   }
 
-  let requestAndApproveChangeComputeRequirement = function(newCompRequirement, callWhenComplete) {
-    console.log("Changing compute requirement to " + newCompRequirement);
-    repoChangeComputeRequirement(
-      { variables: { request: { reqtype: "RepoChangeComputeRequirement", reponame: reponame, facilityname: repodata.facility, clustername: repodata.computeAllocation.clustername, computerequirement: newCompRequirement }},
-      onCompleted: (data) => {
-        console.log(data);
-        let id = data["requestRepoChangeComputeRequirement"]["Id"]
-        approveRequest({ variables: { Id: id }, refetchQueries: [ REPODETAILS ], onCompleted: callWhenComplete });
-      }
-    });
-
-  }
-
   return (<ComputeTab repodata={repodata} onAllocationChange={changeAllocation}
     allocMdlShow={allocMdlShow} setAllocMdlShow={setAllocMdlShow} requestChangeAllocation={requestChangeAllocation}
-    toolbaritems={toolbaritems} setToolbaritems={setToolbaritems} isAdminOrCzar={isAdminOrCzar} changeComputeRequirement={requestAndApproveChangeComputeRequirement}
+    toolbaritems={toolbaritems} setToolbaritems={setToolbaritems} isAdminOrCzar={isAdminOrCzar}
     />);
 }
