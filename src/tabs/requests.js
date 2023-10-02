@@ -41,6 +41,7 @@ query Requests($fetchprocessed: Boolean, $showmine: Boolean, $filter: CoactReque
     gigabytes
     shell
     publichtml
+    computerequirement
     notes
     approvalstatus
     canapprove
