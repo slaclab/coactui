@@ -14,9 +14,10 @@ import Form from 'react-bootstrap/Form';
 import Fade from 'react-bootstrap/Fade';
 import Card from 'react-bootstrap/Card';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faMultiply, faQuestion, faRefresh } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faMultiply, faClockRotateLeft, faRefresh } from '@fortawesome/free-solid-svg-icons'
 import { DateTimeDisp, ErrorMsgModal } from "./widgets";
 import dayjs from "dayjs";
+import { Table } from "react-bootstrap";
 
 
 const REQUESTS = gql`
@@ -42,10 +43,15 @@ query Requests($fetchprocessed: Boolean, $showmine: Boolean, $filter: CoactReque
     shell
     publichtml
     computerequirement
-    notes
     approvalstatus
     canapprove
     canrefire
+    audit {
+      actedat
+      actedby
+      notes
+      previous
+    }
   }
   myreposandfacility {
     name
@@ -385,21 +391,50 @@ class ApprovalStatus extends Component {
   }
 }
 
-
-class RequestsRow extends Component {
+class RequestHistory extends Component {
   constructor(props) {
     super(props);
   }
   render() {
     return (
+      <Modal show={this.props.show} onHide={() => {this.props.setShow(false)}}>
+      <Modal.Header closeButton>
+        <Modal.Title>History of changes to {this.props.req.Id}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Table striped bordered hover>
+          <thead><tr><th>On</th><th>By</th><th>From</th><th>Notes</th></tr></thead>
+          <tbody>
+            { _.map(this.props.req.audit, (ad) => { return ( <tr><td><DateTimeDisp value={ad.actedat}/></td><td>{ad.actedby}</td><td>{ad.previous}</td><td>{ad.notes}</td></tr> ) })}
+          </tbody>
+        </Table>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => {this.props.setShow(false)}}>
+          Close
+        </Button>
+      </Modal.Footer>
+    </Modal>
+    )
+  }
+}
+
+
+class RequestsRow extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { showHistory: false }
+  }
+  render() {
+    return (
       <Row data-id={this.props.req.Id}>
-        <Col className="text-truncate" md={1}>{this.props.req.reqtype}</Col>
-        <Col md={1}>{this.props.req.requestedby}</Col>
-        <Col md={1}><DateTimeDisp value={this.props.req.timeofrequest}/></Col>
-        <Col md={4}><RequestDetails req={this.props.req} /></Col>
-        <Col md={3}>{this.props.req.notes}</Col>
-        <Col md={1}><ApprovalStatus  req={this.props.req}/></Col>
+        <Col className="text-truncate py-2" md={2}>{this.props.req.reqtype}</Col>
+        <Col className="py-2" md={1}>{this.props.req.requestedby}</Col>
+        <Col className="py-2" md={1}><DateTimeDisp value={this.props.req.timeofrequest}/></Col>
+        <Col md={6}><RequestDetails req={this.props.req} /></Col>
+        <Col className="py-2" md={1}><ApprovalStatus req={this.props.req}/> <span title="See history of changes to this request" className="float-end text-primary" onClick={() => { this.setState({showHistory: true})}}><FontAwesomeIcon icon={faClockRotateLeft} size="lg" /></span></Col>
         <Col md={1}><Approve req={this.props.req} approve={this.props.approve} reject={this.props.reject} refire={this.props.refire} showmine={this.props.showmine} /></Col>
+        <RequestHistory req={this.props.req} show={this.state.showHistory} setShow={(v) => { this.setState({showHistory: v}) }} />
       </Row>
     )
   }
@@ -419,11 +454,10 @@ class RequestsTable extends Component {
     return (
       <Container fluid className="rqsttbl">
       <Row>
-        <Col md={1}>Type</Col>
+        <Col md={2}>Type</Col>
         <Col md={1}>By</Col>
         <Col md={1}>At</Col>
-        <Col md={4}>Details</Col>
-        <Col md={3}>Notes</Col>
+        <Col md={6}>Details</Col>
         <Col md={1}>Request Status</Col>
         <Col md={1}>Actions</Col>
       </Row>
