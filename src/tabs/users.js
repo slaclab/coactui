@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useLazyQuery, gql } from "@apollo/client";
 import { Link, useParams, useOutletContext } from "react-router-dom";
-import { SearchAndAdd } from "./widgets";
+import { BulkSearchAndAdd } from "./widgets";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
@@ -10,7 +10,9 @@ import ModalBody from 'react-bootstrap/ModalBody';
 import ModalFooter from 'react-bootstrap/ModalFooter';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { faPersonArrowUpFromLine, faPersonArrowDownToLine } from '@fortawesome/free-solid-svg-icons'
+import Toast from 'react-bootstrap/Toast';
+import ToastContainer from 'react-bootstrap/ToastContainer';
+import { faPersonArrowUpFromLine, faPersonArrowDownToLine, faClipboard } from '@fortawesome/free-solid-svg-icons'
 import _ from "lodash";
 
 const REPODETAILS = gql`
@@ -38,9 +40,9 @@ query Repos($reposinput: RepoInput){
 }
 `;
 
-const USERMATCHINGUSERNAME = gql`
-query usersMatchingUserName($regex: String!) {
-  usersMatchingUserName(regex: $regex) {
+const USERMATCHINGUSERNAMES = gql`
+query usersMatchingUserNames($regexes: [String!]!) {
+  usersMatchingUserNames(regexes: $regexes) {
     username
   }
 }`;
@@ -124,18 +126,25 @@ class ManageRoleAction extends React.Component {
 class UsersTab extends React.Component {
   constructor(props) {
     super(props);
+    this.state = { showToast: false, toastMsg: "" }
     this.hideModal = () => {
       this.props.setShowModal(false);
     }
 
-    this.getusernamematches = (srchtxt, onCompleted) => {
-      this.props.getUsersMatchingUserName({
-        variables: { regex: srchtxt},
+    this.getusernamematches = (srchtxts, onCompleted) => {
+      this.props.getUsersMatchingUserNames({
+        variables: { regexes: srchtxts},
         onCompleted: (data) => {
-          let matches = _.map(_.get(data, "usersMatchingUserName", []), "username");
+          let matches = _.map(_.get(data, "usersMatchingUserNames", []), "username");
           onCompleted(matches);
         }
       })
+    }
+
+    this.copyJustTheUserNamesToTheClipboard = () => {
+      let usernames = _.join(_.sortBy(_.map(this.props.users, "username")), "\n");
+      navigator.clipboard.writeText(usernames);
+      this.setState({showToast: true, toastMsg: "Copied"})
     }
   }
 
@@ -152,60 +161,60 @@ class UsersTab extends React.Component {
   render() {
     return (
       <div className="container-fluid tabcontainer">
-        <Modal show={this.props.showModal}>
+        <Modal show={this.props.showModal} size="lg">
             <ModalHeader>
               Search for users and add/remove them to/from this repo.
             </ModalHeader>
             <ModalBody>
               <div className="mb-2">We use regex matches; so patterns like <code>mar.*</code> can be used.</div>
-              <SearchAndAdd label="Username" getmatches={this.getusernamematches}  selected={_.map(this.props.users, "username")} onSelDesel={this.props.onSelDesel}/>
+              <BulkSearchAndAdd label="Username" getmatches={this.getusernamematches}  selected={_.map(this.props.users, "username")} onSelDesel={this.props.onSelDesel} hideModal={this.hideModal}/>
             </ModalBody>
             <ModalFooter>
-              <Button onClick={this.hideModal}>
-                Done
-              </Button>
             </ModalFooter>
-          </Modal>
-          <div className="container-fluid" id="users_content">
-            <Row>
-              <Col><div className="brdcrmb"><Link to={"../users"}>Users</Link> / {this.props.repodata.name}</div></Col>
-              <Col><div className="sectiontitle">Users for repo <span className="ref">{this.props.repodata.name}</span></div></Col>
-              <Col className="mb-2">
-              </Col>
-            </Row>
-            <div className="table-responsive">
-              <table className="table table-condensed table-striped table-bordered collabtbl">
-                <thead>
-                  <tr>
-                    <th>Userid</th>
-                    <th>Role</th>
-                    <th colSpan="3">
-                      <div className="row">
-                        <span className="col-4">Username</span>
-                        <span className="col-4">User email</span>
-                        <span className="col-4">Organization</span>
-                      </div>
-                    </th>
-                    <th>Account state</th>
-                    <th>Created</th>
-                    <th>Updated</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {_.map(this.props.users, (user) => {
-                  return (<tr key={user.username}>
-                    <td>{user.username}</td>
-                    <td className="manage_roles"><ManageRoleAction user={user} onToggleRole={this.props.onToggleRole}/></td>
-                    <td colSpan="3"><Eppn user={user}/></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                  </tr>)})}
-                </tbody>
-              </table>
-            </div>
+        </Modal>
+        <div className="container-fluid" id="users_content">
+          <Row>
+            <Col><div className="brdcrmb"><Link to={"../users"}>Users</Link> / {this.props.repodata.name}</div></Col>
+            <Col><div className="sectiontitle">Users for repo <span className="ref">{this.props.repodata.name}</span></div></Col>
+            <Col className="mb-2">
+            </Col>
+          </Row>
+          <div className="table-responsive">
+            <table className="table table-condensed table-striped table-bordered collabtbl">
+              <thead>
+                <tr>
+                  <th>Userid<span className="float-end bg-warning" title="Copy the list of users to the clipboard" onClick={this.copyJustTheUserNamesToTheClipboard}><FontAwesomeIcon className="mx-2 my-1 navtxt" icon={faClipboard}/></span></th>
+                  <th>Role</th>
+                  <th colSpan="3">
+                    <div className="row">
+                      <span className="col-4">Username</span>
+                      <span className="col-4">User email</span>
+                      <span className="col-4">Organization</span>
+                    </div>
+                  </th>
+                  <th>Account state</th>
+                  <th>Created</th>
+                  <th>Updated</th>
+                </tr>
+              </thead>
+              <tbody>
+              {_.map(this.props.users, (user) => {
+                return (<tr key={user.username}>
+                  <td>{user.username}</td>
+                  <td className="manage_roles"><ManageRoleAction user={user} onToggleRole={this.props.onToggleRole}/></td>
+                  <td colSpan="3"><Eppn user={user}/></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>)})}
+              </tbody>
+            </table>
           </div>
-       </div>
+        </div>
+        <ToastContainer className="p-3" position={"top-end"} style={{ zIndex: 1 }}>
+          <Toast show={this.state.showToast} onClose={() => { this.setState({showToast: false, toastMsg: ""})}} delay={3000} autohide><Toast.Header>Info</Toast.Header><Toast.Body>{this.state.toastMsg}</Toast.Body></Toast>
+        </ToastContainer>
+      </div>
     );
   }
 }
@@ -214,7 +223,7 @@ class UsersTab extends React.Component {
 export default function Users(props) {
   let params = useParams(), reponame = params.name, facilityname = params.facility;
   const { loading, error, data } = useQuery(REPODETAILS, { variables: { reposinput: { name: reponame, facility: facilityname } } });
-  const [ getUsersMatchingUserName ] = useLazyQuery(USERMATCHINGUSERNAME);
+  const [ getUsersMatchingUserNames ] = useLazyQuery(USERMATCHINGUSERNAMES, { fetchPolicy: "no-cache" });
 
   const [ toggleRoleMutation ] = useMutation(TOGGLE_ROLE_MUTATION);
   const [ addUserMutation ] = useMutation(ADD_USER_MUTATION);
@@ -253,7 +262,7 @@ export default function Users(props) {
     }
   }
 
-  return (<UsersTab repodata={repodata} users={allusers} getUsersMatchingUserName={getUsersMatchingUserName}
+  return (<UsersTab repodata={repodata} users={allusers} getUsersMatchingUserNames={getUsersMatchingUserNames}
     onToggleRole={toggleRole} onSelDesel={addRemoveUser} amILeader={amILeader}
     showModal={showAddUserModal} setShowModal={setShowAddUserModal}
     toolbaritems={toolbaritems} setToolbaritems={setToolbaritems}

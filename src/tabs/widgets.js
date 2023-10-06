@@ -83,6 +83,77 @@ export class SearchAndAdd extends React.Component {
   }
 }
 
+export class BulkSearchAndAdd extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { usertxt: "", selected: this.props.selected, matches: [  ] }
+
+    this.handleTyping = (event) => {
+      this.setState({usertxt: event.target.value});
+    }
+    this.lookup = () => { 
+      let lines = _.reject(_.split(this.state.usertxt, "\n"), (x) => { return x.length < 3});
+      console.log(lines);
+      this.props.getmatches(lines, (matches) => {
+        console.log(matches);
+        this.setState({ matches: _.map(matches, (x) => { return {"label": x, "selected": _.includes(this.state.selected, x)}  }) })
+      })
+    }
+
+    this.checkUncheckAll = (event) => {
+      let checkedstatus = event.target.checked;
+      this.setState((prevstate) => {         
+        return {
+          usertxt: "", 
+          selected: checkedstatus ? _.map(prevstate.matches, "label") : [], 
+          matches: _.map(prevstate.matches, (x) => { return {"label": x["label"], "selected": checkedstatus }})
+        };
+      })
+    } 
+
+    this.checkUncheck = (event) => {
+      let selkey = event.target.dataset.selkey;
+      this.setState((prevstate) => { 
+        return {
+          usertxt: "", 
+          selected: event.target.checked ? _.union(this.state.selected, [selkey]) : _.without(this.state.selected, selkey), 
+          matches: _.map(prevstate.matches, (x) => { if(x["label"] == selkey ) { x["selected"] = event.target.checked; return x } else { return x} })
+        }
+      })      
+    }
+
+    this.apply = (event) => {
+      _.each(this.state.matches, function(x){
+        if(x["selected"] && !_.includes(props.selected, x["label"])) {
+          console.log("Need to add " + x["label"] + " to repo");
+          props.onSelDesel(x["label"], true);
+        } else if(!x["selected"] && _.includes(props.selected, x["label"])) {
+          console.log("Need to remove " + x["label"] + " from repo");
+          props.onSelDesel(x["label"], false);
+        }
+      })
+    }
+  }
+
+  render() {
+    return(
+      <div className="table-responsive">
+        <Form.Group className="mb-3">
+          <Form.Label className="pe-2">{this.props.label}</Form.Label>
+          <Form.Control type="textarea" as="textarea" rows={3} placeholder={"Please type in a " + _.toLower(this.props.label)} onChange={this.handleTyping}/>
+          <Button className="my-2" onClick={this.lookup}>Lookup</Button>
+          <Button className="mx-2 my-2" onClick={this.apply}>Apply</Button>
+          <Button className="float-end mx-2 my-2" onClick={this.props.hideModal}>Done</Button>
+        </Form.Group>
+        <table className="table table-condensed table-striped table-bordered">
+          <thead><tr><th>{this.props.label}</th><th>Select <span className="px-2"><input type="checkbox" onChange={this.checkUncheckAll}/></span></th></tr></thead>
+          <tbody>{ _.map(this.state.matches, (u) => { return (<tr key={u.label}><td>{u.label}</td><td><input type="checkbox" data-selkey={u.label} checked={!!u.selected} onChange={this.checkUncheck}/></td></tr>) }) }</tbody>
+        </table>
+      </div>
+    );
+  }
+}
+
 
 export function NoNavHeader() { // Use for pages that do have a navbar on top.
   return (
