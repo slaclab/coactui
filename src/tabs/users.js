@@ -161,9 +161,9 @@ class UsersTab extends React.Component {
   render() {
     return (
       <div className="container-fluid tabcontainer">
-        <Modal show={this.props.showModal} size="lg">
-            <ModalHeader>
-            <Modal.Title>Search for users and add/remove them to/from this repo.</Modal.Title>
+        <Modal show={this.props.showModal} onHide={this.hideModal} size="lg">
+            <ModalHeader closeButton={true}>
+              <Modal.Title>Search for users and add/remove them to/from this repo.</Modal.Title>
             </ModalHeader>
             <ModalBody>
               <div className="mb-2">Add/remove one or more users to the repo. We use regex matches; so patterns like <code>mar.*</code> can be used. 
