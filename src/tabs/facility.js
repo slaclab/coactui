@@ -9,6 +9,7 @@ import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 import Modal from 'react-bootstrap/Modal';
 import ModalHeader from 'react-bootstrap/ModalHeader';
+import ModalTitle from 'react-bootstrap/ModalTitle';
 import ModalBody from 'react-bootstrap/ModalBody';
 import ModalFooter from 'react-bootstrap/ModalFooter';
 import Form from 'react-bootstrap/Form';
@@ -140,9 +141,9 @@ class AddComputePurchase extends Component {
     let clusterswithoutpurchases = _.difference(_.map(this.props.clusters, "name"), _.map(this.props.facility.computepurchases, "clustername"));
     if(_.isEmpty(clusterswithoutpurchases)) {
       return (
-        <Modal show={this.props.showModal}>
-          <ModalHeader>
-            <div>This facility has purchased compute in all the existing clusters. Please edit the existing purchases.</div>
+        <Modal show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+          <ModalHeader closeButton={true}>
+            <ModalTitle>This facility has purchased compute in all the existing clusters. Please edit the existing purchases.</ModalTitle>
           </ModalHeader>
           <ModalBody>
           </ModalBody>
@@ -156,9 +157,9 @@ class AddComputePurchase extends Component {
     }
 
     return (
-      <Modal show={this.props.showModal}>
-        <ModalHeader>
-          <div>Add a new compute purchase for the facility <b className="text-primary">{this.props.facility.name}</b></div>
+      <Modal show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+        <ModalHeader closeButton={true}>
+          <ModalTitle>Add a new compute purchase for the facility <b className="em">{this.props.facility.name}</b></ModalTitle>
         </ModalHeader>
         <ModalBody>
           <Row>
@@ -207,9 +208,9 @@ class UpdateComputePurchase extends Component {
 
   render() {
     return (
-      <Modal show={this.props.showModal}>
-        <ModalHeader>
-          <div>Update the compute purchase for the facility <b className="text-primary">{this.props.facility.name}</b> on the cluster <b className="text-primary">{this.props.clustername}</b></div>
+      <Modal show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+        <ModalHeader closeButton={true}>
+          <ModalTitle>Update the compute purchase for the facility <b className="em">{this.props.facility.name}</b> on the cluster <b className="em">{this.props.clustername}</b></ModalTitle>
         </ModalHeader>
         <ModalBody>
           <InputGroup hasValidation>
@@ -312,9 +313,9 @@ class AddStoragePurchase extends Component {
     let purposewithoutpurchase = _.difference(this.props.storagepurposes, _.map(this.props.facility.storagepurchases, "purpose"));
     if(_.isEmpty(purposewithoutpurchase)) {
       return (
-        <Modal show={this.props.showModal}>
-          <ModalHeader>
-            <div>This facility has purchased storage for all purposes. Please edit the existing purchases.</div>
+        <Modal show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+          <ModalHeader closeButton={true}>
+            <ModalTitle>This facility has purchased storage for all purposes. Please edit the existing purchases.</ModalTitle>
           </ModalHeader>
           <ModalBody>
           </ModalBody>
@@ -327,9 +328,9 @@ class AddStoragePurchase extends Component {
       )
     }
     return (
-      <Modal show={this.props.showModal}>
-        <ModalHeader>
-          <div>Add a new storage purchase for the facility <b className="text-primary">{this.props.facility.name}</b></div>
+      <Modal show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+        <ModalHeader closeButton={true}>
+          <ModalTitle>Add a new storage purchase for the facility <b className="em">{this.props.facility.name}</b></ModalTitle>
         </ModalHeader>
         <ModalBody>
           <Row>
@@ -391,9 +392,9 @@ class UpdateStoragePurchase extends Component {
 
   render() {
     return (
-      <Modal show={this.props.showModal}>
-        <ModalHeader>
-          <div>Update the storage purchase for the facility <b className="text-primary">{this.props.facility.name}</b> for the purpose <b className="text-primary">{this.props.purpose}</b></div>
+      <Modal show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+        <ModalHeader closeButton={true}>
+          <ModalTitle>Update the storage purchase for the facility <b className="em">{this.props.facility.name}</b> for the purpose <b className="em">{this.props.purpose}</b></ModalTitle>
         </ModalHeader>
         <ModalBody>
           <InputGroup hasValidation>
@@ -509,9 +510,9 @@ class RegisterNewUser extends Component {
 
   render() {
     return (
-      <Modal show={this.props.showModal}>
-        <ModalHeader>
-          Register an new S3DF account.
+      <Modal show={this.props.showModal} onHide={this.closeModal} >
+        <ModalHeader closeButton={true}>
+          <ModalTitle>Register an new S3DF account</ModalTitle>
         </ModalHeader>
         <ModalBody>
           <Form.Text>{this.state.registrationmessage}</Form.Text>
@@ -548,9 +549,9 @@ class AddRemoveCzar extends Component {
 
   render() {
     return (
-      <Modal show={this.props.showModal}>
-        <ModalHeader>
-          Search for users and add/remove them to/from as czars for this facility.
+      <Modal show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+        <ModalHeader closeButton={true}>
+          <ModalTitle>Search for users and add/remove them to/from as czars for this facility.</ModalTitle>
         </ModalHeader>
         <ModalBody>
           <SearchAndAdd label="Username" getmatches={this.getusernamematches} selected={this.props.facility.czars} onSelDesel={this.props.onSelDesel}/>

@@ -10455,6 +10455,14 @@ ol, ul {
   font-size: 1.1rem;
 }
 
+.modal-header {
+  background-color: rgb(177, 4, 14);
+  color: rgb(255, 255, 255);
+}
+.modal-header .em {
+  color: rgb(254, 221, 92);
+}
+
 .tbl-selectable tr.selected {
   background-color: rgb(0, 124, 146);
   color: rgb(255, 255, 255);

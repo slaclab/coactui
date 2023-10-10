@@ -7,6 +7,7 @@ import { faEdit, faUpLong, faDownLong } from '@fortawesome/free-solid-svg-icons'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import ModalHeader from 'react-bootstrap/ModalHeader';
+import ModalTitle from 'react-bootstrap/ModalTitle';
 import ModalBody from 'react-bootstrap/ModalBody';
 import ModalFooter from 'react-bootstrap/ModalFooter';
 import Form from 'react-bootstrap/Form';
@@ -80,9 +81,9 @@ class ChangePI extends Component {
 
   render() {
     return (
-      <Modal show={this.props.showModal}>
-        <ModalHeader>
-          <div>Change the PI for repo <b className="text-primary">{this.props.repo.name}</b> in facility <b className="text-primary">{this.props.repo.facility}</b> </div>
+      <Modal show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+        <ModalHeader closeButton={true}>
+          <ModalTitle>Change the PI for repo <b className="em">{this.props.repo.name}</b> in facility <b className="em">{this.props.repo.facility}</b> </ModalTitle>
         </ModalHeader>
         <ModalBody>
           <InputGroup hasValidation>
@@ -115,9 +116,9 @@ class ChangeDescription extends Component {
 
   render() {
     return (
-      <Modal show={this.props.showModal}>
-        <ModalHeader>
-          <div>Change the description for repo <b className="text-primary">{this.props.repo.name}</b> in facility <b className="text-primary">{this.props.repo.facility}</b> </div>
+      <Modal show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+        <ModalHeader closeButton={true}>
+          <ModalTitle>Change the description for repo <b className="em">{this.props.repo.name}</b> in facility <b className="em">{this.props.repo.facility}</b> </ModalTitle>
         </ModalHeader>
         <ModalBody>
           <InputGroup hasValidation>
@@ -147,9 +148,9 @@ class ChangeLDAPGroup extends Component {
 
   render() {
     return (
-      <Modal show={this.props.showModal}>
-        <ModalHeader>
-          <div>Change the LDAP group for repo <b className="text-primary">{this.props.repo.name}</b> in facility <b className="text-primary">{this.props.repo.facility}</b> </div>
+      <Modal show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+        <ModalHeader closeButton={true}>
+          <ModalTitle>Change the LDAP group for repo <b className="em">{this.props.repo.name}</b> in facility <b className="em">{this.props.repo.facility}</b> </ModalTitle>
         </ModalHeader>
         <ModalBody>
           <InputGroup hasValidation>

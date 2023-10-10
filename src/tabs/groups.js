@@ -6,6 +6,7 @@ import _ from "lodash";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import ModalHeader from 'react-bootstrap/ModalHeader';
+import ModalTitle from 'react-bootstrap/ModalTitle';
 import ModalBody from 'react-bootstrap/ModalBody';
 import ModalFooter from 'react-bootstrap/ModalFooter';
 import Form from 'react-bootstrap/Form';
@@ -76,9 +77,9 @@ class AddGroupModal extends React.Component {
       }),
     });
     return (
-      <Modal show={this.props.showModal}>
-        <ModalHeader>
-          Create a new access group for this repo. The access group name must have the repo name as a prefix.
+      <Modal show={this.props.showModal} onHide={this.props.handleClose}>
+        <ModalHeader closeButton={true}>
+          <ModalTitle>Create a new access group for this repo. The access group name must have the repo name as a prefix.</ModalTitle>
         </ModalHeader>
         <Formik
           validationSchema={schema}
