@@ -142,8 +142,10 @@ export class BulkSearchAndAdd extends React.Component {
           <Form.Label className="pe-2">{this.props.label}</Form.Label>
           <Form.Control type="textarea" as="textarea" rows={3} placeholder={"Please type in a " + _.toLower(this.props.label)} onChange={this.handleTyping}/>
           <Button className="my-2" onClick={this.lookup}>Lookup</Button>
-          <Button className="mx-2 my-2" onClick={this.apply}>Apply</Button>
-          <Button className="float-end mx-2 my-2" onClick={this.props.hideModal}>Done</Button>
+          <div class="float-end">
+            <Button className="mx-2 my-2" onClick={this.apply}>Apply</Button>
+            <Button className="mx-2 my-2" onClick={this.props.hideModal}>Close</Button>
+          </div>
         </Form.Group>
         <table className="table table-condensed table-striped table-bordered">
           <thead><tr><th>{this.props.label}</th><th>Select <span className="px-2"><input type="checkbox" onChange={this.checkUncheckAll}/></span></th></tr></thead>

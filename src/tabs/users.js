@@ -163,10 +163,11 @@ class UsersTab extends React.Component {
       <div className="container-fluid tabcontainer">
         <Modal show={this.props.showModal} size="lg">
             <ModalHeader>
-              Search for users and add/remove them to/from this repo.
+            <Modal.Title>Search for users and add/remove them to/from this repo.</Modal.Title>
             </ModalHeader>
             <ModalBody>
-              <div className="mb-2">We use regex matches; so patterns like <code>mar.*</code> can be used.</div>
+              <div className="mb-2">Add/remove one or more users to the repo. We use regex matches; so patterns like <code>mar.*</code> can be used. 
+              Type in or paste a paste a list of users into the textbox hit <b>Lookup</b> to look up their user accounts. Then select/unselect and hit <b>Apply</b> to actually make the change to the repo.</div>
               <BulkSearchAndAdd label="Username" getmatches={this.getusernamematches}  selected={_.map(this.props.users, "username")} onSelDesel={this.props.onSelDesel} hideModal={this.hideModal}/>
             </ModalBody>
             <ModalFooter>
