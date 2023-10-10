@@ -142,7 +142,7 @@ export default function TopNavBar( props ) {
   let showFacs = false;
   let usernames = [];
   const [show, setShow] = useState(false);
-  const [showAllRepos, setShowAllRepos] = useState("true"==localStorage.getItem("showallrepos"));
+  const [showAllRepos, setShowAllRepos] = useState(localStorage.getItem("showallrepos") == null || "true"==localStorage.getItem("showallrepos"));
   const { loading, error, data } = useQuery(USER);
   const [getUserNames, { unloading, unerror, undata }] = useLazyQuery(USERNAMES);
   let navigate = useNavigate();
@@ -170,7 +170,7 @@ export default function TopNavBar( props ) {
   }
 
   let toggleShowAllRepos = function() {
-    let showAllRepos = _.isNil(localStorage.getItem("showallrepos")) ? "false" : localStorage.getItem("showallrepos");
+    let showAllRepos = _.isNil(localStorage.getItem("showallrepos")) ? "true" : localStorage.getItem("showallrepos");
     console.log("Current value of show all repos " + showAllRepos);
     localStorage.setItem("showallrepos", showAllRepos=="true" ? "false" : "true");
     console.log("Set show all repos to " + localStorage.getItem("showallrepos"));
