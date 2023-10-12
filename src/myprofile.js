@@ -160,9 +160,8 @@ class ChangeUserShell extends Component {
     }
     this.setShell = (event) => { this.setState({ shell: event.target.value }) }
     this.supportedShells = [
-      "/bin/sh",
       "/bin/bash",
-      "/bin/csh",
+      "/bin/tcsh",
       "/bin/zsh"
     ]
   }
