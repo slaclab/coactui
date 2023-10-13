@@ -25,15 +25,16 @@ query Repos($reposinput: RepoInput, $allocationid: MongoId!){
     users
     facilityObj {
       name
+      computepurchases {
+        purchased
+        clustername
+      }  
     }
     computeAllocation(allocationid: $allocationid) {
       clustername
       start
       end
-      qoses {
-        name
-        slachours
-      }
+      percentOfFacility
       userAllocations {
         username
         percent
@@ -129,11 +130,11 @@ class User extends React.Component {
     return (
       <Row data-userid={this.props.user.username}>
         <Col>{this.props.user.username}</Col>
-        <Col className={this.state.updt_sts_cls}><input className="usrcmpalc" type="number" defaultValue={this.state.allocation} onBlur={this.handleChange}/>
+        {/* <Col className={this.state.updt_sts_cls}><input className="usrcmpalc" type="number" defaultValue={this.state.allocation} onBlur={this.handleChange}/>
              <span className="invalid-feedback"></span></Col>
-        <Col><TwoPrecFloat value={this.state.allocated_compute}/></Col>
+        <Col><TwoPrecFloat value={this.state.allocated_compute}/></Col> */}
         <Col><TwoPrecFloat value={this.props.user.slachours}/></Col>
-        <Col><TwoPrecFloat value={this.state.remaining_percent}/></Col>
+        {/* <Col><TwoPrecFloat value={this.state.remaining_percent}/></Col> */}
       </Row>
     )}
 }
@@ -141,7 +142,7 @@ class User extends React.Component {
 class TopTab extends React.Component {
   constructor(props) {
     super(props);
-    this.current_allocation = _.sum(_.map(_.get(this.props.repodata.computeAllocation, "qoses", []), "slachours"));
+    this.current_allocation = props.allocatedCompute;
     this.slachours_charged = _.sum(_.map(_.get(this.props.repodata.computeAllocation, "usage", []), "slachours"));
     this.available_slachours = this.current_allocation - this.slachours_charged;
     this.remaining_percent = (this.available_slachours/this.current_allocation)*100.0;
@@ -168,7 +169,7 @@ class TopTab extends React.Component {
 class MidChart extends React.Component {
   constructor(props) {
     super(props);
-    this.current_allocation = _.sum(_.map(_.get(this.props.repodata.computeAllocation, "qoses", []), "slachours"));
+    this.current_allocation = props.allocatedCompute;
     let per_date_usage = _.get(props.repodata.computeAllocation, "perDateUsage", []);
     console.log(per_date_usage);
 
@@ -195,7 +196,7 @@ class MidChart extends React.Component {
 class BottomTab extends React.Component {
   constructor(props) {
     super(props);
-    this.current_allocation = _.sum(_.map(_.get(this.props.repodata.computeAllocation, "qoses", []), "slachours"));
+    this.current_allocation = props.allocatedCompute;
 
     const repodata = props.repodata,
       per_user_allocations = _.get(this.props.repodata.computeAllocation, "userAllocations", []),
@@ -218,10 +219,10 @@ class BottomTab extends React.Component {
       <div className="btmtbl">
         <Row className="hdr">
           <Col>Username</Col>
-          <Col>Allocation (% of repo)</Col>
-          <Col>Allocated hours</Col>
+          {/* <Col>Allocation (% of repo)</Col>
+          <Col>Allocated hours</Col> */}
           <Col>Used hours</Col>
-          <Col>Remaining hours</Col>
+          {/* <Col>Remaining hours</Col> */}
         </Row>
         {_.map(_.sortBy(this.users, "username"), (user, k) => ( <User key={user.username}  user={user} repoallocation={this.current_allocation} onAllocationChange={this.props.onAllocationChange}/> ))}
       </div>
@@ -315,9 +316,9 @@ class ComputeTab extends React.Component {
         <Col className="text-center"><div className="sectiontitle">Resource usage for repo <span className="ref">{this.props.repodata.name}</span> on the <span className="ref">{this.props.repodata.computeAllocation.clustername}</span> cluster</div></Col>
         <Col></Col>
       </Row>
-      <TopTab repodata={this.props.repodata} isAdminOrCzar={this.props.isAdminOrCzar} />
-      <MidChart repodata={this.props.repodata}/>
-      <BottomTab repodata={this.props.repodata} onAllocationChange={this.props.onAllocationChange}/>
+      <TopTab repodata={this.props.repodata} allocatedCompute={this.props.allocatedCompute} isAdminOrCzar={this.props.isAdminOrCzar} />
+      <MidChart repodata={this.props.repodata} allocatedCompute={this.props.allocatedCompute}/>
+      <BottomTab repodata={this.props.repodata} onAllocationChange={this.props.onAllocationChange} allocatedCompute={this.props.allocatedCompute}/>
     </div>)
   }
 }
@@ -336,6 +337,8 @@ export default function Compute() {
   if (error) return <p>Error :</p>;
   let repodata = data.repos[0];
   console.log(repodata);
+  let facilityPurchased = _.get(_.find(repodata["facilityObj"]["computepurchases"], ["clustername", repodata["computeAllocation"]["clustername"]]), "purchased", 0.0);
+  let totalAllocatedCompute = _.get(repodata, "computeAllocation.percentOfFacility", 0.0)*facilityPurchased/100.0;
 
   const isAdminOrCzar = data.whoami.isAdmin || data.whoami.isCzar;  
 
@@ -353,7 +356,7 @@ export default function Compute() {
     repocmpallocfn({ variables: { request: { reqtype: "RepoComputeAllocation", reponame: reponame, facilityname: repodata.facility, clustername: repodata.computeAllocation.clustername, qosname: qosname, slachours: _.toNumber(newSlacHours), notes: notes }}});
   }
 
-  return (<ComputeTab repodata={repodata} onAllocationChange={changeAllocation}
+  return (<ComputeTab repodata={repodata} allocatedCompute={totalAllocatedCompute} onAllocationChange={changeAllocation}
     allocMdlShow={allocMdlShow} setAllocMdlShow={setAllocMdlShow} requestChangeAllocation={requestChangeAllocation}
     toolbaritems={toolbaritems} setToolbaritems={setToolbaritems} isAdminOrCzar={isAdminOrCzar}
     />);

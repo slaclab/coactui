@@ -36,10 +36,11 @@ query Requests($fetchprocessed: Boolean, $showmine: Boolean, $filter: CoactReque
     allocationid
     clustername
     storagename
-    qosname
     purpose
-    slachours
+    percentOfFacility
     gigabytes
+    start
+    end
     shell
     publichtml
     computerequirement
@@ -305,7 +306,7 @@ class RequestDetails extends Component {
     if(this.props.req.reqtype == "RepoComputeAllocation") {
       return (
         <ListGroup>
-          {_.map(["reponame", "clustername", "qosname", "slachours"], function(x){
+          {_.map(["reponame", "clustername", "percentOfFacility", "start"], function(x){
             return(
               <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
             )
@@ -316,7 +317,7 @@ class RequestDetails extends Component {
     if(this.props.req.reqtype == "RepoStorageAllocation") {
       return (
         <ListGroup>
-          {_.map(["reponame", "storagename", "purpose", "gigabytes"], function(x){
+          {_.map(["reponame", "storagename", "purpose", "gigabytes", "start"], function(x){
             return(
               <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
             )
