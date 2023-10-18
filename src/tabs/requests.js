@@ -418,6 +418,7 @@ class RequestHistory extends Component {
           <thead><tr><th>On</th><th>By</th><th>From</th><th>Notes</th></tr></thead>
           <tbody>
             { _.map(this.props.req.audit, (ad) => { return ( <tr key={ad.actedat}><td><DateTimeDisp value={ad.actedat}/></td><td>{ad.actedby}</td><td>{ad.previous}</td><td>{ad.notes}</td></tr> ) })}
+            <tr key="final"><td><DateTimeDisp value={this.props.req.timeofrequest}/></td><td>{this.props.req.requestedby}</td><td>{this.props.req.approvalstatus}</td><td>{this.props.req.notes}</td></tr>
           </tbody>
         </Table>
       </Modal.Body>
