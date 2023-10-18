@@ -233,24 +233,13 @@ class BottomTab extends React.Component {
 class ChangeAllocationModal extends Component {
   constructor(props) {
     super(props);
-    this.qosnames = _.map(_.get(props.currallocation, "qoses"), "name");
-    this.state = { qosname: "", qosInvalid: false, allocationRequest: 0, allocationRequestInvalid: false, notes: "" }
+    this.state = { allocationRequest: this.props.currallocation, notes: "", modalError: false, modalErrorMessage: "" }
     this.handleClose = () => { this.props.setShow(false); }
-    this.setQosName = (event) => {
-      let qosname = event.target.value;
-      let currAlloc = _.get(_.find(_.get(props.currallocation, "qoses"), ["name", qosname]), "slachours", 0)
-      this.setState({ qosname: qosname, allocationRequest: currAlloc })
-    }
     this.setAllocationRequest = (event) => { this.setState({ allocationRequest: event.target.value }) }
     this.setnotes = (event) => { this.setState({ notes: event.target.value }) }
     this.changeAllocationRequest = () => {
       console.log(this.state.allocationRequest);
-      if(_.isEmpty(this.state.allocationRequest)) {
-        this.setState({ allocationRequestInvalid: true });
-        return;
-      }
-      this.props.requestChangeAllocation(this.state.qosname, this.state.allocationRequest, this.state.notes);
-      this.props.setShow(false);
+      this.props.requestChangeAllocation(this.state.allocationRequest, this.state.notes, () => { this.props.setShow(false); }, (errmsg) => { this.setState({modalError: true, modalErrorMessage: errmsg})} );
     }
   }
   render() {
@@ -261,18 +250,12 @@ class ChangeAllocationModal extends Component {
         </Modal.Header>
         <Modal.Body>
           <Row className="mb-3">
-            <Form.Text>Which QOS should we change?</Form.Text>
+            <p>A compute allocation is specified as a percentage of the facility's allocation.</p>
+            <p>The facility <b className="em">{this.props.facilityname}</b> has purchased <b className="em">{this.props.facilityPurchased}</b> on the <b className="em">{this.props.clustername}</b> cluster</p>
             <InputGroup hasValidation>
-              <Form.Select name="shell" value={this.state.qosname} onChange={this.setQosName} isInvalid={this.state.qosInvalid}>
-                <option value="">Please choose a QOS</option>
-                { _.map(this.qosnames, (q) => { return (<option key={q} value={q}>{q}</option>)}) }
-              </Form.Select>
-              <Form.Control.Feedback type="invalid">Please choose a valid QOS.</Form.Control.Feedback>
-            </InputGroup>
-            <Form.Text>Please enter the compute (in hours) needed</Form.Text>
-            <InputGroup hasValidation>
-              <Form.Control type="number" value={this.state.allocationRequest} value={this.state.allocationRequest} onChange={this.setAllocationRequest} isInvalid={this.state.allocationRequestInvalid}/>
-              <Form.Control.Feedback type="invalid">Please enter a valid compute request (in hours), for example, 1024.00</Form.Control.Feedback>
+              <InputGroup.Text>Current Percent:</InputGroup.Text>
+              <Form.Control type="number" value={this.state.allocationRequest} defaultValue={this.state.allocationRequest} onChange={this.setAllocationRequest} isInvalid={this.state.modalError}/>
+              <Form.Control.Feedback type="invalid">{this.state.modalErrorMessage}</Form.Control.Feedback>
             </InputGroup>
             <Form.Text>Any additional comments</Form.Text>
             <Row className="mb-3">
@@ -310,7 +293,7 @@ class ComputeTab extends React.Component {
 
   render() {
     return (<div className="container-fluid text-left tabcontainer">
-      <ChangeAllocationModal show={this.props.allocMdlShow} setShow={this.props.setAllocMdlShow} reponame={this.props.repodata.name} clustername={this.props.repodata.computeAllocation.clustername} currallocation={this.props.repodata.computeAllocation} requestChangeAllocation={this.props.requestChangeAllocation}/>
+      <ChangeAllocationModal show={this.props.allocMdlShow} setShow={this.props.setAllocMdlShow} reponame={this.props.repodata.name} clustername={this.props.repodata.computeAllocation.clustername} currallocation={this.props.repodata.computeAllocation.percentOfFacility} facilityPurchased={this.props.facilityPurchased} requestChangeAllocation={this.props.requestChangeAllocation}/>
       <Row>
         <Col className="text-left"><div className="brdcrmb"><Link to={"../compute"}>Compute </Link> / {this.props.repodata.name} - {this.props.repodata.computeAllocation.clustername}</div></Col>
         <Col className="text-center"><div className="sectiontitle">Resource usage for repo <span className="ref">{this.props.repodata.name}</span> on the <span className="ref">{this.props.repodata.computeAllocation.clustername}</span> cluster</div></Col>
@@ -336,27 +319,29 @@ export default function Compute() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;
   let repodata = data.repos[0];
+
   console.log(repodata);
   let facilityPurchased = _.get(_.find(repodata["facilityObj"]["computepurchases"], ["clustername", repodata["computeAllocation"]["clustername"]]), "purchased", 0.0);
   let totalAllocatedCompute = _.get(repodata, "computeAllocation.percentOfFacility", 0.0)*facilityPurchased/100.0;
 
   const isAdminOrCzar = data.whoami.isAdmin || data.whoami.isCzar;  
 
-  let changeAllocation = (username, allocation_percent, onSuccess, onError) => {
+  let changeAllocation = (username, allocation_percent, callWhenDone, callOnError) => {
     console.log("Changing allocation for user " + username + " to " + _.toNumber(allocation_percent));
     repoUpdateUserAllocation({ variables: { reposinput: { name: reponame, facility: facilityname }, data: [ {
       allocationid: allocationid,
       username: username,
       percent: _.toNumber(allocation_percent)
-    } ] }, onCompleted: onSuccess, onError: (error) => { onError(error)} });
+    } ] }, onCompleted: callWhenDone, onError: (error) => { callOnError(error.message)} });
   }
 
-  let requestChangeAllocation = function(qosname, newSlacHours, notes) {
-    console.log("Adding a request to change allocation to " + newSlacHours);
-    repocmpallocfn({ variables: { request: { reqtype: "RepoComputeAllocation", reponame: reponame, facilityname: repodata.facility, clustername: repodata.computeAllocation.clustername, qosname: qosname, slachours: _.toNumber(newSlacHours), notes: notes }}});
+  let requestChangeAllocation = function(newalloc, notes, callWhenDone, callOnError) {
+    console.log("Adding a request to change allocation to " + newalloc);
+    repocmpallocfn({ variables: { request: { reqtype: "RepoComputeAllocation", reponame: reponame, facilityname: repodata.facility, clustername: repodata.computeAllocation.clustername, start: repodata.computeAllocation.start, percentOfFacility: _.toNumber(newalloc), notes: notes }},
+    onCompleted: callWhenDone, onError: (error) => { callOnError(error.message)}});
   }
 
-  return (<ComputeTab repodata={repodata} allocatedCompute={totalAllocatedCompute} onAllocationChange={changeAllocation}
+  return (<ComputeTab repodata={repodata} facilityPurchased={facilityPurchased} allocatedCompute={totalAllocatedCompute} onAllocationChange={changeAllocation}
     allocMdlShow={allocMdlShow} setAllocMdlShow={setAllocMdlShow} requestChangeAllocation={requestChangeAllocation}
     toolbaritems={toolbaritems} setToolbaritems={setToolbaritems} isAdminOrCzar={isAdminOrCzar}
     />);
