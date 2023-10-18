@@ -142,17 +142,17 @@ class User extends React.Component {
 class TopTab extends React.Component {
   constructor(props) {
     super(props);
-    this.current_allocation = props.allocatedCompute;
+    this.allocatedCompute = props.allocatedCompute;
     this.slachours_charged = _.sum(_.map(_.get(this.props.repodata.computeAllocation, "usage", []), "slachours"));
-    this.available_slachours = this.current_allocation - this.slachours_charged;
-    this.remaining_percent = (this.available_slachours/this.current_allocation)*100.0;
+    this.available_slachours = this.allocatedCompute - this.slachours_charged;
+    this.remaining_percent = (this.available_slachours/this.allocatedCompute)*100.0;
   }
   render() {
     return (<Table striped bordered>
       <tbody>
         <tr>
           <th><label>Current allocation</label></th>
-          <td>{this.current_allocation}</td>
+          <td><span>{this.allocatedCompute}</span><span class="px-2 fst-italic">{ "(" + this.props.currallocation + "%)"}</span>{}</td>
           <th><label>Hours charged</label></th>
           <td><TwoPrecFloat value={this.slachours_charged}/></td>
           <th><label>Available hours</label></th>
@@ -299,7 +299,7 @@ class ComputeTab extends React.Component {
         <Col className="text-center"><div className="sectiontitle">Resource usage for repo <span className="ref">{this.props.repodata.name}</span> on the <span className="ref">{this.props.repodata.computeAllocation.clustername}</span> cluster</div></Col>
         <Col></Col>
       </Row>
-      <TopTab repodata={this.props.repodata} allocatedCompute={this.props.allocatedCompute} isAdminOrCzar={this.props.isAdminOrCzar} />
+      <TopTab repodata={this.props.repodata} allocatedCompute={this.props.allocatedCompute} currallocation={this.props.repodata.computeAllocation.percentOfFacility} isAdminOrCzar={this.props.isAdminOrCzar} />
       <MidChart repodata={this.props.repodata} allocatedCompute={this.props.allocatedCompute}/>
       <BottomTab repodata={this.props.repodata} onAllocationChange={this.props.onAllocationChange} allocatedCompute={this.props.allocatedCompute}/>
     </div>)

@@ -173,7 +173,8 @@ class ReposRows extends Component {
     if(cas.length == 0) { cas = [{"clustername": "N/A"}] }
     let trs = _.map(cas, (a) => {
       let facilityPurchased = _.get(_.find(this.facilityData.computepurchases, ["clustername", a.clustername]), "purchased", 0.0);
-      let totalAllocatedCompute = _.get(a, "percentOfFacility", 0.0)*facilityPurchased/100.0;
+      let percentoffacility = _.get(a, "percentOfFacility", 0.0);
+      let totalAllocatedCompute = percentoffacility*facilityPurchased/100.0;
       let totalUsedHours = _.sum(_.map(_.get(a, "usage", []), "slachours"));
       if(first) {
         first = false;
@@ -183,14 +184,14 @@ class ReposRows extends Component {
             <td rowSpan={rows} className="vmid">{this.props.repo.facilityObj.name}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
             <td>{a.clustername == "N/A" ? "None" : <NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink>}</td>
-            <td>{totalAllocatedCompute} {this.props.canEditAllocations && a.clustername != "N/A" ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
+            <td><span>{totalAllocatedCompute}</span><span class="px-2 fst-italic">{ "(" + percentoffacility + "%)"}</span> {this.props.canEditAllocations && a.clustername != "N/A" ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
             <td><TwoPrecFloat value={totalUsedHours}/></td>
           </tr>)
         } else {
           return (
             <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame}>
               <td><NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink></td>
-              <td>{totalAllocatedCompute} {this.props.canEditAllocations ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
+              <td><span>{totalAllocatedCompute}</span><span class="px-2 fst-italic">{ "(" + percentoffacility + "%)"}</span> {this.props.canEditAllocations ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
               <td><TwoPrecFloat value={totalUsedHours}/></td>
             </tr>)
         }
