@@ -4,7 +4,7 @@ import { useQuery, useMutation, gql } from "@apollo/client";
 import React, { Component, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faEdit } from '@fortawesome/free-solid-svg-icons'
-import { TwoPrecFloat } from "./widgets";
+import { TwoPrecFloat, DateDisp } from "./widgets";
 import Modal from 'react-bootstrap/Modal';
 import ModalHeader from 'react-bootstrap/ModalHeader';
 import ModalTitle from 'react-bootstrap/ModalTitle';
@@ -187,6 +187,8 @@ class ReposRows extends Component {
             <td>{a.clustername == "N/A" ? "None" : <NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink>}</td>
             <td><span><TwoPrecFloat value={totalAllocatedCompute}/></span><span class="px-2 fst-italic">{ "(" + percentoffacility + "%)"}</span> {this.props.canEditAllocations && a.clustername != "N/A" ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
             <td><TwoPrecFloat value={totalUsedHours}/></td>
+            <td><DateDisp value={a.start}/></td>
+            <td><DateDisp value={a.end}/></td>
           </tr>)
         } else {
           return (
@@ -194,6 +196,8 @@ class ReposRows extends Component {
               <td><NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink></td>
               <td><span><TwoPrecFloat value={totalAllocatedCompute}/></span><span class="px-2 fst-italic">{ "(" + percentoffacility + "%)"}</span> {this.props.canEditAllocations ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
               <td><TwoPrecFloat value={totalUsedHours}/></td>
+              <td><DateDisp value={a.start}/></td>
+              <td><DateDisp value={a.end}/></td>
             </tr>)
         }
     });
@@ -271,7 +275,7 @@ class ReposTable extends Component {
         </ToastContainer>
         <table className="table table-condensed table-striped table-bordered">
           <thead>
-            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th>Total compute used</th></tr>
+            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th>Total compute used</th><th>Start</th><th>End</th></tr>
           </thead>
           { _.map(this.props.repos, (r) => { return (<ReposRows key={r.facility+"_"+r.name} repo={r} facilities={this.props.facilities} canEditAllocations={this.props.canEditAllocations} showUpdateModal={this.showUpdateModal} showAddModal={this.showAddModal}/>) }) }
           </table>
