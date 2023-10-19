@@ -18,6 +18,7 @@ import { faCheck, faMultiply, faClockRotateLeft, faRefresh } from '@fortawesome/
 import { DateTimeDisp, ErrorMsgModal } from "./widgets";
 import dayjs from "dayjs";
 import { Table } from "react-bootstrap";
+import { req2audit } from "../bpl/requests";
 
 
 const REQUESTS = gql`
@@ -406,9 +407,11 @@ class ApprovalStatus extends Component {
 
 class RequestHistory extends Component {
   constructor(props) {
-    super(props);
+    super(props);    
   }
   render() {
+    let cmbads = req2audit(this.props.req);
+
     return (
       <Modal show={this.props.show} onHide={() => {this.props.setShow(false)}}>
       <Modal.Header closeButton>
@@ -416,10 +419,9 @@ class RequestHistory extends Component {
       </Modal.Header>
       <Modal.Body>
         <Table striped bordered hover>
-          <thead><tr><th>On</th><th>By</th><th>From</th><th>Notes</th></tr></thead>
+          <thead><tr><th>On</th><th>By</th><th>To state</th><th>Notes</th></tr></thead>
           <tbody>
-            { _.map(this.props.req.audit, (ad) => { return ( <tr key={ad.actedat}><td><DateTimeDisp value={ad.actedat}/></td><td>{ad.actedby}</td><td>{ad.previous}</td><td>{ad.notes}</td></tr> ) })}
-            <tr key="final"><td><DateTimeDisp value={this.props.req.timeofrequest}/></td><td>{this.props.req.requestedby}</td><td>{this.props.req.approvalstatus}</td><td>{this.props.req.notes}</td></tr>
+            { _.map(cmbads, (ad, i) => { return ( <tr key={i}><td><DateTimeDisp value={ad.actedat}/></td><td>{ad.actedby}</td><td>{ad.status}</td><td>{ad.details}</td></tr> ) })}
           </tbody>
         </Table>
       </Modal.Body>

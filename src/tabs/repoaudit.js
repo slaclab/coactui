@@ -7,16 +7,34 @@ import Container from 'react-bootstrap/Container';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { TwoPrecFloat, DateTimeDisp } from "./widgets";
+import { req2audit } from "../bpl/requests";
+
 
 const REPOAUDIT = gql`
-query repoAuditTrails($repo: RepoInput!){
-  repoAuditTrails(repo: $repo) {
+query repoAuditTrails($repo: String!, $facility: String!){
+  repoAuditTrails(repo: { name: $repo, facility: $facility } ) {
+    Id
     type
     action
     actedby
     actedat
     details
   }
+  requests(fetchprocessed: true, showmine: false, filter: { reponame: $repo }) {
+    Id
+    reqtype
+    requestedby
+    timeofrequest
+    approvalstatus
+    username
+    notes
+    audit {
+      actedby
+      actedat
+      notes
+      previous
+    }
+}
   whoami {
     username
   }
@@ -25,17 +43,30 @@ query repoAuditTrails($repo: RepoInput!){
 class AuditTable extends Component {
   constructor(props) {
     super(props);
+
+    let reqs = _.flatten(_.map(this.props.requests, (req) => { return req2audit(req) }));
+    _.each(reqs, (r) => { r["isRequest"] = true} )
+    let combined = _.reverse(_.sortBy(_.concat(reqs, _.map(this.props.audittrail, (a) => { let ac = _.clone(a); ac["isRequest"] = false; return ac })), (c) => { return new Date(c["actedat"]) }))
+    this.state = { combined: combined }
   }
+
   render() {
     return (
       <>
       <div className="container-fluid text-center table-responsive">
         <table className="table table-condensed table-striped table-bordered">
           <thead>
-            <tr><th>Action</th><th>By</th><th>At</th><th>Details</th></tr>
+            <tr className="d-flex"><th className="col-2">At</th><th className="col-2">By</th><th className="col-3">Action</th><th className="col-2">Status</th><th className="col-3">Details</th></tr>
           </thead>
           <tbody>
-          { _.map(this.props.audittrail, (a) => { return (<tr key={a.Id}><td>{a.action}</td><td>{a.actedby}</td><td><DateTimeDisp value={a.actedat}/></td><td>{a.details}</td></tr>) }) }
+          { _.map(this.state.combined, (a, i) => { return (
+            <tr key={i} className="d-flex">
+              <td className="col-2"><DateTimeDisp value={a.actedat}/>{ a.isRequest ? <span className="float-end text-warning"><>&larr;</></span> : ""}</td>
+              <td className="col-2">{a.actedby}</td>
+              <td className="col-3">{a.action}</td>
+              <td className="col-2">{a.status}</td>
+              <td className="col-3 text-truncate">{a.details}</td>
+            </tr>) }) }
           </tbody>
           </table>
         </div>
@@ -46,7 +77,7 @@ class AuditTable extends Component {
 
 export default function RepoAuditTrail() {
   let params = useParams(), reponame = params.name, facilityname = params.facility;
-  const { loading, error, data } = useQuery(REPOAUDIT, { variables: { repo: { name: reponame, facility: facilityname } } }, { fetchPolicy: 'no-cache', nextFetchPolicy: 'no-cache'});
+  const { loading, error, data } = useQuery(REPOAUDIT, { variables: { repo: reponame, facility: facilityname } }, { fetchPolicy: 'no-cache', nextFetchPolicy: 'no-cache'});
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;
@@ -56,7 +87,7 @@ export default function RepoAuditTrail() {
 
   return (
     <>
-    <AuditTable audittrail={data.repoAuditTrails} />
+    <AuditTable audittrail={data.repoAuditTrails} requests={data.requests}/>
     </>
   );
 }
