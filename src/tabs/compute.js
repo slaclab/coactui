@@ -40,24 +40,23 @@ query Repos($reposinput: RepoInput, $allocationid: MongoId!){
         percent
       }
       usage {
-        slachours
-        avgcf
+        resourceHours
       }
       perDateUsage {
         date
-        slachours
-        machinesecs
-        rawsecs
-        avgcf
+        resourceHours
       }
       perUserUsage {
         username
-        slachours
-        machinesecs
-        rawsecs
-        avgcf
+        resourceHours
       }
     }
+  }
+  clusters {
+    name
+    nodecpucount
+    nodecpucountdivisor
+    chargefactor
   }
   whoami {
     username
@@ -95,7 +94,7 @@ class User extends React.Component {
     super(props);
     this.computeRemaining = (allocation_percent) => {
       let allocated_compute = _.toNumber(allocation_percent)*this.props.repoallocation/100;
-      let remaining_compute = allocated_compute - _.get(this.props.user, "slachours", 0);
+      let remaining_compute = allocated_compute - _.get(this.props.user, "resourceHours", 0);
       let remaining_percent = (remaining_compute/allocated_compute)*100.0;
       return {
         "allocation": _.toNumber(allocation_percent),
@@ -133,7 +132,7 @@ class User extends React.Component {
         {/* <Col className={this.state.updt_sts_cls}><input className="usrcmpalc" type="number" defaultValue={this.state.allocation} onBlur={this.handleChange}/>
              <span className="invalid-feedback"></span></Col>
         <Col><TwoPrecFloat value={this.state.allocated_compute}/></Col> */}
-        <Col><TwoPrecFloat value={this.props.user.slachours}/></Col>
+        <Col><TwoPrecFloat value={this.props.user.resourceHours}/></Col>
         {/* <Col><TwoPrecFloat value={this.state.remaining_percent}/></Col> */}
       </Row>
     )}
@@ -143,25 +142,26 @@ class TopTab extends React.Component {
   constructor(props) {
     super(props);
     this.allocatedCompute = props.allocatedCompute;
-    this.slachours_charged = _.sum(_.map(_.get(this.props.repodata.computeAllocation, "usage", []), "slachours"));
-    this.available_slachours = this.allocatedCompute - this.slachours_charged;
-    this.remaining_percent = (this.available_slachours/this.allocatedCompute)*100.0;
+    this.resourceHours_charged = _.sum(_.map(_.get(this.props.repodata.computeAllocation, "usage", []), "resourceHours"));
+    let startdate = dayjs(_.get(props.repodata.computeAllocation, "start")), enddate = dayjs(_.get(props.repodata.computeAllocation, "end"));
+    this.allocatedResourceHours = props.allocatedCompute * (enddate.diff(startdate, "days"))*24*props.clusterInfo.nodecpucount;
+    console.log(dayjs(this.props.repodata.computeAllocation.end).subtract(dayjs(this.props.repodata.computeAllocation.start), "days"));
+    this.available_resourceHours = this.allocatedResourceHours - this.resourceHours_charged;
+    this.remaining_percent = (this.available_resourceHours/this.allocatedResourceHours)*100.0;
   }
   render() {
-    return (<Table striped bordered>
-      <tbody>
-        <tr>
-          <th><label>Current allocation</label></th>
-          <td><span>{this.allocatedCompute}</span><span class="px-2 fst-italic">{ "(" + this.props.currallocation + "%)"}</span>{}</td>
-          <th><label>Hours charged</label></th>
-          <td><TwoPrecFloat value={this.slachours_charged}/></td>
-          <th><label>Available hours</label></th>
-          <td><TwoPrecFloat value={this.available_slachours}/></td>
-          <th><label>Remaining %</label></th>
-          <td><TwoPrecFloat value={this.remaining_percent}/></td>
-        </tr>
-      </tbody>
-      </Table>
+    return (<><Row>
+      <Col><label>Current allocation</label></Col>
+      <Col><span>{this.allocatedCompute}</span><span className="px-2 fst-italic">{ "(" + this.props.currallocation + "%)"}</span></Col>
+      <Col><label>In hours</label></Col>
+      <Col><span><TwoPrecFloat value={this.allocatedResourceHours}/></span></Col>
+      <Col><label>Hours charged</label></Col>
+      <Col><TwoPrecFloat value={this.resourceHours_charged}/></Col>
+      <Col><label>Available hours</label></Col>
+      <Col><TwoPrecFloat value={this.available_resourceHours}/></Col>
+      <Col><label>Remaining %</label></Col>
+      <Col><TwoPrecFloat value={this.remaining_percent}/></Col>
+      </Row></>
     );
   }
 }
@@ -171,14 +171,16 @@ class MidChart extends React.Component {
     super(props);
     this.current_allocation = props.allocatedCompute;
     let per_date_usage = _.get(props.repodata.computeAllocation, "perDateUsage", []);
-    console.log(per_date_usage);
+    let startdate = dayjs(_.get(props.repodata.computeAllocation, "start")), enddate = dayjs(_.get(props.repodata.computeAllocation, "end"));
+    let per_day_allocation = this.current_allocation/(enddate.diff(startdate, "days"));
+    console.log(per_day_allocation);
 
     this.layout = { showlegend: true, legend: { x: 0.075, xanchor: 'center', y: 0.98, font: { family: 'Optima, Helevetica, Lucida Grande, Lucida Sans, sans-serif', size: 14, color: '#000' } }, autosize: false, width: window.innerWidth, height: 0.4*window.innerHeight, margin: { t: 0, b: -0.1 } };
     let uniform_charge_rate = { x: [], y: [], type: 'scatter', name: "Uniform Charge Rate" }, daily_charge_rate = { x: [], y: [], type: 'scatter', "name": "Hours charged" };
-    let daily_usage_by_day = _.keyBy(per_date_usage, (x) => dayjs(x["date"]).dayOfYear()), avg_allocation = this.current_allocation/(dayjs().endOf("year").diff(dayjs().startOf('year'), "days")), cuml_daily_usage = 0, today = dayjs();
-    for(let i=0, d = dayjs().startOf('year'); d.isBefore(dayjs().endOf("year")); d = d.add(1, "days"), i=i+1) {
-      uniform_charge_rate.x.push(d.toDate()); uniform_charge_rate.y.push(i*avg_allocation);
-      if(d.isBefore(today)){ daily_charge_rate.x.push(d.toDate()); cuml_daily_usage = cuml_daily_usage + (_.get(daily_usage_by_day, d.dayOfYear() + ".slachours", 0)); daily_charge_rate.y.push(cuml_daily_usage); }
+    let daily_usage_by_day = _.keyBy(per_date_usage, (x) => dayjs(x["date"]).dayOfYear()), cuml_daily_usage = 0, today = dayjs();
+    for(let i=0, d = startdate; d.isBefore(enddate); d = d.add(1, "days"), i=i+1) {
+      uniform_charge_rate.x.push(d.toDate()); uniform_charge_rate.y.push(i*per_day_allocation);
+      if(d.isBefore(today)){ daily_charge_rate.x.push(d.toDate()); cuml_daily_usage = cuml_daily_usage + (_.get(daily_usage_by_day, d.dayOfYear() + ".resourceHours", 0)); daily_charge_rate.y.push(cuml_daily_usage); }
     }
     this.chartdata = [uniform_charge_rate, daily_charge_rate];
   }
@@ -204,11 +206,11 @@ class BottomTab extends React.Component {
       repo_users = _.get(repodata, "users", []);
 
 
-    console.log(per_user_allocations);
+    console.log(per_user_usage);
     // Users can come and go.. Collect all the users from the both the repo itself and also from any past jobs
     var users = _.fromPairs(_.map(_.union(_.map(per_user_allocations, "username"), _.map(per_user_usage, "username"), repo_users), u => [ u, { username: u, allocated_compute: 0, remaining_compute: 0, remaining_percent: 100}]));
     _.each(per_user_allocations, function(v,k){ users[v["username"]]["allocation"] = _.cloneDeep(v) });
-    _.each(per_user_usage, function(pu){ users[pu["username"]]["slachours"] = pu["slachours"] });
+    _.each(per_user_usage, function(pu){ users[pu["username"]]["resourceHours"] = pu["resourceHours"] });
     console.log(users);
 
     this.users = users;
@@ -299,7 +301,7 @@ class ComputeTab extends React.Component {
         <Col className="text-center"><div className="sectiontitle">Resource usage for repo <span className="ref">{this.props.repodata.name}</span> on the <span className="ref">{this.props.repodata.computeAllocation.clustername}</span> cluster</div></Col>
         <Col></Col>
       </Row>
-      <TopTab repodata={this.props.repodata} allocatedCompute={this.props.allocatedCompute} currallocation={this.props.repodata.computeAllocation.percentOfFacility} isAdminOrCzar={this.props.isAdminOrCzar} />
+      <TopTab repodata={this.props.repodata} allocatedCompute={this.props.allocatedCompute} clusterInfo={this.props.clusterInfo} currallocation={this.props.repodata.computeAllocation.percentOfFacility} isAdminOrCzar={this.props.isAdminOrCzar} />
       <MidChart repodata={this.props.repodata} allocatedCompute={this.props.allocatedCompute}/>
       <BottomTab repodata={this.props.repodata} onAllocationChange={this.props.onAllocationChange} allocatedCompute={this.props.allocatedCompute}/>
     </div>)
@@ -323,6 +325,7 @@ export default function Compute() {
   console.log(repodata);
   let facilityPurchased = _.get(_.find(repodata["facilityObj"]["computepurchases"], ["clustername", repodata["computeAllocation"]["clustername"]]), "purchased", 0.0);
   let totalAllocatedCompute = _.get(repodata, "computeAllocation.percentOfFacility", 0.0)*facilityPurchased/100.0;
+  let clusterInfo = _.keyBy(data.clusters, "name")[repodata["computeAllocation"]["clustername"]];
 
   const isAdminOrCzar = data.whoami.isAdmin || data.whoami.isCzar;  
 
@@ -341,7 +344,8 @@ export default function Compute() {
     onCompleted: callWhenDone, onError: (error) => { callOnError(error.message)}});
   }
 
-  return (<ComputeTab repodata={repodata} facilityPurchased={facilityPurchased} allocatedCompute={totalAllocatedCompute} onAllocationChange={changeAllocation}
+  return (<ComputeTab repodata={repodata} facilityPurchased={facilityPurchased} allocatedCompute={totalAllocatedCompute} 
+    clusterInfo={clusterInfo} onAllocationChange={changeAllocation}
     allocMdlShow={allocMdlShow} setAllocMdlShow={setAllocMdlShow} requestChangeAllocation={requestChangeAllocation}
     toolbaritems={toolbaritems} setToolbaritems={setToolbaritems} isAdminOrCzar={isAdminOrCzar}
     />);

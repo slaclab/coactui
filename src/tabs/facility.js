@@ -31,7 +31,8 @@ query Facility($facilityinput: FacilityInput){
       clustername
       purchased
       allocated
-      used
+      usedDay
+      usedWeek
     }
     storagepurchases {
       storagename
@@ -47,6 +48,9 @@ query Facility($facilityinput: FacilityInput){
   }
   clusters {
     name
+    nodecpucount
+    nodecpucountdivisor
+    chargefactor
   }
   storagenames
   storagepurposes
@@ -238,6 +242,7 @@ class FacilityComputePurchases extends Component {
     this.applyNewPurchase = (clustername, newPurchase) => {
       this.props.addUpdateComputePurchase(clustername, newPurchase, () => {this.setState({showAddModal: false, showUpdateModal: false})}, (message) => { this.setState({modalError: true, modalErrorMessage: message})})
     }
+    this.clusterInfos = _.keyBy(this.props.clusters, "name");
   }
 
   render() {
@@ -247,18 +252,22 @@ class FacilityComputePurchases extends Component {
           <Card.Header>Compute {this.props.isAdmin ? (<span className="px-1 text-warning" title="Add new compute purchase" onClick={() => { this.setState({showAddModal: true, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faPlus}/></span>) : (<span></span>)}</Card.Header>
           <Card.Body>
             <Row className="mb-2">
-              <Col md={3}><span className="tbllbl">Cluster</span></Col>
-              <Col md={3}><span className="tbllbl">Acquired</span></Col>
-              <Col md={3}><span className="tbllbl">Allocated</span></Col>
-              <Col md={3}><span className="tbllbl">Used</span></Col>
+              <Col md={2}><span className="tbllbl">Cluster</span></Col>
+              <Col md={2}><span className="tbllbl">Acquired</span></Col>
+              <Col md={2}><span className="tbllbl">Allocated</span></Col>
+              <Col md={2}><span className="tbllbl">Avg Used (day)</span></Col>
+              <Col md={2}><span className="tbllbl">Avg Used (week)</span></Col>
             </Row>
             {
-              _.map(_.sortBy(this.props.facility.computepurchases, "clustername"), (p) => { return (
+              _.map(_.sortBy(this.props.facility.computepurchases, "clustername"), (p) => { 
+                let clusterinfo = this.clusterInfos[p.clustername];
+                return (
                 <Row key={p.clustername} className="mb-2">
-                  <Col md={3}><NavLink to={"/clusterusage/"+p.clustername} key={p.clustername}>{p.clustername}</NavLink></Col>
-                  <Col md={3}>{p.purchased} {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased amount" onClick={() => { this.setState({showUpdateModal: true, updateModalClusterName: p.clustername, updateModalCurrentPurchase: p.purchased, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</Col>
-                  <Col md={3}>{p.allocated}</Col>
-                  <Col md={3}>{p.used.toFixed(2)}</Col>
+                  <Col md={2}><NavLink to={"/clusterusage/"+p.clustername} key={p.clustername}>{p.clustername}</NavLink></Col>
+                  <Col md={2}>{p.purchased} {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased amount" onClick={() => { this.setState({showUpdateModal: true, updateModalClusterName: p.clustername, updateModalCurrentPurchase: p.purchased, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</Col>
+                  <Col md={2}>{p.allocated}</Col>
+                  <Col md={2}>{(p.usedDay/clusterinfo.nodecpucount).toFixed(2)}</Col>
+                  <Col md={2}>{(p.usedWeek/(clusterinfo.nodecpucount*7.0)).toFixed(2)}</Col>
                 </Row>
 
               ) })
