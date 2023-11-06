@@ -37,6 +37,14 @@ query{
       usage {
         resourceHours
       }
+      todaysUsage {
+        date
+        resourceHours
+      }
+      thisWeeksUsage {
+        date
+        resourceHours
+      }
     }
   }
   whoami {
@@ -53,6 +61,7 @@ query{
   }
   clusters {
     name
+    nodecpucount
   }
 }`;
 
@@ -176,6 +185,13 @@ class ReposRows extends Component {
       let percentoffacility = _.get(a, "percentOfFacility", 0.0);
       let totalAllocatedCompute = _.get(a, "allocated", 0.0);
       let totalUsedHours = _.sum(_.map(_.get(a, "usage", []), "resourceHours"));
+      let todaysUsage = _.sum(_.map(_.get(a, "todaysUsage", []), "resourceHours"));
+      let thisWeeksUsage =  _.sum(_.map(_.get(a, "thisWeeksUsage", []), "resourceHours"));
+      let nodecpucount = _.get(this.props.clusterInfo, a.clustername + ".nodecpucount", 1);
+      let allocatedResourceHoursPerDay = totalAllocatedCompute * 24.0 * nodecpucount;
+      let todaysUsageInPercent = allocatedResourceHoursPerDay != 0.0 ? todaysUsage*100/allocatedResourceHoursPerDay : 0;
+      let thisWeeksUsageInPercent = allocatedResourceHoursPerDay != 0.0 ? thisWeeksUsage*100/(allocatedResourceHoursPerDay*7.0) : 0;
+
       if(first) {
         first = false;
         return (
@@ -184,7 +200,9 @@ class ReposRows extends Component {
             <td rowSpan={rows} className="vmid">{this.props.repo.facilityObj.name}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
             <td>{a.clustername == "N/A" ? "None" : <NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink>}</td>
-            <td><span><TwoPrecFloat value={totalAllocatedCompute}/></span><span className="px-2 fst-italic">{ "(" + percentoffacility + "%)"}</span> {this.props.canEditAllocations && a.clustername != "N/A" ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
+            <td><span className="px-2 fst-italic">{ percentoffacility + "%"}</span><span>(<TwoPrecFloat value={totalAllocatedCompute}/>)</span> {this.props.canEditAllocations && a.clustername != "N/A" ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
+            <td><TwoPrecFloat value={todaysUsage}/> <span className="fst-italic">(<TwoPrecFloat value={todaysUsageInPercent}/>%)</span></td>
+            <td><TwoPrecFloat value={thisWeeksUsage}/> <span className="fst-italic">(<TwoPrecFloat value={thisWeeksUsageInPercent}/>%)</span></td>
             <td><TwoPrecFloat value={totalUsedHours}/></td>
             <td><DateDisp value={a.start}/></td>
             <td><DateDisp value={a.end}/></td>
@@ -193,7 +211,9 @@ class ReposRows extends Component {
           return (
             <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame}>
               <td><NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink></td>
-              <td><span><TwoPrecFloat value={totalAllocatedCompute}/></span><span className="px-2 fst-italic">{ "(" + percentoffacility + "%)"}</span> {this.props.canEditAllocations ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
+              <td><span className="px-2 fst-italic">{ percentoffacility + "%"}</span><span>(<TwoPrecFloat value={totalAllocatedCompute}/>)</span> {this.props.canEditAllocations ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
+              <td><TwoPrecFloat value={todaysUsage}/> <span className="fst-italic">(<TwoPrecFloat value={todaysUsageInPercent}/>%)</span></td>
+              <td><TwoPrecFloat value={thisWeeksUsage}/> <span className="fst-italic">(<TwoPrecFloat value={thisWeeksUsageInPercent}/>%)</span></td>
               <td><TwoPrecFloat value={totalUsedHours}/></td>
               <td><DateDisp value={a.start}/></td>
               <td><DateDisp value={a.end}/></td>
@@ -210,6 +230,7 @@ class ReposTable extends Component {
     super(props);
     this.resetState = () => { return  { repo: "", facility: "", cluster: "", allocationStartTime: "", currentAllocation: 0, clustersunallocated: [], facilityPurchased: 0, showAddModal: false, showUpdateModal: false, updateModalClusterName: "", updateModalCurrentPurchase: 0, modalError: false, modalErrorMessage: "", showToast: false, toastMsg: ""}}
     this.state = this.resetState();
+    this.clusterInfo = _.keyBy(props.clusters, "name");
 
     this.showUpdateModal = (repoObj, compAlloc, facilityPurchased) => { 
       this.setState((prevState) => {
@@ -274,9 +295,9 @@ class ReposTable extends Component {
         </ToastContainer>
         <table className="table table-condensed table-striped table-bordered">
           <thead>
-            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th>Total compute used</th><th>Start</th><th>End</th></tr>
+            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th>Today's usage</th><th>This week's usage</th><th>Total compute used</th><th>Start</th><th>End</th></tr>
           </thead>
-          { _.map(this.props.repos, (r) => { return (<ReposRows key={r.facility+"_"+r.name} repo={r} facilities={this.props.facilities} canEditAllocations={this.props.canEditAllocations} showUpdateModal={this.showUpdateModal} showAddModal={this.showAddModal}/>) }) }
+          { _.map(this.props.repos, (r) => { return (<ReposRows key={r.facility+"_"+r.name} repo={r} facilities={this.props.facilities} clusterInfo={this.clusterInfo} canEditAllocations={this.props.canEditAllocations} showUpdateModal={this.showUpdateModal} showAddModal={this.showAddModal}/>) }) }
           </table>
         </div>
         <UpdateComputeAllocation reponame={this.state.repo} facilityname={this.state.facility} clustername={this.state.cluster} currentAllocation={this.state.currentAllocation} facilityPurchased={this.state.facilityPurchased} showModal={this.state.showUpdateModal} showUpdateModal={this.showUpdateModal} hideModal={this.hideUpdateModal} isError={this.state.modalError} errorMessage={this.state.modalErrorMessage} applyUpdateAllocation={this.applyUpdateAllocation}/>
@@ -314,7 +335,6 @@ export default function ReposComputeListView() {
       onCompleted: (data) => { console.log(data); approveRequest(data["requestRepoComputeAllocation"]["Id"], callWhenDone, callOnError)},
       onError: (error) => { console.log(error); callOnError(error.message)}});
   }
-
   return (
     <>
     <ReposTable repos={data.myRepos} facilities={data.facilities} clusters={data.clusters} canEditAllocations={canEditAllocations} 
