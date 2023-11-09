@@ -38,12 +38,14 @@ query{
         resourceHours
       }
       recentUsage {
-        date
-        resourceHours
+        allocatedResourceHours
+        usedResourceHours
+        percentUsed
       }
-      thisWeeksUsage {
-        date
-        resourceHours
+      lastWeeksUsage {
+        allocatedResourceHours
+        usedResourceHours
+        percentUsed
       }
     }
   }
@@ -185,12 +187,10 @@ class ReposRows extends Component {
       let percentoffacility = _.get(a, "percentOfFacility", 0.0);
       let totalAllocatedCompute = _.get(a, "allocated", 0.0);
       let totalUsedHours = _.sum(_.map(_.get(a, "usage", []), "resourceHours"));
-      let recentUsage = _.sum(_.map(_.get(a, "recentUsage", []), "resourceHours"));
-      let thisWeeksUsage =  _.sum(_.map(_.get(a, "thisWeeksUsage", []), "resourceHours"));
-      let nodecpucount = _.get(this.props.clusterInfo, a.clustername + ".nodecpucount", 1);
-      let allocatedResourceHoursPerDay = totalAllocatedCompute * 24.0 * nodecpucount;
-      let recentUsageInPercent = allocatedResourceHoursPerDay != 0.0 ? recentUsage*100/allocatedResourceHoursPerDay : 0;
-      let thisWeeksUsageInPercent = allocatedResourceHoursPerDay != 0.0 ? thisWeeksUsage*100/(allocatedResourceHoursPerDay*7.0) : 0;
+      let recentUsage = _.get(a, "recentUsage.usedResourceHours", 0);
+      let recentUsageInPercent = _.get(a, "recentUsage.percentUsed", 0);
+      let lastWeeksUsage =  _.get(a, "lastWeeksUsage.usedResourceHours", 0);
+      let lastWeeksUsageInPercent = _.get(a, "lastWeeksUsage.percentUsed", 0);
 
       if(first) {
         first = false;
@@ -201,9 +201,9 @@ class ReposRows extends Component {
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
             <td>{a.clustername == "N/A" ? "None" : <NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink>}</td>
             <td><span className="px-2 fst-italic">{ percentoffacility + "%"}</span><span>(<TwoPrecFloat value={totalAllocatedCompute}/>)</span> {this.props.canEditAllocations && a.clustername != "N/A" ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
-            <td><TwoPrecFloat value={recentUsage}/> <span className="fst-italic">(<TwoPrecFloat value={recentUsageInPercent}/>%)</span></td>
-            <td><TwoPrecFloat value={thisWeeksUsage}/> <span className="fst-italic">(<TwoPrecFloat value={thisWeeksUsageInPercent}/>%)</span></td>
-            <td><TwoPrecFloat value={totalUsedHours}/></td>
+            <td><span className="float-start"><TwoPrecFloat value={recentUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={recentUsageInPercent}/>%)</span></td>
+            <td><span className="float-start"><TwoPrecFloat value={lastWeeksUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={lastWeeksUsageInPercent}/>%)</span></td>
+            <td><span className="float-end"><TwoPrecFloat value={totalUsedHours}/></span></td>
             <td><DateDisp value={a.start}/></td>
             <td><DateDisp value={a.end}/></td>
           </tr>)
@@ -212,9 +212,9 @@ class ReposRows extends Component {
             <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame}>
               <td><NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink></td>
               <td><span className="px-2 fst-italic">{ percentoffacility + "%"}</span><span>(<TwoPrecFloat value={totalAllocatedCompute}/>)</span> {this.props.canEditAllocations ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
-              <td><TwoPrecFloat value={recentUsage}/> <span className="fst-italic">(<TwoPrecFloat value={recentUsageInPercent}/>%)</span></td>
-              <td><TwoPrecFloat value={thisWeeksUsage}/> <span className="fst-italic">(<TwoPrecFloat value={thisWeeksUsageInPercent}/>%)</span></td>
-              <td><TwoPrecFloat value={totalUsedHours}/></td>
+              <td><span className="float-start"><TwoPrecFloat value={recentUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={recentUsageInPercent}/>%)</span></td>
+              <td><span className="float-start"><TwoPrecFloat value={lastWeeksUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={lastWeeksUsageInPercent}/>%)</span></td>
+              <td><span className="float-end"><TwoPrecFloat value={totalUsedHours}/></span></td>
               <td><DateDisp value={a.start}/></td>
               <td><DateDisp value={a.end}/></td>
             </tr>)
