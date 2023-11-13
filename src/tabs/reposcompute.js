@@ -34,6 +34,8 @@ query{
       end
       percentOfFacility
       allocated
+      burstPercentOfFacility
+      burstAllocated
       usage {
         resourceHours
       }
@@ -84,7 +86,7 @@ mutation requestApprove($Id: String!){
 class AddComputeAllocation extends Component {
   constructor(props) {
     super(props);
-    this.state = { currentCluster: "", facilityPurchased: 0.0, currentAllocation: 0, showalloc: false }
+    this.state = { currentCluster: "", facilityPurchased: 0.0, currentAllocation: 0, currentBurstAllocation: 0, showalloc: false }
     this.setCluster = (event) => { 
       let clustername = event.target.value;
       let facilityData = _.find(this.props.facilities, ["name", this.props.facilityname]);
@@ -92,6 +94,7 @@ class AddComputeAllocation extends Component {
       this.setState({currentCluster: clustername, facilityPurchased: facilityPurchased, showalloc: true}) 
     }
     this.setAllocation = (event) => { this.setState({currentAllocation: event.target.value}) }
+    this.setBurstAllocation = (event) => { this.setState({currentBurstAllocation: event.target.value}) }
     this.hideModal = () => { 
       this.setState({currentCluster: "", facilityPurchased: 0.0, currentAllocation: 0, showalloc: false});
       this.props.hideModal();
@@ -121,12 +124,21 @@ class AddComputeAllocation extends Component {
               <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
             </InputGroup>
           </div>
+          <div className={this.state.showalloc ? "py-2" : "d-none"}>
+            <p>One can also specify the max fraction of the facility's resources that can be at any instant in time as a cap on burst usage.
+            </p>
+            <InputGroup hasValidation>
+              <InputGroup.Text>Current Burst Percent:</InputGroup.Text>
+              <Form.Control type="number" onBlur={this.setBurstAllocation} isInvalid={this.props.isError} defaultValue={this.props.currentBurstAllocation}/>
+              <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
+            </InputGroup>
+          </div>
         </ModalBody>
         <ModalFooter>
           <Button onClick={() => {this.hideModal()}}>
             Close
           </Button>
-          <Button onClick={() => { this.props.applyNewAllocation(this.state.currentCluster, this.state.currentAllocation) }}>
+          <Button onClick={() => { this.props.applyNewAllocation(this.state.currentCluster, this.state.currentAllocation, this.state.currentBurstAllocation) }}>
             Done
           </Button>
         </ModalFooter>
@@ -138,8 +150,9 @@ class AddComputeAllocation extends Component {
 class UpdateComputeAllocation extends Component {
   constructor(props) {
     super(props);
-    this.state = { currentAllocation: props.currentAllocation }
+    this.state = { currentAllocation: props.currentAllocation, currentBurstAllocation: props.currentBurstAllocation }
     this.setAllocation = (event) => { this.setState({currentAllocation: event.target.value}) }
+    this.setBurstAllocation = (event) => { this.setState({currentBurstAllocation: event.target.value}) }
   }
 
   render() {
@@ -156,12 +169,18 @@ class UpdateComputeAllocation extends Component {
             <Form.Control type="number" onBlur={this.setAllocation} isInvalid={this.props.isError} defaultValue={this.props.currentAllocation}/>
             <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
           </InputGroup>
+          <p className="mt-2">One can also specify the max fraction of the facility's resources that can be at any instant in time as a cap on burst usage.</p>
+          <InputGroup hasValidation>
+            <InputGroup.Text>Current Burst Percent:</InputGroup.Text>
+            <Form.Control type="number" onBlur={this.setBurstAllocation} isInvalid={this.props.isError} defaultValue={this.props.currentBurstAllocation}/>
+            <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
+          </InputGroup>
         </ModalBody>
         <ModalFooter>
           <Button onClick={() => {this.props.hideModal()}}>
             Close
           </Button>
-          <Button onClick={() => { this.props.applyUpdateAllocation(this.state.currentAllocation) }}>
+          <Button onClick={() => { this.props.applyUpdateAllocation(this.state.currentAllocation, this.state.currentBurstAllocation) }}>
             Done
           </Button>
         </ModalFooter>
@@ -186,6 +205,9 @@ class ReposRows extends Component {
       let facilityPurchased = _.get(_.find(this.facilityData.computepurchases, ["clustername", a.clustername]), "purchased", 0.0);
       let percentoffacility = _.get(a, "percentOfFacility", 0.0);
       let totalAllocatedCompute = _.get(a, "allocated", 0.0);
+      let burstPercentOfFacility = _.get(a, "burstPercentOfFacility", 0.0);
+      let totalBurstAllocatedCompute = _.get(a, "burstAllocated", 0.0);
+      
       let totalUsedHours = _.sum(_.map(_.get(a, "usage", []), "resourceHours"));
       let recentUsage = _.get(a, "recentUsage.usedResourceHours", 0);
       let recentUsageInPercent = _.get(a, "recentUsage.percentUsed", 0);
@@ -201,6 +223,7 @@ class ReposRows extends Component {
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
             <td>{a.clustername == "N/A" ? "None" : <NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink>}</td>
             <td><span className="px-2 fst-italic">{ percentoffacility + "%"}</span><span>(<TwoPrecFloat value={totalAllocatedCompute}/>)</span> {this.props.canEditAllocations && a.clustername != "N/A" ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
+            <td><span className="px-2 fst-italic">{ burstPercentOfFacility + "%"}</span><span>(<TwoPrecFloat value={totalBurstAllocatedCompute}/>)</span></td>
             <td><span className="float-start"><TwoPrecFloat value={recentUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={recentUsageInPercent}/>%)</span></td>
             <td><span className="float-start"><TwoPrecFloat value={lastWeeksUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={lastWeeksUsageInPercent}/>%)</span></td>
             <td><span className="float-end"><TwoPrecFloat value={totalUsedHours}/></span></td>
@@ -212,6 +235,7 @@ class ReposRows extends Component {
             <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame}>
               <td><NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink></td>
               <td><span className="px-2 fst-italic">{ percentoffacility + "%"}</span><span>(<TwoPrecFloat value={totalAllocatedCompute}/>)</span> {this.props.canEditAllocations ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
+              <td><span className="px-2 fst-italic">{ burstPercentOfFacility + "%"}</span><span>(<TwoPrecFloat value={totalBurstAllocatedCompute}/>)</span></td>
               <td><span className="float-start"><TwoPrecFloat value={recentUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={recentUsageInPercent}/>%)</span></td>
               <td><span className="float-start"><TwoPrecFloat value={lastWeeksUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={lastWeeksUsageInPercent}/>%)</span></td>
               <td><span className="float-end"><TwoPrecFloat value={totalUsedHours}/></span></td>
@@ -259,12 +283,16 @@ class ReposTable extends Component {
       })
   }
     
-    this.applyUpdateAllocation = (curalloc) => { 
+    this.applyUpdateAllocation = (curalloc, currburstalloc) => { 
       if(curalloc < 0.0) {
         this.setState({modalError: true, modalErrorMessage: "Please enter a number >= 0"});
         return;
       }
-      this.props.actuallyChangeAllocation(this.state.facility, this.state.repo, this.state.cluster, this.state.allocationStartTime, curalloc, 
+      if(currburstalloc < 0.0) {
+        this.setState({modalError: true, modalErrorMessage: "Please enter a number >= 0"});
+        return;
+      }
+      this.props.actuallyChangeAllocation(this.state.facility, this.state.repo, this.state.cluster, this.state.allocationStartTime, curalloc, currburstalloc,
         () => { 
           this.hideUpdateModal();
           this.setState({showToast: true, toastMsg: "A request to update the compute allocation has been made and approved. It will take a few seconds for this approval to be processed. Please refresh the screen after a little while to update the UI."})
@@ -272,12 +300,16 @@ class ReposTable extends Component {
         (errormsg) => { this.setState({modalError: true, modalErrorMessage: errormsg})} );
     }
 
-    this.applyNewAllocation = (clustername, curalloc) => { 
+    this.applyNewAllocation = (clustername, curalloc, currburstalloc) => { 
       if(curalloc < 0.0) {
         this.setState({modalError: true, modalErrorMessage: "Please enter a number >= 0"});
         return;
       }
-      this.props.actuallyChangeAllocation(this.state.facility, this.state.repo, clustername, this.state.allocationStartTime, curalloc, 
+      if(currburstalloc < 0.0) {
+        this.setState({modalError: true, modalErrorMessage: "Please enter a number >= 0"});
+        return;
+      }
+      this.props.actuallyChangeAllocation(this.state.facility, this.state.repo, clustername, this.state.allocationStartTime, curalloc, currburstalloc,
         () => { 
           this.hideUpdateModal();
           this.setState({showToast: true, toastMsg: "A request to update the compute allocation has been made and approved. It will take a few seconds for this approval to be processed. Please refresh the screen after a little while to update the UI."})
@@ -295,7 +327,7 @@ class ReposTable extends Component {
         </ToastContainer>
         <table className="table table-condensed table-striped table-bordered">
           <thead>
-            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th title="Includes data from yesterday and today">Recent usage</th><th title="Includes data for 7 days">Last week's usage</th><th>Total compute used</th><th>Start</th><th>End</th></tr>
+            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th>Burst allocation</th><th title="Includes data from yesterday and today">Recent usage</th><th title="Includes data for 7 days">Last week's usage</th><th>Total compute used</th><th>Start</th><th>End</th></tr>
           </thead>
           { _.map(this.props.repos, (r) => { return (<ReposRows key={r.facility+"_"+r.name} repo={r} facilities={this.props.facilities} clusterInfo={this.clusterInfo} canEditAllocations={this.props.canEditAllocations} showUpdateModal={this.showUpdateModal} showAddModal={this.showAddModal}/>) }) }
           </table>
@@ -329,9 +361,9 @@ export default function ReposComputeListView() {
       onError: (error) => { callOnError(error.message) }, 
       refetchQueries: [ REPOS ] });
     }
-  let actuallyChangeAllocation = function(facility, repo, cluster, allocationStartTime, curalloc, callWhenDone, callOnError) {
-    console.log("Actually change allocations to " + curalloc + " for " + repo);
-    allocreq({ variables: { request: { reqtype: "RepoComputeAllocation", facilityname: facility, reponame: repo, clustername: cluster, start: allocationStartTime, percentOfFacility: _.toNumber(curalloc) } }, 
+  let actuallyChangeAllocation = function(facility, repo, cluster, allocationStartTime, curalloc, currburstalloc, callWhenDone, callOnError) {
+    console.log("Actually change allocations to " + curalloc + " burst=" + currburstalloc + " for " + repo);
+    allocreq({ variables: { request: { reqtype: "RepoComputeAllocation", facilityname: facility, reponame: repo, clustername: cluster, start: allocationStartTime, percentOfFacility: _.toNumber(curalloc), burstPercentOfFacility: _.toNumber(currburstalloc) } }, 
       onCompleted: (data) => { console.log(data); approveRequest(data["requestRepoComputeAllocation"]["Id"], callWhenDone, callOnError)},
       onError: (error) => { console.log(error); callOnError(error.message)}});
   }
