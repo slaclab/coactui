@@ -117,6 +117,25 @@ mutation facilityAddUpdateStoragePurchase($facilityinput: FacilityInput!, $purpo
 }
 `
 
+const USER_LOOKUP_BY_USERNAME = gql`
+query userlookup($username: String!) {
+  usersLookupFromService(filter: {username: $username}) {
+    username
+    fullname
+    preferredemail
+  }
+}
+`
+const USER_LOOKUP_BY_FULLNAME = gql`
+query userlookup($fullname: String!) {
+  usersLookupFromService(filter: {fullname: $fullname}) {
+    username
+    fullname
+    preferredemail
+  }
+}
+`
+
 
 
 class AddComputePurchase extends Component {
@@ -472,48 +491,45 @@ class FacilityStoragePurchases extends Component {
 class RegisterNewUser extends Component {
   constructor(props) {
     super(props);
-    this.state = { registrationmessage : "Please enter a valid email", eppn: "", eppnInvalid: false, eppnInvalidMsg: "" };
+    this.state = {searchstring: "", selected: [], matches: [], showregister: false, errormsg: "" };
     this.usernames = [];
-    this.validate = () => {
-      const validations = [];
-      validations.push(new Promise(resolve => {
-        if(_.isEmpty(this.state.eppn)) {
-          this.setState({ eppnInvalid: true, eppnInvalidMsg: "Please enter a valid email address"}, () => { resolve(false); return; })
-        } else {
-          resolve(true);
-          return;
-        }
-      }));
-      validations.push(new Promise(resolve => {
-        const validateEmail = (email) => {
-          return email.match(
-            /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-          );
-        };
-        if(!validateEmail(this.state.eppn)) {
-          this.setState({ eppnInvalid: true, eppnInvalidMsg: "Please enter a valid email address"}, () => { resolve(false); return; })
-        } else {
-          resolve(true);
-          return;
-        }
-      }));
-      return Promise.all(validations);
-    }
-    
-    this.setEppn = (event) => { 
-      this.setState({ eppn: event.target.value, eppnInvalid: false, eppnInvalidMsg: ""}, this.validate)
+
+    this.setSearchString = (event) => { 
+      this.setState({ searchstring: event.target.value, showregister: false, matches: [], selected: []})
     }
     this.closeModal = () => {
-      this.setState({ eppn: "", eppnInvalid: false, eppnInvalidMsg: ""});
       this.props.setShowModal(false) 
     }
-    this.setError = (error) => { console.log("Error!!!!!!"); console.log(error.message); this.setState({ eppnInvalid: true, eppnInvalidMsg: error.message })}
+    this.setError = (errmsg) => { 
+      this.setState({errormsg: errmsg})
+    }
     this.registerUser = () => {
-      this.validate().then((data) =>{
-        console.log(data);
-        if(this.state.eppnInvalid) { console.log("Still some errors; please process"); return; }
-        this.props.requestUserAccount(this.state.eppn, this.closeModal, this.setError );
+      let ubynm = _.keyBy(this.state.matches, "username");
+      _.each(this.state.selected, (sel) => { 
+        let user = ubynm[sel];
+        this.props.requestUserAccount(user, this.closeModal, this.setError );
       })
+    }
+    this.lookupUser = () => { 
+      let mergeInMatches = (matches) => {
+        let uniqmatches = _.uniqBy(_.concat(matches, this.state.matches), (x) => { return x["username"]})
+        this.setState({matches: uniqmatches});
+      }
+      this.props.userLookupByUserName({
+        variables: { username: this.state.searchstring },
+        onCompleted: (data) => {
+          mergeInMatches(_.get(data, "usersLookupFromService", []));
+        }
+      })
+      this.props.userLookupByFullName({
+        variables: { fullname: this.state.searchstring },
+        onCompleted: (data) => {
+          mergeInMatches(_.get(data, "usersLookupFromService", []));
+        }
+      })
+    }
+    this.checkUncheck = (username) => { 
+      this.setState({selected: _.concat(this.state.selected, username), showregister: true})
     }
   }
 
@@ -521,20 +537,23 @@ class RegisterNewUser extends Component {
     return (
       <Modal show={this.props.showModal} onHide={this.closeModal} >
         <ModalHeader closeButton={true}>
-          <ModalTitle>Register an new S3DF account</ModalTitle>
+          <ModalTitle>Invite users to the {this.props.facility.name} facility</ModalTitle>
         </ModalHeader>
         <ModalBody>
-          <Form.Text>{this.state.registrationmessage}</Form.Text>
+          <Form.Text>Search for users by their name or by their userid; hit tab to lookup</Form.Text>
+          <Form.Label className="text-danger">{this.state.errormsg}</Form.Label>
           <InputGroup hasValidation>
-            <Form.Control type="email" placeholder="Username" onBlur={this.setEppn} isInvalid={this.state.eppnInvalid} defaultValue="@slac.stanford.edu"/>
-            <Form.Control.Feedback type="invalid">{this.state.eppnInvalidMsg}</Form.Control.Feedback>
+            <Form.Control type="email" placeholder="Name or userid" onChange={this.setSearchString} onBlur={this.lookupUser}/>
           </InputGroup>
-
-
+          <table className="table table-condensed table-striped table-bordered mt-2 pt-2">
+            <thead><tr><th>UserId</th><th>Name</th><th>Preferred email</th><th></th></tr></thead>
+            <tbody>{ _.map(this.state.matches, (u) => { return (<tr key={u.username}><td>{u.username}</td><td>{u.fullname}</td><td>{u.preferredemail}</td><td><input type="checkbox" data-selkey={u.username} onChange={() => this.checkUncheck(u.username)}/></td></tr>) }) }</tbody>
+          </table>
         </ModalBody>
         <ModalFooter>
-          <Button onClick={this.closeModal}>Close</Button>
-          <Button onClick={this.registerUser}>Register</Button>
+          <Button className="btn-secondary" onClick={this.closeModal}>Close</Button>
+          <Button className={!this.state.showregister ? "" : "d-none"} onClick={this.lookupUser}>Lookup</Button>
+          <Button className={this.state.showregister ? "" : "d-none"}  onClick={this.registerUser}>Register</Button>
         </ModalFooter>
     </Modal>
     );
@@ -629,7 +648,9 @@ class FacilityDetails extends Component {
           <FacilityComputePurchases facility={this.props.facility} clusters={this.props.clusters} isAdmin={this.props.isAdmin} addUpdateComputePurchase={this.props.addUpdateComputePurchase}/>
           <FacilityStoragePurchases facility={this.props.facility} storagenames={this.props.storagenames} storagepurposes={this.props.storagepurposes} isAdmin={this.props.isAdmin} addUpdateStoragePurchase={this.props.addUpdateStoragePurchase} />
           <AddRemoveCzar facility={this.props.facility} getUsersMatchingUserName={this.props.getUsersMatchingUserName} onSelDesel={this.props.onSelDesel} showModal={this.state.showCzarModal} setShowModal={(val) => { this.setState({showCzarModal: val})} }/>
-          <RegisterNewUser facility={this.props.facility} getUsersMatchingUserName={this.props.getUsersMatchingUserName} getUserForEPPN={this.props.getUserForEPPN} showModal={this.state.showRegisterUserModal} setShowModal={(val) => { this.setState({showRegisterUserModal: val})} } requestUserAccount={this.props.requestUserAccount }/>
+          <RegisterNewUser facility={this.props.facility} getUsersMatchingUserName={this.props.getUsersMatchingUserName} getUserForEPPN={this.props.getUserForEPPN} 
+            userLookupByUserName={this.props.userLookupByUserName} userLookupByFullName={this.props.userLookupByFullName} showModal={this.state.showRegisterUserModal} 
+            setShowModal={(val) => { this.setState({showRegisterUserModal: val})} } requestUserAccount={this.props.requestUserAccount }/>
         </Row>
       </Container>
     )
@@ -647,6 +668,8 @@ export default function Facility(props) {
   const { loading, error, data } = useQuery(FACILITYDETAILS, { variables: { facilityinput: { name: props.facilityname }}},  { errorPolicy: 'all'} );
   const [ getUsersMatchingUserName ] = useLazyQuery(USERMATCHINGUSERNAME);
   const [ getUserForEPPN ] = useLazyQuery(USERFOREPPN);
+  const [ userLookupByUserName ] = useLazyQuery(USER_LOOKUP_BY_USERNAME);
+  const [ userLookupByFullName ] = useLazyQuery(USER_LOOKUP_BY_FULLNAME);
   const [ addCzarMutation ] = useMutation(ADD_CZAR_MUTATION);
   const [ removeCzarMutation ] = useMutation(REMOVE_CZAR_MUTATION);
   const [ requestUserAccount ] = useMutation(REQUEST_USERACCOUNT_MUTATION);
@@ -664,13 +687,14 @@ export default function Facility(props) {
     }
   }
 
-  const requestAccount = (eppn, callWhenDone, onError) => {
-    const username = eppn.split("@")[0];
+  const requestAccount = (user, callWhenDone, onError) => {
+    const username = user["username"];
+    const eppn = username + "@slac.stanford.edu";
     console.log("Account requested for eppn " + eppn + " in facility "  + props.facilityname + " with preferred username " + username);
     requestUserAccount({ variables: { request: { reqtype: "UserAccount", eppn: eppn, preferredUserName: username, "facilityname": props.facilityname, "approvalstatus": "PreApproved"}}, 
       onCompleted: (data) => { console.log(data); callWhenDone(data)},
-      onError: (error) => { console.log(error); onError(error)}
-    }).catch(err => { console.log(err); onError(err)});
+      onError: (error) => { console.log(error); onError(error.message)}
+    }).catch(err => { console.log(err); onError(err.message)});
   };
 
   let addUpdateComputePurchase = function(clustername, newPurchase, callWhenDone, onError) {
@@ -705,6 +729,8 @@ export default function Facility(props) {
   return (<div>
     <FacilityDetails facility={facility} isAdmin={isAdmin} getUserForEPPN={getUserForEPPN} clusters={clusters} storagenames={storagenames} storagepurposes={storagepurposes}
     onSelDesel={addRemoveCzar} requestUserAccount={requestAccount} getUsersMatchingUserName={getUsersMatchingUserName}
-    addUpdateComputePurchase={addUpdateComputePurchase} addUpdateStoragePurchase={addUpdateStoragePurchase}/>
+    addUpdateComputePurchase={addUpdateComputePurchase} addUpdateStoragePurchase={addUpdateStoragePurchase}
+    userLookupByUserName={userLookupByUserName} userLookupByFullName={userLookupByFullName}
+    />
   </div>);
 }
