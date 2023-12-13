@@ -498,6 +498,7 @@ class RegisterNewUser extends Component {
       this.setState({ searchstring: event.target.value, showregister: false, matches: [], selected: []})
     }
     this.closeModal = () => {
+      this.setState({searchstring: "", selected: [], matches: [], showregister: false, errormsg: "" })
       this.props.setShowModal(false) 
     }
     this.setError = (errmsg) => { 
@@ -528,8 +529,17 @@ class RegisterNewUser extends Component {
         }
       })
     }
-    this.checkUncheck = (username) => { 
-      this.setState({selected: _.concat(this.state.selected, username), showregister: true})
+    this.checkUncheck = (event, username) => { 
+      this.setState((currstate) => { 
+        let newstate = _.clone(currstate);
+        if(event.target.checked) {
+          newstate.selected = _.concat(this.state.selected, username);
+        } else {
+          newstate.selected = _.without(this.state.selected, username);
+        }
+        newstate.showregister = newstate.selected.length > 0;
+        return newstate;
+      })
     }
   }
 
@@ -547,7 +557,7 @@ class RegisterNewUser extends Component {
           </InputGroup>
           <table className="table table-condensed table-striped table-bordered mt-2 pt-2">
             <thead><tr><th>UserId</th><th>Name</th><th>Preferred email</th><th></th></tr></thead>
-            <tbody>{ _.map(this.state.matches, (u) => { return (<tr key={u.username}><td>{u.username}</td><td>{u.fullname}</td><td>{u.preferredemail}</td><td><input type="checkbox" data-selkey={u.username} onChange={() => this.checkUncheck(u.username)}/></td></tr>) }) }</tbody>
+            <tbody>{ _.map(this.state.matches, (u) => { return (<tr key={u.username}><td>{u.username}</td><td>{u.fullname}</td><td>{u.preferredemail}</td><td><input type="checkbox" data-selkey={u.username} onChange={(ev) => this.checkUncheck(ev, u.username)}/></td></tr>) }) }</tbody>
           </table>
         </ModalBody>
         <ModalFooter>
