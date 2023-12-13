@@ -545,7 +545,7 @@ class RegisterNewUser extends Component {
 
   render() {
     return (
-      <Modal show={this.props.showModal} onHide={this.closeModal} >
+      <Modal size="lg" show={this.props.showModal} onHide={this.closeModal} >
         <ModalHeader closeButton={true}>
           <ModalTitle>Invite users to the {this.props.facility.name} facility</ModalTitle>
         </ModalHeader>
