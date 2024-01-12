@@ -205,6 +205,9 @@ class ReposRows extends Component {
       let facilityPurchased = _.get(_.find(this.facilityData.computepurchases, ["clustername", a.clustername]), "purchased", 0.0);
       let percentoffacility = _.get(a, "percentOfFacility", 0.0);
       let totalAllocatedCompute = _.get(a, "allocated", 0.0);
+      if(totalAllocatedCompute == 0 && facilityPurchased != 0 && percentoffacility != 0) {
+        totalAllocatedCompute = facilityPurchased*percentoffacility/100.0;
+      }
       let burstPercentOfFacility = _.get(a, "burstPercentOfFacility", 0.0);
       let totalBurstAllocatedCompute = _.get(a, "burstAllocated", 0.0);
       
