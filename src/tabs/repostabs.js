@@ -1,7 +1,7 @@
 import _ from "lodash";
 import React, { Component, useState } from 'react';
 import { Link, Outlet } from "react-router-dom";
-import { useQuery, useMutation, gql } from "@apollo/client";
+import { useQuery, useMutation, gql, useLazyQuery } from "@apollo/client";
 import Tab from 'react-bootstrap/Tab';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
@@ -25,6 +25,14 @@ query{
     facilities
   }
   facilities {
+    name
+  }
+}`;
+
+const ALL_REPOS = gql`
+query {
+  allreposandfacility {
+    facility
     name
   }
 }`;
@@ -68,8 +76,17 @@ class ReqRepMembership extends Component {
         this.setState({ facilityInvalid: true });
         return;
       }
-      this.props.requestRepoMembership(this.state.reponame, this.state.facility);
-      this.props.setShow(false);
+      console.log(props.allreposquery);
+      props.allreposquery({
+        onCompleted: (data) => {
+          if(_.findIndex(data.allreposandfacility, { "facility": this.state.facility, "name": this.state.reponame }) < 0) {
+            this.setState({ reponameInvalid: true });
+            return;
+          }
+          this.props.requestRepoMembership(this.state.reponame, this.state.facility);
+          this.props.setShow(false);    
+        }
+      })
     }
     this.setRepoName = (event) => { this.setState({ reponame: event.target.value }) }
     this.setFacility = (event) => { this.setState({ facility: event.target.value }) }
@@ -264,6 +281,7 @@ class ReqFacilityAccess extends Component {
 
 export default function RepoTabs(props) {
   const { loading, error, data } = useQuery(WHOAMI);
+  const [ allreposquery ] = useLazyQuery(ALL_REPOS);
   const [repMemShow, setRepMemShow] = useState(false);
   const [newRepShow, setNewRepShow] = useState(false);
   const [facAccShow, setFacAccShow] = useState(false);
@@ -341,7 +359,7 @@ export default function RepoTabs(props) {
         <Tab.Content>
           <Outlet context={[toolbaritems, setToolbaritems]}/>
         </Tab.Content>
-        <ReqRepMembership show={repMemShow} setShow={setRepMemShow} username={username} requestRepoMembership={requestRepoMembership} facilities={myfacilities} />
+        <ReqRepMembership show={repMemShow} setShow={setRepMemShow} username={username} requestRepoMembership={requestRepoMembership} facilities={myfacilities} allreposquery={allreposquery} />
         <ReqNewRepo show={newRepShow} setShow={setNewRepShow} username={username} requestNewRepo={requestNewRepo}  facilities={myfacilities}/>
         <ReqFacilityAccess show={facAccShow} setShow={setFacAccShow} username={username} requestFacilityAccess={requestFacilityAccess}  facilities={mymissingfacilties}/>
     </Tab.Container>);
