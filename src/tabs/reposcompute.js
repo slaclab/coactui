@@ -124,7 +124,7 @@ class AddComputeAllocation extends Component {
               <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
             </InputGroup>
           </div>
-          <div className={this.state.showalloc ? "py-2" : "d-none"}>
+          <div className={"d-none"}>
             <p>One can also specify the max fraction of the facility's resources that can be at any instant in time as a cap on burst usage.
             </p>
             <InputGroup hasValidation>
@@ -150,7 +150,7 @@ class AddComputeAllocation extends Component {
 class UpdateComputeAllocation extends Component {
   constructor(props) {
     super(props);
-    this.state = { currentAllocation: props.currentAllocation, currentBurstAllocation: props.currentBurstAllocation }
+    this.state = { currentAllocation: props.currentAllocation, currentBurstAllocation: props.currentBurstAllocation ?? 0 }
     this.setAllocation = (event) => { this.setState({currentAllocation: event.target.value}) }
     this.setBurstAllocation = (event) => { this.setState({currentBurstAllocation: event.target.value}) }
   }
@@ -169,8 +169,8 @@ class UpdateComputeAllocation extends Component {
             <Form.Control type="number" onBlur={this.setAllocation} isInvalid={this.props.isError} defaultValue={this.props.currentAllocation}/>
             <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
           </InputGroup>
-          <p className="mt-2">One can also specify the max fraction of the facility's resources that can be at any instant in time as a cap on burst usage.</p>
-          <InputGroup hasValidation>
+          <p className="d-none mt-2">One can also specify the max fraction of the facility's resources that can be at any instant in time as a cap on burst usage.</p>
+          <InputGroup className="d-none" hasValidation>
             <InputGroup.Text>Current Burst Percent:</InputGroup.Text>
             <Form.Control type="number" onBlur={this.setBurstAllocation} isInvalid={this.props.isError} defaultValue={this.props.currentBurstAllocation}/>
             <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
@@ -226,7 +226,6 @@ class ReposRows extends Component {
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
             <td>{a.clustername == "N/A" ? "None" : <NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink>}</td>
             <td><span className="px-2 fst-italic">{ percentoffacility + "%"}</span><span>(<TwoPrecFloat value={totalAllocatedCompute}/>)</span> {this.props.canEditAllocations && a.clustername != "N/A" ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
-            <td><span className="px-2 fst-italic">{ burstPercentOfFacility + "%"}</span><span>(<TwoPrecFloat value={totalBurstAllocatedCompute}/>)</span></td>
             <td><span className="float-start"><TwoPrecFloat value={recentUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={recentUsageInPercent}/>%)</span></td>
             <td><span className="float-start"><TwoPrecFloat value={lastWeeksUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={lastWeeksUsageInPercent}/>%)</span></td>
             <td><span className="float-end"><TwoPrecFloat value={totalUsedHours}/></span></td>
@@ -238,7 +237,6 @@ class ReposRows extends Component {
             <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame}>
               <td><NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame}>{a.clustername}</NavLink></td>
               <td><span className="px-2 fst-italic">{ percentoffacility + "%"}</span><span>(<TwoPrecFloat value={totalAllocatedCompute}/>)</span> {this.props.canEditAllocations ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
-              <td><span className="px-2 fst-italic">{ burstPercentOfFacility + "%"}</span><span>(<TwoPrecFloat value={totalBurstAllocatedCompute}/>)</span></td>
               <td><span className="float-start"><TwoPrecFloat value={recentUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={recentUsageInPercent}/>%)</span></td>
               <td><span className="float-start"><TwoPrecFloat value={lastWeeksUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={lastWeeksUsageInPercent}/>%)</span></td>
               <td><span className="float-end"><TwoPrecFloat value={totalUsedHours}/></span></td>
@@ -330,7 +328,7 @@ class ReposTable extends Component {
         </ToastContainer>
         <table className="table table-condensed table-striped table-bordered">
           <thead>
-            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th>Burst allocation</th><th title="Includes data from yesterday and today">Recent usage</th><th title="Includes data for 7 days">Last week's usage</th><th>Total compute used</th><th>Start</th><th>End</th></tr>
+            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th title="Includes data from yesterday and today">Recent usage</th><th title="Includes data for 7 days">Last week's usage</th><th>Total compute used</th><th>Start</th><th>End</th></tr>
           </thead>
           { _.map(this.props.repos, (r) => { return (<ReposRows key={r.facility+"_"+r.name} repo={r} facilities={this.props.facilities} clusterInfo={this.clusterInfo} canEditAllocations={this.props.canEditAllocations} showUpdateModal={this.showUpdateModal} showAddModal={this.showAddModal}/>) }) }
           </table>
