@@ -273,7 +273,7 @@ class FacilityComputePurchases extends Component {
             <Row className="mb-2">
               <Col md={2}><span className="tbllbl">Cluster</span></Col>
               <Col md={2}><span className="tbllbl">Acquired</span></Col>
-              <Col md={2}><span className="tbllbl">Allocated</span></Col>
+              <Col md={2}><span className="tbllbl">Total allocated (%)</span></Col>
               <Col md={2}><span className="tbllbl">Avg Used (day)</span></Col>
               <Col md={2}><span className="tbllbl">Avg Used (week)</span></Col>
             </Row>
