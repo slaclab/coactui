@@ -45,14 +45,17 @@ export default function ClusterTabs() {
       <Tab eventKey="by_month_year" title="By month - year">
         <FacilityComputeByDay clustername={clustername} startDate={dayjs().subtract(1, 'year').toDate()} endDate={dayjs().toDate()} group="Month" />
       </Tab>
-      <Tab eventKey="by_user_week" title="By user - week">
-        <FacilityComputeByUser clustername={clustername} startDate={dayjs().subtract(7, 'day').toDate()} endDate={dayjs().toDate()} />
+      <Tab eventKey="by_user_day" title="By user - day">
+        <FacilityComputeByUser clustername={clustername} startDate={dayjs().subtract(1, 'days').toDate()} endDate={dayjs().toDate()} />
+      </Tab>
+      <Tab eventKey="by_user_past2" title="By user - past 2 days">
+        <FacilityComputeByUser clustername={clustername} startDate={dayjs().subtract(2, 'days').toDate()} endDate={dayjs().toDate()} />
+      </Tab>
+      <Tab eventKey="by_user_weel" title="By user - week">
+       <FacilityComputeByUser clustername={clustername} startDate={dayjs().subtract(7, 'day').toDate()} endDate={dayjs().toDate()} />
       </Tab>
       <Tab eventKey="by_user_month" title="By user - month">
-      <FacilityComputeByUser clustername={clustername} startDate={dayjs().subtract(1, 'month').toDate()} endDate={dayjs().toDate()} />
-      </Tab>
-      <Tab eventKey="by_user_year" title="By user - year">
-      <FacilityComputeByUser clustername={clustername} startDate={dayjs().subtract(1, 'year').toDate()} endDate={dayjs().toDate()} />
+        <FacilityComputeByUser clustername={clustername} startDate={dayjs().subtract(1, 'month').toDate()} endDate={dayjs().toDate()} />
       </Tab>
       </Tabs>
     </Tab.Container>

@@ -38,7 +38,7 @@ export default function FacilityComputeByDay(props) {
     <Table bordered>
       <thead><tr><th>Repo</th><th>Facility</th><th>Date</th><th>Compute hours used</th></tr></thead>
       <tbody>
-        { _.map(usage, (u) => { return (<tr key={u.repo+u.date}><td>{u.repo}</td><td>{u.facility}</td><td><DateDisp value={u.date}/></td><td><TwoPrecFloat value={u.resourceHours}/></td></tr>) }) }
+        { _.map(usage, (u) => { return (<tr key={u.facility+u.repo+u.date}><td>{u.repo}</td><td>{u.facility}</td><td><DateDisp value={u.date}/></td><td><TwoPrecFloat value={u.resourceHours}/></td></tr>) }) }
       </tbody>
     </Table>
   );

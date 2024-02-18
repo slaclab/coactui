@@ -17,8 +17,9 @@ const BYDAYREPORT = gql`
 query report($clustername: String!, $range: ReportRangeInput!){
   reportFacilityComputeByUser(clustername: $clustername, range: $range) {
     repo
+    facility
     username
-    slachours
+    resourceHours
   }
 }
 `;
@@ -35,9 +36,9 @@ export default function FacilityComputeByUser(props) {
 
   return (
     <Table bordered>
-      <thead><tr><th>Repo</th><th>User</th><th>Compute hours used</th></tr></thead>
+      <thead><tr><th>Facility</th><th>Repo</th><th>User</th><th>Compute hours used</th></tr></thead>
       <tbody>
-        { _.map(usage, (u) => { return (<tr key={u.repo+u.date}><td>{u.repo}</td><td>{u.username}</td><td><TwoPrecFloat value={u.slachours}/></td></tr>) }) }
+        { _.map(usage, (u) => { return (<tr key={u.facility+u.repo+u.username}><td>{u.facility}</td><td>{u.repo}</td><td>{u.username}</td><td><TwoPrecFloat value={u.resourceHours}/></td></tr>) }) }
       </tbody>
     </Table>
   );
