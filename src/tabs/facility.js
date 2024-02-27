@@ -135,6 +135,15 @@ query userlookup($fullname: String!) {
   }
 }
 `
+const USER_LOOKUP_BY_PREFERRED_EMAIL = gql`
+query userlookup($preferredemail: String!) {
+  usersLookupFromService(filter: {preferredemail: $preferredemail}) {
+    username
+    fullname
+    preferredemail
+  }
+}
+`
 
 
 
@@ -528,6 +537,12 @@ class RegisterNewUser extends Component {
           mergeInMatches(_.get(data, "usersLookupFromService", []));
         }
       })
+      this.props.userLookupByPreferredEmail({
+        variables: { preferredemail: this.state.searchstring },
+        onCompleted: (data) => {
+          mergeInMatches(_.get(data, "usersLookupFromService", []));
+        }
+      });
     }
     this.checkUncheck = (event, username) => { 
       this.setState((currstate) => { 
@@ -550,7 +565,7 @@ class RegisterNewUser extends Component {
           <ModalTitle>Invite users to the {this.props.facility.name} facility</ModalTitle>
         </ModalHeader>
         <ModalBody>
-          <Form.Text>Search for users by their name or by their userid; hit tab to lookup</Form.Text>
+          <Form.Text>Search for users by their name, their userid or their preferred email; hit tab to lookup</Form.Text>
           <Form.Label className="text-danger">{this.state.errormsg}</Form.Label>
           <InputGroup hasValidation>
             <Form.Control type="email" placeholder="Name or userid" onChange={this.setSearchString} onBlur={this.lookupUser}/>
@@ -659,8 +674,8 @@ class FacilityDetails extends Component {
           <FacilityStoragePurchases facility={this.props.facility} storagenames={this.props.storagenames} storagepurposes={this.props.storagepurposes} isAdmin={this.props.isAdmin} addUpdateStoragePurchase={this.props.addUpdateStoragePurchase} />
           <AddRemoveCzar facility={this.props.facility} getUsersMatchingUserName={this.props.getUsersMatchingUserName} onSelDesel={this.props.onSelDesel} showModal={this.state.showCzarModal} setShowModal={(val) => { this.setState({showCzarModal: val})} }/>
           <RegisterNewUser facility={this.props.facility} getUsersMatchingUserName={this.props.getUsersMatchingUserName} getUserForEPPN={this.props.getUserForEPPN} 
-            userLookupByUserName={this.props.userLookupByUserName} userLookupByFullName={this.props.userLookupByFullName} showModal={this.state.showRegisterUserModal} 
-            setShowModal={(val) => { this.setState({showRegisterUserModal: val})} } requestUserAccount={this.props.requestUserAccount }/>
+            userLookupByUserName={this.props.userLookupByUserName} userLookupByFullName={this.props.userLookupByFullName} userLookupByPreferredEmail={this.props.userLookupByPreferredEmail}
+            showModal={this.state.showRegisterUserModal} setShowModal={(val) => { this.setState({showRegisterUserModal: val})} } requestUserAccount={this.props.requestUserAccount }/>
         </Row>
       </Container>
     )
@@ -680,6 +695,7 @@ export default function Facility(props) {
   const [ getUserForEPPN ] = useLazyQuery(USERFOREPPN);
   const [ userLookupByUserName ] = useLazyQuery(USER_LOOKUP_BY_USERNAME);
   const [ userLookupByFullName ] = useLazyQuery(USER_LOOKUP_BY_FULLNAME);
+  const [ userLookupByPreferredEmail ] = useLazyQuery(USER_LOOKUP_BY_PREFERRED_EMAIL);
   const [ addCzarMutation ] = useMutation(ADD_CZAR_MUTATION);
   const [ removeCzarMutation ] = useMutation(REMOVE_CZAR_MUTATION);
   const [ requestUserAccount ] = useMutation(REQUEST_USERACCOUNT_MUTATION);
@@ -740,7 +756,7 @@ export default function Facility(props) {
     <FacilityDetails facility={facility} isAdmin={isAdmin} getUserForEPPN={getUserForEPPN} clusters={clusters} storagenames={storagenames} storagepurposes={storagepurposes}
     onSelDesel={addRemoveCzar} requestUserAccount={requestAccount} getUsersMatchingUserName={getUsersMatchingUserName}
     addUpdateComputePurchase={addUpdateComputePurchase} addUpdateStoragePurchase={addUpdateStoragePurchase}
-    userLookupByUserName={userLookupByUserName} userLookupByFullName={userLookupByFullName}
+    userLookupByUserName={userLookupByUserName} userLookupByFullName={userLookupByFullName} userLookupByPreferredEmail={userLookupByPreferredEmail}
     />
   </div>);
 }
