@@ -21,6 +21,7 @@ query facilityNames {
     isRegistered
     isRegistrationPending
     eppn
+    username
     fullname
     requestObj {
       Id
@@ -111,6 +112,7 @@ export default function RegisterUser(props) {
 
   let hasUserAcc = _.get(data, "amIRegistered.isRegistered", false);
   let eppn = _.get(data, "amIRegistered.eppn", null);
+  let username = _.get(data, "amIRegistered.username", null);
   let registrationPending = _.get(data, "amIRegistered.isRegistrationPending", false);
   let isRegistered = _.get(data, "amIRegistered.isRegistered", false);
   let fullname = _.get(data, "amIRegistered.fullname", "");
@@ -120,7 +122,7 @@ export default function RegisterUser(props) {
   
 
   const requestAccount = (selectedFacility, onSuccess, onError) => {
-    const preferredUserName = _.split(eppn, "@")[0];
+    const preferredUserName = username;
     console.log("Account requested for eppn " + eppn + " in facility "  + selectedFacility + " with preferred username " + preferredUserName);
     requestUserAccount({ variables: { request: { reqtype: "UserAccount", eppn: eppn, preferredUserName: preferredUserName, "facilityname": selectedFacility }}, 
       onCompleted: () => { onSuccess() },
@@ -135,8 +137,9 @@ export default function RegisterUser(props) {
   }
 
   if (registrationPending) {
+    let preferredUserName = _.get(data, "amIRegistered.requestObj.preferredUserName", "")
     if(isRegistrationPreapproved) {    
-      let preferredUserName = _.get(data, "amIRegistered.requestObj.preferredUserName", ""), reqid = _.get(data, "amIRegistered.requestObj.Id", "");
+      let reqid = _.get(data, "amIRegistered.requestObj.Id", "");
       if (!_.isEmpty(preferredUserName) && eppn==_.get(data, "amIRegistered.requestObj.eppn", "") && !_.isEmpty(reqid)) {
         let approve = function() {
           requestApproveMutation({ 
@@ -187,7 +190,7 @@ export default function RegisterUser(props) {
          <NoNavHeader/>
          <h6 className="p-2">Hi <span className="text-primary">{fullname}</span>, welcome to Coact; the portal for using the S3DF.</h6>
          <div className="p-2 flex-grow-1">
-          Your request to enable the EPPN <span className="text-primary"><b>{eppn}</b></span> for S3DF is still pending and will be acted upon soon.
+          Your request to enable the EPPN <span className="text-primary"><b>{eppn}</b></span> and userid <span className="text-primary"><b>{preferredUserName}</b></span> for S3DF is still pending and will be acted upon soon.
          </div>
          <Footer/>
       </div>
@@ -201,7 +204,7 @@ export default function RegisterUser(props) {
       <NoNavHeader/>
       <h6 className="p-2">Hi <span className="text-primary">{fullname}</span>, welcome to Coact; the portal for using the S3DF.</h6>
       <div className="p-2 flex-grow-1">
-        You don't seem to have an S3DF account associated with your EPPN <span className="text-primary"><b>{eppn}</b></span>.
+        You don't seem to have an S3DF account associated with your EPPN <span className="text-primary"><b>{eppn}</b></span> and userid <span className="text-primary"><b>{username}</b></span>.
         If you would like to request your account be enabled for S3DF, please click here -
         <button type="button" className="btn btn-primary" onClick={handleShow}>Enable my S3DF account</button>
       </div>
