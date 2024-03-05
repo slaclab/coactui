@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { NavLink } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import React, { Component, useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
@@ -607,7 +607,17 @@ class RequestFilters extends Component {
 
 
 export default function Requests(props) {
-  const [filter, setFilter] = useState( { approvalstatus: "NotActedOn" } );
+  const location = useLocation();
+  const urlsearchparams = new URLSearchParams(location.search);
+  let paramsFromQueryString = [];
+  for(const p of urlsearchparams) {
+    paramsFromQueryString.push(p);
+  }
+  let qsfilter = _.defaults(_.fromPairs(paramsFromQueryString), { approvalstatus: "NotActedOn" });
+  console.log(qsfilter);
+  const [filter, setFilter] = useState( qsfilter );  
+  console.log(filter);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { loading, error, data, refetch } = useQuery(REQUESTS, { variables: { fetchprocessed: props.showall, showmine: props.showmine, filter: filter } }, { fetchPolicy: 'no-cache', nextFetchPolicy: 'no-cache'});
   const [ requestApproveMutation ] = useMutation(APPROVE_REQUEST_MUTATION);
@@ -618,6 +628,8 @@ export default function Requests(props) {
   const [errTitle, setErrTitle] = useState("Error processing request");
   const [errMessage, setErrMessage] = useState("");
   const [twlabel, setTwlabel] = useState("");
+  
+
 
   useEffect(() => { refetch(filter).then(console.log(data))});
 
@@ -644,6 +656,7 @@ export default function Requests(props) {
       } else {
         currfilt[attrname] = attrvalue;
       }
+      setSearchParams(currfilt);
       return {...currfilt};
     })
   }
