@@ -4,7 +4,7 @@ import { useQuery, useMutation, gql } from "@apollo/client";
 import React, { Component, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faEdit } from '@fortawesome/free-solid-svg-icons'
-import { TwoPrecFloat, DateDisp } from "./widgets";
+import { TwoPrecFloat, DateDisp, TwoPrecPercent } from "./widgets";
 import Modal from 'react-bootstrap/Modal';
 import ModalHeader from 'react-bootstrap/ModalHeader';
 import ModalTitle from 'react-bootstrap/ModalTitle';
@@ -249,11 +249,11 @@ class ReposRows extends Component {
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
             <td>{a.clustername == "N/A" ? "None" : <NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame} title={"Node CPU count=" + clusterNodeCPUCount}>{a.clustername}</NavLink>}</td>
             <td><span className="px-2 fst-italic">{ percentoffacility + "%"}</span><span>(<TwoPrecFloat value={totalAllocatedCompute}/>)</span> {this.props.canEditAllocations && a.clustername != "N/A" ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
-            <td><span className="float-start"><TwoPrecFloat value={last5minsUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={last5minsUsageInPercent}/>%)</span></td>
-            <td><span className="float-start"><TwoPrecFloat value={last15minsUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={last15minsUsageInPercent}/>%)</span></td>
-            <td><span className="float-start"><TwoPrecFloat value={last60minsUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={last60minsUsageInPercent}/>%)</span></td>
-            <td><span className="float-start"><TwoPrecFloat value={last180minsUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={last180minsUsageInPercent}/>%)</span></td>
-            <td><span className="float-start"><TwoPrecFloat value={lastWeeksUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={lastWeeksUsageInPercent}/>%)</span></td>
+            <td><span className="float-start"><TwoPrecFloat value={last5minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last5minsUsageInPercent}/></span></td>
+            <td><span className="float-start"><TwoPrecFloat value={last15minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last15minsUsageInPercent}/></span></td>
+            <td><span className="float-start"><TwoPrecFloat value={last60minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last60minsUsageInPercent}/></span></td>
+            <td><span className="float-start"><TwoPrecFloat value={last180minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last180minsUsageInPercent}/></span></td>
+            <td><span className="float-start"><TwoPrecFloat value={lastWeeksUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={lastWeeksUsageInPercent}/></span></td>
             <td><span className="float-end"><TwoPrecFloat value={totalUsedHours}/></span></td>
             <td><DateDisp value={a.start}/></td>
             <td><DateDisp value={a.end}/></td>
@@ -263,11 +263,11 @@ class ReposRows extends Component {
             <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame}>
               <td><NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame} title={"Node CPU count=" + clusterNodeCPUCount}>{a.clustername}</NavLink></td>
               <td><span className="px-2 fst-italic">{ percentoffacility + "%"}</span><span>(<TwoPrecFloat value={totalAllocatedCompute}/>)</span> {this.props.canEditAllocations ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
-              <td><span className="float-start"><TwoPrecFloat value={last5minsUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={last5minsUsageInPercent}/>%)</span></td>
-              <td><span className="float-start"><TwoPrecFloat value={last15minsUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={last15minsUsageInPercent}/>%)</span></td>
-              <td><span className="float-start"><TwoPrecFloat value={last60minsUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={last60minsUsageInPercent}/>%)</span></td>
-              <td><span className="float-start"><TwoPrecFloat value={last180minsUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={last180minsUsageInPercent}/>%)</span></td>
-              <td><span className="float-start"><TwoPrecFloat value={lastWeeksUsage}/></span><span className="fst-italic float-end">(<TwoPrecFloat value={lastWeeksUsageInPercent}/>%)</span></td>
+              <td><span className="float-start"><TwoPrecFloat value={last5minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last5minsUsageInPercent}/></span></td>
+              <td><span className="float-start"><TwoPrecFloat value={last15minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last15minsUsageInPercent}/></span></td>
+              <td><span className="float-start"><TwoPrecFloat value={last60minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last60minsUsageInPercent}/></span></td>
+              <td><span className="float-start"><TwoPrecFloat value={last180minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last180minsUsageInPercent}/></span></td>
+              <td><span className="float-start"><TwoPrecFloat value={lastWeeksUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={lastWeeksUsageInPercent}/></span></td>
               <td><span className="float-end"><TwoPrecFloat value={totalUsedHours}/></span></td>
               <td><DateDisp value={a.start}/></td>
               <td><DateDisp value={a.end}/></td>
