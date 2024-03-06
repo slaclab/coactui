@@ -7,12 +7,14 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Fade from 'react-bootstrap/Fade';
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
 import { Link, useParams, useOutletContext } from "react-router-dom";
-import { useQuery, useMutation, gql } from "@apollo/client";
+import { useQuery, useLazyQuery, useMutation, gql } from "@apollo/client";
 import dayjs from "dayjs";
 import dayOfYear from 'dayjs/plugin/dayOfYear';
 import Plot from "react-plotly.js";
-import { ChargeFactor, TwoPrecFloat } from "./widgets";
+import { ChargeFactor, TwoPrecFloat, DateTimeDisp } from "./widgets";
 import _ from "lodash";
 
 dayjs.extend(dayOfYear);
@@ -88,6 +90,19 @@ mutation ApproveRequest($Id: String!){
 }
 `;
 
+const REPO_PAST_X_JOBS = gql`
+query repoComputeJobs($pastXMins: Int!, $allocationid: MongoId!) {
+  repoComputeJobs(pastXMins: $pastXMins, rca: {Id: $allocationid}) {
+    startTs
+    endTs
+    durationMillis
+    jobId
+    resourceHours
+    normalizedResourceHours
+    qos
+    username
+  }
+}`;
 
 class User extends React.Component {
   constructor(props) {
@@ -198,6 +213,7 @@ class MidChart extends React.Component {
 class BottomTab extends React.Component {
   constructor(props) {
     super(props);
+    this.state = { past_x_jobs:  [] }
     this.current_allocation = props.allocatedCompute;
 
     const repodata = props.repodata,
@@ -217,16 +233,72 @@ class BottomTab extends React.Component {
   }
 
   render() {
+    let getPastXJobs = (mins) => {
+      console.log("Fetching job data from server");
+      this.props.getPastXJobs({
+        variables: { pastXMins: mins, allocationid: this.props.repoComputeAllocationId },
+        onCompleted: (data) => {
+          let jobs = _.get(data, "repoComputeJobs", []);
+          console.log(jobs);
+          this.setState({ past_x_jobs : jobs })
+        }
+      })
+    }
+
+    let tabselected = (eventkey) => { 
+      console.log(eventkey);
+      if(eventkey == "users") {
+        this.setState({ past_x_jobs : [] });
+      } else if(eventkey == "past_5") {
+        getPastXJobs(5);
+      } else if(eventkey == "past_15") {
+        getPastXJobs(15);
+      } else if(eventkey == "past_60") {
+        getPastXJobs(60);
+      } else if(eventkey == "past_180") {
+        getPastXJobs(180);
+      }      
+    }
+
+    let pastXTable = () => { 
+      return (
+        <Table striped bordered hover>
+          <thead>
+            <tr><th>JobId</th><th>QOS</th><th>ResourceHours</th><th>Normalized ResourceHours</th><th>Start time</th><th>End Time</th><th>Duration (in s)</th></tr>
+          </thead>
+          <tbody>
+            {_.map(this.state.past_x_jobs, (job) => <tr key={job.jobId}><td>{job.jobId}</td><td>{job.qos}</td><td><TwoPrecFloat value={job.resourceHours}/></td><td><TwoPrecFloat value={job.normalizedResourceHours}/></td><td><DateTimeDisp value={job.startTs}/></td><td><DateTimeDisp value={job.endTs}/></td><td><TwoPrecFloat value={job.durationMillis/1000}/></td></tr>)}
+          </tbody>
+        </Table>
+      )
+    }
+
     return (
       <div className="btmtbl">
-        <Row className="hdr">
-          <Col>Username</Col>
-          {/* <Col>Allocation (% of repo)</Col>
-          <Col>Allocated hours</Col> */}
-          <Col>Used hours</Col>
-          {/* <Col>Remaining hours</Col> */}
-        </Row>
-        {_.map(_.sortBy(this.users, "username"), (user, k) => ( <User key={user.username}  user={user} repoallocation={this.current_allocation} onAllocationChange={this.props.onAllocationChange}/> ))}
+        <Tabs defaultActiveKey="users"  onSelect={(eventkey) => tabselected(eventkey)}>
+          <Tab eventKey="users" title="Users">
+            <Row className="hdr">
+              <Col>Username</Col>
+              {/* <Col>Allocation (% of repo)</Col>
+              <Col>Allocated hours</Col> */}
+              <Col>Used hours</Col>
+              {/* <Col>Remaining hours</Col> */}
+            </Row>
+            {_.map(_.sortBy(this.users, "username"), (user, k) => ( <User key={user.username}  user={user} repoallocation={this.current_allocation} onAllocationChange={this.props.onAllocationChange}/> ))}
+          </Tab>
+          <Tab eventKey="past_5" title="Past 5">
+            {pastXTable()}
+          </Tab>
+          <Tab eventKey="past_15" title="Past 15">
+            {pastXTable()}
+          </Tab>
+          <Tab eventKey="past_60" title="Past 60">
+            {pastXTable()}
+          </Tab>
+          <Tab eventKey="past_180" title="Past 180">
+            {pastXTable()}
+          </Tab>
+        </Tabs>
       </div>
     );
     }
@@ -303,7 +375,7 @@ class ComputeTab extends React.Component {
       </Row>
       <TopTab repodata={this.props.repodata} allocatedCompute={this.props.allocatedCompute} clusterInfo={this.props.clusterInfo} currallocation={this.props.repodata.computeAllocation.percentOfFacility} isAdminOrCzar={this.props.isAdminOrCzar} />
       <MidChart repodata={this.props.repodata} allocatedCompute={this.props.allocatedCompute}/>
-      <BottomTab repodata={this.props.repodata} onAllocationChange={this.props.onAllocationChange} allocatedCompute={this.props.allocatedCompute}/>
+      <BottomTab repodata={this.props.repodata} onAllocationChange={this.props.onAllocationChange} allocatedCompute={this.props.allocatedCompute} repoComputeAllocationId={this.props.repoComputeAllocationId} getPastXJobs={this.props.getPastXJobs}/>
     </div>)
   }
 }
@@ -314,6 +386,7 @@ export default function Compute() {
   const [ repoUpdateUserAllocation, { allocdata, allocloading, allocerror }] = useMutation(ALLOCATION_MUTATION);
   const [ repocmpallocfn, { repocmpallocdata, repocmpallocloading, repocmpallocerror }] = useMutation(REPO_COMPUTE_ALLOCATION_REQUEST);
   const [ approveRequest, { arD, arL, arE } ] = useMutation(APPROVE_REQUEST_MUTATION);
+  const [ getPastXJobs ] = useLazyQuery(REPO_PAST_X_JOBS);
   const [ allocMdlShow, setAllocMdlShow] = useState(false);
   const [ toolbaritems, setToolbaritems ] = useOutletContext();
 
@@ -347,6 +420,6 @@ export default function Compute() {
   return (<ComputeTab repodata={repodata} facilityPurchased={facilityPurchased} allocatedCompute={totalAllocatedCompute} 
     clusterInfo={clusterInfo} onAllocationChange={changeAllocation}
     allocMdlShow={allocMdlShow} setAllocMdlShow={setAllocMdlShow} requestChangeAllocation={requestChangeAllocation}
-    toolbaritems={toolbaritems} setToolbaritems={setToolbaritems} isAdminOrCzar={isAdminOrCzar}
+    toolbaritems={toolbaritems} setToolbaritems={setToolbaritems} isAdminOrCzar={isAdminOrCzar} getPastXJobs={getPastXJobs} repoComputeAllocationId={allocationid}
     />);
 }
