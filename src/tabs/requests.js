@@ -9,12 +9,11 @@ import Col from "react-bootstrap/Col";
 import ListGroup from 'react-bootstrap/ListGroup';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
-import Alert from 'react-bootstrap/Alert';
 import Form from 'react-bootstrap/Form';
 import Fade from 'react-bootstrap/Fade';
 import Card from 'react-bootstrap/Card';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faMultiply, faClockRotateLeft, faRefresh, faSearch } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faMultiply, faClockRotateLeft, faRefresh, faSearch, faMotorcycle } from '@fortawesome/free-solid-svg-icons'
 import { DateTimeDisp, ErrorMsgModal } from "./widgets";
 import dayjs from "dayjs";
 import { Table } from "react-bootstrap";
@@ -90,6 +89,14 @@ query usersLookupFromService($username: String!) {
     preferredemail
     uidnumber
     username
+  }
+}
+`;
+
+const LOOKUP_FACILITIES = gql`
+query{
+  facilities {
+    name
   }
 }
 `;
@@ -200,6 +207,39 @@ class UserDetails extends Component {
   }
 }
 
+class ReassignFacility extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { facilities: [] }
+  }
+  render() {
+    return (
+      <Modal show={this.props.show} onHide={() => {this.props.setShow(false)}}>
+      <Modal.Header closeButton>
+        <Modal.Title>Reassign user account request for {this.props.req.eppn} to a new facility</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <InputGroup>
+          <Form.Select name="facility" onChange={this.setFacility} isInvalid={this.state.facilityInvalid}>
+            { _.map(this.props.facilityNames, (f) => { 
+              if(this.props.req.facilityName == f) { 
+                return (<option key={f} value={f} selected>{f}</option>);
+              } else { 
+                return (<option key={f} value={f}>{f}</option>);
+              }})}
+          </Form.Select>
+        </InputGroup>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => {this.props.setShow(false)}}>
+          Close
+        </Button>
+      </Modal.Footer>
+    </Modal>
+    )
+  }
+}
+
 class Approve extends React.Component {
   constructor(props) {
     super(props);
@@ -208,6 +248,8 @@ class Approve extends React.Component {
       showActions: props.req.approvalstatus == "NotActedOn" && !props.showmine,
       showReasonForRejection: false,
       showUserDetails: false,
+      showReassignFacility: false,
+      reassignFacilities: [],
       userDetails: {}
     }
 
@@ -245,12 +287,19 @@ class Approve extends React.Component {
         }
       })
     }
+
+    this.showReassignFacility = () => { 
+      this.props.lookupFacilities({onCompleted: (data) => { 
+        let facilities = _.map(data.facilities, "name");
+        this.setState({showReassignFacility: true, reassignFacilities: facilities})
+      }})
+    }
   }
 
   render() {
     let cNm = "rqAuto mx-1";
     if(_.includes(["NewFacility"], this.props.req.reqtype)) { cNm = "rqManual mx-1"; }
-    let actionCNm = "", refireCNm = "", userDetailsCNm = "";
+    let actionCNm = "", refireCNm = "", userDetailsCNm = "", reassignFacilityCNm = " d-none";
     if(!this.props.req.canapprove) {
       actionCNm =  " d-none";
     }
@@ -260,6 +309,10 @@ class Approve extends React.Component {
 
     if(this.props.req.reqtype != "UserAccount") {
       userDetailsCNm = " d-none";
+    }
+
+    if(this.props.req.reqtype == "UserAccount" && this.props.req.approvalstatus == "NotActedOn") {
+      reassignFacilityCNm = "";
     }
 
 
@@ -285,9 +338,11 @@ class Approve extends React.Component {
         <ConfirmStepsModal show={this.state.showNewFacMdl} setShow={(st) => { this.setState({showNewFacMdl: st})}} title={"Manual steps for facility " + this.props.req.facilityname} actuallyApprove={this.actuallyApproveRequest} steps={["Run Wilko's script for creating a facility mountpoint", "Run Yee's script for creating facility specific partitions"]}/>
         <ReasonForRejectionModal show={this.state.showReasonForRejection} setShow={this.showHideReasonForRejection} actuallyRejectRequest={this.actuallyRejectRequest}/>
         <UserDetails req={this.props.req} show={this.state.showUserDetails} setShow={(v) => { this.setState({showUserDetails: v}) }} usersLookupFromService={this.props.usersLookupFromService} userDetails={this.state.userDetails}/>
+        <ReassignFacility req={this.props.req} show={this.state.showReassignFacility} setShow={(v) => { this.setState({showReassignFacility: v}) }} facilityNames={this.state.reassignFacilities}/>
         <Button className={cNm + actionCNm} onClick={this.requestApprove}><FontAwesomeIcon icon={faCheck}/></Button>
         <Button className={actionCNm} variant="primary" onClick={() => { this.showHideReasonForRejection(true) }}><FontAwesomeIcon icon={faMultiply}/></Button>
         <Button className={cNm + userDetailsCNm} title="Lookup user details" onClick={() => { this.showUserDetails()}}><FontAwesomeIcon icon={faSearch}/></Button>
+        <Button className={cNm + reassignFacilityCNm} title="Reassign this user to a new facility" onClick={() => { this.showReassignFacility()}}><FontAwesomeIcon icon={faMotorcycle}/></Button>
       </span>
     )
   }
@@ -509,7 +564,7 @@ class RequestsRow extends Component {
         <Col className="py-2" md={1}><DateTimeDisp value={this.props.req.timeofrequest}/></Col>
         <Col md={6}><RequestDetails req={this.props.req} /></Col>
         <Col className="py-2" md={1}><ApprovalStatus req={this.props.req}/> <span title="See history of changes to this request" className="float-end text-primary" onClick={() => { this.setState({showHistory: true})}}><FontAwesomeIcon icon={faClockRotateLeft} size="lg" /></span></Col>
-        <Col md={1}><Approve req={this.props.req} approve={this.props.approve} reject={this.props.reject} refire={this.props.refire} showmine={this.props.showmine} usersLookupFromService={this.props.usersLookupFromService}/></Col>
+        <Col md={1}><Approve req={this.props.req} approve={this.props.approve} reject={this.props.reject} refire={this.props.refire} showmine={this.props.showmine} usersLookupFromService={this.props.usersLookupFromService} lookupFacilities={this.props.lookupFacilities}/></Col>
         <RequestHistory req={this.props.req} show={this.state.showHistory} setShow={(v) => { this.setState({showHistory: v}) }} />
       </Row>
     )
@@ -539,7 +594,7 @@ class RequestsTable extends Component {
       </Row>
       {
         _.map(this.props.requests, (r) => { return (
-        <RequestsRow key={r.Id} req={r} approve={this.props.approve} reject={this.props.reject} refire={this.props.refire} showmine={this.props.showmine} usersLookupFromService={this.props.usersLookupFromService}/>
+        <RequestsRow key={r.Id} req={r} approve={this.props.approve} reject={this.props.reject} refire={this.props.refire} showmine={this.props.showmine} usersLookupFromService={this.props.usersLookupFromService} lookupFacilities={this.props.lookupFacilities}/>
       )})}
       </Container>
      )
@@ -684,6 +739,7 @@ export default function Requests(props) {
   const [ requestRejectMutation ] = useMutation(REJECT_REQUEST_MUTATION);
   const [ requestRefireMutation ] = useMutation(REFIRE_REQUEST_MUTATION);
   const [ usersLookupFromService ] = useLazyQuery(LOOKUP_USER_DETAILS);
+  const [ lookupFacilities ] = useLazyQuery(LOOKUP_FACILITIES);
 
   const [showErr, setShowErr] = useState(false);
   const [errTitle, setErrTitle] = useState("Error processing request");
@@ -746,7 +802,7 @@ export default function Requests(props) {
     <Container fluid id="requests">
       <RequestFilters filter={filter} applyFilter={applyFilter} timeWindowLabel={twlabel} setTimeWindow={setTimeWindow} requestTypes={data.requestTypes} requestStatuses={data.requestStatuses} repofacs={data.myreposandfacility}/>
       <ErrorMsgModal show={showErr} setShow={setShowErr} title={errTitle} message={errMessage}/>
-      <RequestsTable requests={data.requests} approve={approve} reject={reject} refire={refire} showmine={props.showmine} setRequestsActiveTab={props.setRequestsActiveTab} usersLookupFromService={usersLookupFromService}/>
+      <RequestsTable requests={data.requests} approve={approve} reject={reject} refire={refire} showmine={props.showmine} setRequestsActiveTab={props.setRequestsActiveTab} usersLookupFromService={usersLookupFromService} lookupFacilities={lookupFacilities}/>
     </Container>
     </>
   );
