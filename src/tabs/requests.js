@@ -210,8 +210,8 @@ class UserDetails extends Component {
 class ReassignFacility extends Component {
   constructor(props) {
     super(props);
-    this.state = { facilities: [] }
   }
+
   render() {
     return (
       <Modal show={this.props.show} onHide={() => {this.props.setShow(false)}}>
@@ -220,13 +220,10 @@ class ReassignFacility extends Component {
       </Modal.Header>
       <Modal.Body>
         <InputGroup>
-          <Form.Select name="facility" onChange={this.setFacility} isInvalid={this.state.facilityInvalid}>
-            { _.map(this.props.facilityNames, (f) => { 
-              if(this.props.req.facilityName == f) { 
-                return (<option key={f} value={f} selected>{f}</option>);
-              } else { 
+          <Form.Select name="facility" onChange={this.setFacility} defaultValue={this.props.selectedFacility}>
+            { _.map(this.props.facilities, (f) => {
                 return (<option key={f} value={f}>{f}</option>);
-              }})}
+            })}
           </Form.Select>
         </InputGroup>
       </Modal.Body>
@@ -249,7 +246,8 @@ class Approve extends React.Component {
       showReasonForRejection: false,
       showUserDetails: false,
       showReassignFacility: false,
-      reassignFacilities: [],
+      facilities: [],
+      selectedFacility: props.req.facilityname,
       userDetails: {}
     }
 
@@ -288,10 +286,9 @@ class Approve extends React.Component {
       })
     }
 
-    this.showReassignFacility = () => { 
+    this.showReassignFacility = () => {
       this.props.lookupFacilities({onCompleted: (data) => { 
-        let facilities = _.map(data.facilities, "name");
-        this.setState({showReassignFacility: true, reassignFacilities: facilities})
+        this.setState({showReassignFacility: true, facilities: _.map(data.facilities, "name")});
       }})
     }
   }
@@ -338,11 +335,11 @@ class Approve extends React.Component {
         <ConfirmStepsModal show={this.state.showNewFacMdl} setShow={(st) => { this.setState({showNewFacMdl: st})}} title={"Manual steps for facility " + this.props.req.facilityname} actuallyApprove={this.actuallyApproveRequest} steps={["Run Wilko's script for creating a facility mountpoint", "Run Yee's script for creating facility specific partitions"]}/>
         <ReasonForRejectionModal show={this.state.showReasonForRejection} setShow={this.showHideReasonForRejection} actuallyRejectRequest={this.actuallyRejectRequest}/>
         <UserDetails req={this.props.req} show={this.state.showUserDetails} setShow={(v) => { this.setState({showUserDetails: v}) }} usersLookupFromService={this.props.usersLookupFromService} userDetails={this.state.userDetails}/>
-        <ReassignFacility req={this.props.req} show={this.state.showReassignFacility} setShow={(v) => { this.setState({showReassignFacility: v}) }} facilityNames={this.state.reassignFacilities}/>
+        <ReassignFacility req={this.props.req} show={this.state.showReassignFacility} setShow={(v) => { this.setState({showReassignFacility: v}) }} facilities={this.state.facilities} selectedFacility={this.props.req.facilityname}/>
         <Button className={cNm + actionCNm} onClick={this.requestApprove}><FontAwesomeIcon icon={faCheck}/></Button>
         <Button className={actionCNm} variant="primary" onClick={() => { this.showHideReasonForRejection(true) }}><FontAwesomeIcon icon={faMultiply}/></Button>
         <Button className={cNm + userDetailsCNm} title="Lookup user details" onClick={() => { this.showUserDetails()}}><FontAwesomeIcon icon={faSearch}/></Button>
-        <Button className={cNm + reassignFacilityCNm} title="Reassign this user to a new facility" onClick={() => { this.showReassignFacility()}}><FontAwesomeIcon icon={faMotorcycle}/></Button>
+        {/* <Button className={cNm + reassignFacilityCNm} title="Reassign this user to a new facility" onClick={() => { this.showReassignFacility()}}><FontAwesomeIcon icon={faMotorcycle}/></Button> */}
       </span>
     )
   }
