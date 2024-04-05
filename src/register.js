@@ -116,6 +116,7 @@ export default function RegisterUser(props) {
   let registrationPending = _.get(data, "amIRegistered.isRegistrationPending", false);
   let isRegistered = _.get(data, "amIRegistered.isRegistered", false);
   let fullname = _.get(data, "amIRegistered.fullname", "");
+  let isRegistrationApproved = _.get(data, "amIRegistered.requestObj.approvalstatus", "") == "Approved";
   let isRegistrationPreapproved = _.get(data, "amIRegistered.requestObj.approvalstatus", "") == "PreApproved";
   let isRegistrationRejected = _.get(data, "amIRegistered.requestObj.approvalstatus", "") == "Rejected";
   let notes = _.get(data, "amIRegistered.requestObj.notes", "");
@@ -144,7 +145,7 @@ export default function RegisterUser(props) {
         let approve = function() {
           requestApproveMutation({ 
             variables: { Id: reqid }, 
-            onCompleted: () => { setTimeout(() => { window.location.href = "myprofile" }, 5000)}, 
+            onCompleted: () => { setTimeout(() => { window.location.reload() }, 5000)}, 
             onError: (error) => { console.log("Error when approving request " + error); }, 
             refetchQueries: [ FACNAMES, 'amIRegistered' ] });
         }
@@ -182,6 +183,22 @@ export default function RegisterUser(props) {
         </div>
         </>
       )    
+    }
+
+    if(isRegistrationApproved) {
+      setTimeout(() => { window.location.reload() }, 30000);
+      return (
+      <>
+      <div className="registeruser d-flex flex-column">
+         <NoNavHeader/>
+         <h6 className="p-2">Hi <span className="text-primary">{fullname}</span>, welcome to Coact; the portal for using the S3DF.</h6>
+         <div className="p-2 flex-grow-1">
+          Your request to enable the EPPN <span className="text-primary"><b>{eppn}</b></span> and userid <span className="text-primary"><b>{preferredUserName}</b></span> for S3DF has been approved.
+          Your account is still in the process of being created; please check back again in a little while.
+         </div>
+         <Footer/>
+      </div>
+      </>)
     }
 
     return (
