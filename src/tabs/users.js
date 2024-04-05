@@ -20,6 +20,9 @@ query Repos($reposinput: RepoInput){
   repos(filter:$reposinput) {
     name
     facility
+    facilityObj {
+      czars
+    }    
     principal
     leaders
     users
@@ -149,7 +152,7 @@ class UsersTab extends React.Component {
   }
 
   componentDidMount() {
-    if(this.props.amILeader) {
+    if(this.props.amILeader || this.props.amICzar) {
       this.props.setToolbaritems(oldItems => [...oldItems, ["Add user to repo", this.props.setShowModal]]);
     }
   }
@@ -247,6 +250,7 @@ export default function Users(props) {
   });
   console.log(allusers);
   let amILeader = _.includes(leaders, logged_in_user) || principal==logged_in_user;
+  let amICzar = _.includes(_.get(repodata, "facilityObj.czars", []), logged_in_user);
 
   let toggleRole = function(username, callWhenDone) {
     console.log("Toggling role for user " + username);
@@ -264,7 +268,7 @@ export default function Users(props) {
   }
 
   return (<UsersTab repodata={repodata} users={allusers} getUsersMatchingUserNames={getUsersMatchingUserNames}
-    onToggleRole={toggleRole} onSelDesel={addRemoveUser} amILeader={amILeader}
+    onToggleRole={toggleRole} onSelDesel={addRemoveUser} amILeader={amILeader} amICzar={amICzar}
     showModal={showAddUserModal} setShowModal={setShowAddUserModal}
     toolbaritems={toolbaritems} setToolbaritems={setToolbaritems}
     />);
