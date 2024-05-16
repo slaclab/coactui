@@ -25,7 +25,6 @@ query{
     users
     group
     description
-    computerequirement
   }
   whoami {
     username
@@ -46,14 +45,6 @@ const UPDATE_REPO_PI_MUTATION = gql`
 mutation repoChangePrincipal($reposinput: RepoInput!, $user: UserInput!){
   repoChangePrincipal(repo: $reposinput, user: $user){
     name
-  }
-}
-`;
-
-const REQUEST_COMPUTE_REQUIREMENT_CHANGE = gql`
-mutation requestRepoChangeComputeRequirement($request: CoactRequestInput!){
-  requestRepoChangeComputeRequirement(request: $request){
-    Id
   }
 }
 `;
@@ -175,7 +166,6 @@ class ReposRows extends Component {
   constructor(props) {
     super(props);
     let isAdminOrCzar = this.props.userinfo.isAdmin || _.includes(this.props.userinfo.subjectFacilities, this.props.repo.facility);
-    let currCompRequirement = _.isNil(this.props.repo.computerequirement) ? "Normal" :  this.props.repo.computerequirement;
     this.state = { 
       showPI: false, 
       showGrp: false, 
@@ -184,31 +174,9 @@ class ReposRows extends Component {
     this.changePI = (event) => {  this.setState({showPI: true}) }
     this.changeLDAPGroup = (event) => {  this.setState({showGrp: true}) }
     this.changeDescription = (event) => {  this.setState({showDesc: true}) }
-    this.reallyChangeComputeRequirement = (newcomp) => { 
-      props.changeComputeRequirement(this.props.repo.name, this.props.repo.facility, newcomp, () => { this.props.displayConfirmation("A request to change the compute requirement has been issued; the actual change is done in the background and will take a few seconds. The UI will refresh in a few seconds; if the change is not reflected then, please refresh your screen manually"); });
-    }
   }
   render() {
-    let isAdminOrCzar = this.props.userinfo.isAdmin || _.includes(this.props.userinfo.subjectFacilities, this.props.repo.facility);
-    let currCompRequirement = _.isNil(this.props.repo.computerequirement) ? "Normal" :  this.props.repo.computerequirement,
-      compreqclass = isAdminOrCzar ? "float-end" : "d-none",
-      comprequpclass = (isAdminOrCzar && !_.includes(["OnShift"], currCompRequirement)) ? "text-warning px-2" : "d-none",
-      compreqdownclass = (isAdminOrCzar && _.includes(["OnShift", "OffShift"], currCompRequirement)) ? "text-warning px-2" : "d-none";
-    let upComputeReq = () => { 
-        if(currCompRequirement == "OffShift") {
-          this.reallyChangeComputeRequirement("OnShift");
-        } else {
-          this.reallyChangeComputeRequirement("OffShift");
-        }
-      }
-    let downComputeReq = () => { 
-        if(currCompRequirement == "OnShift") {
-          this.reallyChangeComputeRequirement("OffShift");
-        } else if(currCompRequirement == "OffShift") {
-          this.reallyChangeComputeRequirement("Normal");
-        }
-      }
-  
+    let isAdminOrCzar = this.props.userinfo.isAdmin || _.includes(this.props.userinfo.subjectFacilities, this.props.repo.facility);  
       return (
         <tr key={this.props.repo.name}>
           <td className="vmid">{this.props.repo.name}</td>
@@ -216,12 +184,6 @@ class ReposRows extends Component {
           <td className="vmid">{this.props.repo.principal} { isAdminOrCzar ? <span className="inlntlbr select_role px-2 text-warning" title="Change the PI for this repo" onClick={this.changePI}><FontAwesomeIcon icon={faEdit}/></span> : ""}</td>
           <td className="vmid">{this.props.repo.group} { isAdminOrCzar ? <span className="inlntlbr select_role px-2 text-warning" title="Change the LDAP group associated with this repo" onClick={this.changeLDAPGroup}><FontAwesomeIcon icon={faEdit}/></span> : ""}</td>
           <td className="vmid">{this.props.repo.description} { isAdminOrCzar ? <span className="inlntlbr select_role px-2 text-warning" title="Edit this repo's description" onClick={this.changeDescription}><FontAwesomeIcon icon={faEdit}/></span> : ""}</td>
-          <td>{currCompRequirement}
-            <span className={compreqclass}>
-              <span title="Bump down the compute requirement for this repo" className={compreqdownclass} onClick={downComputeReq}><FontAwesomeIcon icon={faDownLong}/></span>
-              <span title="Bump up the compute requirement for this repo" className={comprequpclass} onClick={upComputeReq}><FontAwesomeIcon icon={faUpLong}/></span>
-            </span>
-          </td>
           <ChangePI showModal={this.state.showPI} setShowModal={() => this.setState({showPI: false})} repo={this.props.repo} changePI={this.props.changePI} />
           <ChangeDescription showModal={this.state.showDesc} setShowModal={() => this.setState({showDesc: false})} repo={this.props.repo} changeRepoDescription={this.props.changeRepoDescription} />
           <ChangeLDAPGroup showModal={this.state.showGrp} setShowModal={() => this.setState({showGrp: false})} repo={this.props.repo} changeRepoGroup={this.props.changeRepoGroup} />
@@ -248,13 +210,13 @@ class ReposTable extends Component {
       <div className="container-fluid text-center">
         <table className="table table-condensed table-striped table-bordered table-responsive">
           <thead>
-            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>LDAP Group</th><th>Description</th><th>Compute Requirement</th></tr>
+            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>LDAP Group</th><th>Description</th></tr>
           </thead>
           <tbody>
             { _.map(this.props.repos, (r) => { return (<ReposRows key={r.facility+"_"+r.name} repo={r} userinfo={this.props.userinfo}
               displayConfirmation={this.displayConfirmation}
-              changeRepoDescription={this.props.changeRepoDescription} changeRepoGroup={this.props.changeRepoGroup} changePI={this.props.changePI} 
-              changeComputeRequirement={this.props.changeComputeRequirement} />) }) }
+              changeRepoDescription={this.props.changeRepoDescription} changeRepoGroup={this.props.changeRepoGroup} changePI={this.props.changePI} />) }) 
+            }
           </tbody>
         </table>
       </div>
@@ -267,7 +229,6 @@ export default function ReposInfoListView() {
   const { loading, error, data, refetch } = useQuery(REPOS);
   const [ updateRepoMutation ] = useMutation(UPDATE_REPO_MUTATION);
   const [ changeRepoPIMutation ] = useMutation(UPDATE_REPO_PI_MUTATION);
-  const [ repoChangeComputeRequirement ] = useMutation(REQUEST_COMPUTE_REQUIREMENT_CHANGE);
   const [ approveRequest ] = useMutation(APPROVE_REQUEST_MUTATION);
 
 
@@ -286,23 +247,11 @@ export default function ReposInfoListView() {
     changeRepoPIMutation({ variables: { reposinput: { name: reponame, facility: facilityname }, user: { username: newPI }}, refetchQueries: [ REPOS ], onCompleted: onSuccess, onError:  onError});
   }
 
-  let requestAndApproveChangeComputeRequirement = function(reponame, facilityname, newCompRequirement, callWhenComplete) {
-    console.log("Changing compute requirement to " + newCompRequirement);
-    repoChangeComputeRequirement(
-      { variables: { request: { reqtype: "RepoChangeComputeRequirement", reponame: reponame, facilityname: facilityname, computerequirement: newCompRequirement }},
-      onCompleted: (compreqdata) => {
-        let id = compreqdata["requestRepoChangeComputeRequirement"]["Id"]
-        approveRequest({ variables: { Id: id }, refetchQueries: [ REPOS ], onCompleted: () => { callWhenComplete(); setTimeout(refetch, 5000) } });
-      }
-    });
-
-  }
-
   let userinfo = _.get(data, "whoami");
   console.log(data);
   return (
     <>
-    <ReposTable repos={data.myRepos} userinfo={userinfo} changeRepoDescription={changeRepoDescription} changeRepoGroup={changeRepoGroup} changePI={changePI} changeComputeRequirement={requestAndApproveChangeComputeRequirement} />
+    <ReposTable repos={data.myRepos} userinfo={userinfo} changeRepoDescription={changeRepoDescription} changeRepoGroup={changeRepoGroup} changePI={changePI} />
     </>
   );
 }
