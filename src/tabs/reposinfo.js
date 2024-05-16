@@ -179,7 +179,7 @@ class ReposRows extends Component {
     let isAdminOrCzar = this.props.userinfo.isAdmin || _.includes(this.props.userinfo.subjectFacilities, this.props.repo.facility);  
       return (
         <tr key={this.props.repo.name}>
-          <td className="vmid">{this.props.repo.name}</td>
+          <td className="vmid"><NavLink to={"/repos/users/"+this.props.repo.facility+"/"+this.props.repo.name}>{this.props.repo.name}</NavLink></td>
           <td className="vmid">{this.props.repo.facility}</td>
           <td className="vmid">{this.props.repo.principal} { isAdminOrCzar ? <span className="inlntlbr select_role px-2 text-warning" title="Change the PI for this repo" onClick={this.changePI}><FontAwesomeIcon icon={faEdit}/></span> : ""}</td>
           <td className="vmid">{this.props.repo.group} { isAdminOrCzar ? <span className="inlntlbr select_role px-2 text-warning" title="Change the LDAP group associated with this repo" onClick={this.changeLDAPGroup}><FontAwesomeIcon icon={faEdit}/></span> : ""}</td>
