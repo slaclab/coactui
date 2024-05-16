@@ -352,7 +352,7 @@ class ReposTable extends Component {
     return (
       <>
       <div className="container-fluid text-center table-responsive">
-        <ToastContainer className="p-3" position={"top-end"} style={{ zIndex: 1 }}>
+        <ToastContainer className="p-3" position={"top-end"} containerPosition={"fixed"} style={{ zIndex: 1 }}>
           <Toast show={this.state.showToast} onClose={() => { this.setState({showToast: false, toastMsg: ""})}} delay={10000} autohide><Toast.Header>Info</Toast.Header><Toast.Body>{this.state.toastMsg}</Toast.Body></Toast>
         </ToastContainer>
         <table className="table table-condensed table-striped table-bordered">
