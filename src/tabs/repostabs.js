@@ -331,20 +331,8 @@ export default function RepoTabs(props) {
             <Nav.Item>
                 <Nav.Link eventKey="info" as={Link} to={`info`}>Info</Nav.Link>
               </Nav.Item>
-              <Nav.Item>
-                <Nav.Link eventKey="users" as={Link} to={`users`}>Users</Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link eventKey="groups" as={Link} to={`groups`}>Access groups</Nav.Link>
-              </Nav.Item>
                 <Nav.Item>
                   <Nav.Link eventKey="compute" as={Link} to={`compute`}>Compute</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="storage" as={Link} to={`storage`}>Storage</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="audit" as={Link} to={`audit`}>History</Nav.Link>
                 </Nav.Item>
               </Nav>
             </Col>

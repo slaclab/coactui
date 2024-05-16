@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import React, { Component, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEdit, faUpLong, faDownLong } from '@fortawesome/free-solid-svg-icons'
+import { faEdit, faUser, faHistory } from '@fortawesome/free-solid-svg-icons'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import ModalHeader from 'react-bootstrap/ModalHeader';
@@ -178,12 +178,20 @@ class ReposRows extends Component {
   render() {
     let isAdminOrCzar = this.props.userinfo.isAdmin || _.includes(this.props.userinfo.subjectFacilities, this.props.repo.facility);  
       return (
-        <tr key={this.props.repo.name}>
-          <td className="vmid"><NavLink to={"/repos/users/"+this.props.repo.facility+"/"+this.props.repo.name}>{this.props.repo.name}</NavLink></td>
-          <td className="vmid">{this.props.repo.facility}</td>
-          <td className="vmid">{this.props.repo.principal} { isAdminOrCzar ? <span className="inlntlbr select_role px-2 text-warning" title="Change the PI for this repo" onClick={this.changePI}><FontAwesomeIcon icon={faEdit}/></span> : ""}</td>
-          <td className="vmid">{this.props.repo.group} { isAdminOrCzar ? <span className="inlntlbr select_role px-2 text-warning" title="Change the LDAP group associated with this repo" onClick={this.changeLDAPGroup}><FontAwesomeIcon icon={faEdit}/></span> : ""}</td>
-          <td className="vmid">{this.props.repo.description} { isAdminOrCzar ? <span className="inlntlbr select_role px-2 text-warning" title="Edit this repo's description" onClick={this.changeDescription}><FontAwesomeIcon icon={faEdit}/></span> : ""}</td>
+        <tr key={this.props.repo.name} className="text-start">
+          <td className="vmid px-2">
+            {this.props.repo.name}
+            <NavLink to={"/repos/audit/"+this.props.repo.facility+"/"+this.props.repo.name} className="float-end px-1">
+              <span className="text-warning" title="See the history of changes to this repo" onClick={this.changePI}><FontAwesomeIcon icon={faHistory}/></span>
+            </NavLink>
+            <NavLink to={"/repos/users/"+this.props.repo.facility+"/"+this.props.repo.name} className="float-end px-1">
+              <span className="text-warning" title="Add/remove users to/from this repo" onClick={this.changePI}><FontAwesomeIcon icon={faUser}/></span>
+            </NavLink>
+          </td>
+          <td className="vmid px-2">{this.props.repo.facility}</td>
+          <td className="vmid px-2">{this.props.repo.principal} { isAdminOrCzar ? <span className="float-end"><span className="inlntlbr select_role px-2 text-warning" title="Change the PI for this repo" onClick={this.changePI}><FontAwesomeIcon icon={faEdit}/></span></span> : ""}</td>
+          <td className="vmid px-2">{this.props.repo.group} { isAdminOrCzar ? <span className="float-end"><span className="inlntlbr select_role px-2 text-warning" title="Change the LDAP group associated with this repo" onClick={this.changeLDAPGroup}><FontAwesomeIcon icon={faEdit}/></span></span> : ""}</td>
+          <td className="vmid px-2">{this.props.repo.description} { isAdminOrCzar ? <span className="float-end"><span className="inlntlbr select_role px-2 text-warning" title="Edit this repo's description" onClick={this.changeDescription}><FontAwesomeIcon icon={faEdit}/></span></span> : ""}</td>
           <ChangePI showModal={this.state.showPI} setShowModal={() => this.setState({showPI: false})} repo={this.props.repo} changePI={this.props.changePI} />
           <ChangeDescription showModal={this.state.showDesc} setShowModal={() => this.setState({showDesc: false})} repo={this.props.repo} changeRepoDescription={this.props.changeRepoDescription} />
           <ChangeLDAPGroup showModal={this.state.showGrp} setShowModal={() => this.setState({showGrp: false})} repo={this.props.repo} changeRepoGroup={this.props.changeRepoGroup} />

@@ -205,6 +205,14 @@ class UpdateComputeAllocation extends Component {
   }
 }
 
+export function ComputePercent(props) {
+  if(_.isNil(props.percent)) return (<span>(N/A)</span>);
+  if(props.percent > 99999998) return (<span>Inf</span>);
+  if(props.percent == 0) return <span></span>;
+  return (<span title={props.value.toFixed(2) + " resource-hours"}>{props.percent.toFixed(2) + "%"}</span>)
+}
+
+
 
 class ReposRows extends Component {
   constructor(props) {
@@ -212,6 +220,12 @@ class ReposRows extends Component {
     this.reponame = props.repo.name;
     this.facility = props.repo.facility;
     this.facilityData = _.find(this.props.facilities, ["name", props.repo.facility]);
+    this.twoPrec = function(flt) {
+      if(_.isNil(flt)) return "N/A";
+      if(flt > 99999998) return "Inf";
+      if(flt == 0) return "";
+      return (flt).toFixed(2);
+    }
   }
   render() {
     var first = true;
@@ -240,35 +254,36 @@ class ReposRows extends Component {
       let last180minsUsage = _.get(a, "last180minsUsage.usedResourceHours", 0);
       let last180minsUsageInPercent = _.get(a, "last180minsUsage.percentUsed", 0);
 
+
       if(first) {
         first = false;
         return (
-          <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame}>
-            <td rowSpan={rows} className="vmid">{this.reponame} {this.props.canEditAllocations ? <span className="px-2 text-warning" title="Allocate compute on a new cluster" onClick={() => { this.props.showAddModal(this.props.repo, facilityPurchased) }}><FontAwesomeIcon icon={faPlus}/></span> : <span></span>}</td>
+          <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame} className="text-start px-2">
+            <td rowSpan={rows} className="vmid">{this.reponame} {this.props.canEditAllocations ? <span className="float-end"><span className="px-2 text-warning" title="Allocate compute on a new cluster" onClick={() => { this.props.showAddModal(this.props.repo, facilityPurchased) }}><FontAwesomeIcon icon={faPlus}/></span></span> : <span></span>}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.facilityObj.name}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
             <td>{a.clustername == "N/A" ? "None" : <NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame} title={"Node CPU count=" + clusterNodeCPUCount}>{a.clustername}</NavLink>}</td>
-            <td><span className="px-2 fst-italic">{ percentoffacility + "%"}</span><span>(<TwoPrecFloat value={totalAllocatedCompute}/>)</span> {this.props.canEditAllocations && a.clustername != "N/A" ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
-            <td><span className="float-start"><TwoPrecFloat value={last5minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last5minsUsageInPercent}/></span></td>
-            <td><span className="float-start"><TwoPrecFloat value={last15minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last15minsUsageInPercent}/></span></td>
-            <td><span className="float-start"><TwoPrecFloat value={last60minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last60minsUsageInPercent}/></span></td>
-            <td><span className="float-start"><TwoPrecFloat value={last180minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last180minsUsageInPercent}/></span></td>
-            <td><span className="float-start"><TwoPrecFloat value={lastWeeksUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={lastWeeksUsageInPercent}/></span></td>
-            <td><span className="float-end"><TwoPrecFloat value={totalUsedHours}/></span></td>
+            <td className="text-end"><span title={this.twoPrec(totalAllocatedCompute) + " nodes"}>{ percentoffacility + "%"}</span> {this.props.canEditAllocations && a.clustername != "N/A" ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
+            <td className="text-end"><span><ComputePercent percent={last5minsUsageInPercent} value={last5minsUsage}/></span></td>
+            <td className="text-end"><span><ComputePercent percent={last15minsUsageInPercent} value={last15minsUsage}/></span></td>
+            <td className="text-end"><span><ComputePercent percent={last60minsUsageInPercent} value={last60minsUsage}/></span></td>
+            <td className="text-end"><span><ComputePercent percent={last180minsUsageInPercent} value={last180minsUsage}/></span></td>
+            <td className="text-end"><span><ComputePercent percent={lastWeeksUsageInPercent} value={lastWeeksUsage}/></span></td>
+            <td className="text-end"><TwoPrecFloat value={totalUsedHours}/></td>
             <td><DateDisp value={a.start}/></td>
             <td><DateDisp value={a.end}/></td>
           </tr>)
         } else {
           return (
-            <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame}>
+            <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame} className="text-start px-2">
               <td><NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame} title={"Node CPU count=" + clusterNodeCPUCount}>{a.clustername}</NavLink></td>
-              <td><span className="px-2 fst-italic">{ percentoffacility + "%"}</span><span>(<TwoPrecFloat value={totalAllocatedCompute}/>)</span> {this.props.canEditAllocations ? <span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span> : <span></span>}</td>
-              <td><span className="float-start"><TwoPrecFloat value={last5minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last5minsUsageInPercent}/></span></td>
-              <td><span className="float-start"><TwoPrecFloat value={last15minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last15minsUsageInPercent}/></span></td>
-              <td><span className="float-start"><TwoPrecFloat value={last60minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last60minsUsageInPercent}/></span></td>
-              <td><span className="float-start"><TwoPrecFloat value={last180minsUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={last180minsUsageInPercent}/></span></td>
-              <td><span className="float-start"><TwoPrecFloat value={lastWeeksUsage}/></span><span className="fst-italic float-end"><TwoPrecPercent value={lastWeeksUsageInPercent}/></span></td>
-              <td><span className="float-end"><TwoPrecFloat value={totalUsedHours}/></span></td>
+              <td className="text-end"><span title={this.twoPrec(totalAllocatedCompute) + " nodes"}>{ percentoffacility + "%"}</span> {this.props.canEditAllocations ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
+              <td className="text-end"><span><ComputePercent percent={last5minsUsageInPercent} value={last5minsUsage}/></span></td>
+              <td className="text-end"><span><ComputePercent percent={last15minsUsageInPercent} value={last15minsUsage}/></span></td>
+              <td className="text-end"><span><ComputePercent percent={last60minsUsageInPercent} value={last60minsUsage}/></span></td>
+              <td className="text-end"><span><ComputePercent percent={last180minsUsageInPercent} value={last180minsUsage}/></span></td>
+              <td className="text-end"><span><ComputePercent percent={lastWeeksUsageInPercent} value={lastWeeksUsage}/></span></td>
+              <td className="text-end"><TwoPrecFloat value={totalUsedHours}/></td>
               <td><DateDisp value={a.start}/></td>
               <td><DateDisp value={a.end}/></td>
             </tr>)
@@ -357,7 +372,7 @@ class ReposTable extends Component {
         </ToastContainer>
         <table className="table table-condensed table-striped table-bordered">
           <thead>
-            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th>Past 5 mins</th><th>Past 15 mins</th><th>Past hour</th><th>Past 3 hours</th><th title="Includes data for 7 days">Last week's usage</th><th>Total compute used</th><th>Start</th><th>End</th></tr>
+            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th>Past 5 mins</th><th>Past 15 mins</th><th>Past hour</th><th>Past 3 hours</th><th title="Includes data for 7 days">Last week's usage</th><th title="Resource-hours consumed for the lifetime of the repo">Total compute used</th><th>Start</th><th>End</th></tr>
           </thead>
           { _.map(this.props.repos, (r) => { return (<ReposRows key={r.facility+"_"+r.name} repo={r} facilities={this.props.facilities} clusterInfo={this.clusterInfo} canEditAllocations={this.props.canEditAllocations} showUpdateModal={this.showUpdateModal} showAddModal={this.showAddModal}/>) }) }
           </table>
