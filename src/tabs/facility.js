@@ -31,8 +31,6 @@ query Facility($facilityinput: FacilityInput){
       clustername
       purchased
       allocated
-      usedDay
-      usedWeek
     }
     storagepurchases {
       storagename
@@ -42,6 +40,24 @@ query Facility($facilityinput: FacilityInput){
       used
     }
   }
+	pastHour:facilityRecentComputeUsage(pastMinutes: 60, skipQoses: "preemptable") {
+    clustername
+    facility
+    percentUsed
+    resourceHours
+  }  
+  pastDay:facilityRecentComputeUsage(pastMinutes: 1440, skipQoses: "preemptable") {
+    clustername
+    facility
+    percentUsed
+    resourceHours
+  }  
+  pastWeek:facilityRecentComputeUsage(pastMinutes: 10080, skipQoses: "preemptable") {
+    clustername
+    facility
+    percentUsed
+    resourceHours
+  }  
   whoami {
     username
     isAdmin
@@ -263,6 +279,12 @@ class UpdateComputePurchase extends Component {
   }
 }
 
+function ComputeUsage(props) {
+  const { periodname, recentusagebycluster, facilityname, clustername } = props;
+  let usage = _.find(_.get(recentusagebycluster, periodname), {facility: facilityname, clustername: clustername}) ?? { percentUsed: 0, resourceHours: 0 };
+  return (<span title={usage.resourceHours + " resource hours"}>{usage.percentUsed.toFixed(2) + "%"}</span>)
+}
+
 class FacilityComputePurchases extends Component {
   constructor(props) {
     super(props);
@@ -280,24 +302,31 @@ class FacilityComputePurchases extends Component {
           <Card.Header>Compute {this.props.isAdmin ? (<span className="px-1 text-warning" title="Add new compute purchase" onClick={() => { this.setState({showAddModal: true, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faPlus}/></span>) : (<span></span>)}</Card.Header>
           <Card.Body>
             <Row className="mb-2">
+              <Col md={6}><span className="tbllbl"></span></Col>
+              <Col md={6} className="text-center"><span className="tbllbl">% Used</span></Col>
+            </Row>
+            <Row className="mb-2">
               <Col md={2}><span className="tbllbl">Cluster</span></Col>
-              <Col md={2}><span className="tbllbl">Acquired</span></Col>
+              <Col md={2}><span className="tbllbl" title="Number of nodes">Acquired nodes</span></Col>
               <Col md={2}><span className="tbllbl">Total allocated (%)</span></Col>
-              <Col md={2}><span className="tbllbl">Avg Used (day)</span></Col>
-              <Col md={2}><span className="tbllbl">Avg Used (week)</span></Col>
+              <Col md={2} className="text-end"><span className="tbllbl">Past hour</span></Col>
+              <Col md={2} className="text-end"><span className="tbllbl">Past day</span></Col>
+              <Col md={2} className="text-end"><span className="tbllbl">Past week</span></Col>
             </Row>
             {
               _.map(_.sortBy(this.props.facility.computepurchases, "clustername"), (p) => { 
                 let clusterinfo = this.clusterInfos[p.clustername];
+                // console.log(_.get(_.find(_.get(this.props.recentusagebycluster, "pastHour"), {facility: this.props.facility.name, clustername: p.clustername}), "percent"));
+                console.log(this.props.recentusagebycluster);
                 return (
-                <Row key={p.clustername} className="mb-2">
-                  <Col md={2}><NavLink to={"/clusterusage/"+p.clustername} key={p.clustername}>{p.clustername}</NavLink></Col>
+                <Row key={p.clustername} className="mb-2 text-end">
+                  <Col md={2} className="text-start"><NavLink to={"/clusterusage/"+p.clustername} key={p.clustername}>{p.clustername}</NavLink></Col>
                   <Col md={2}>{p.purchased} {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased amount" onClick={() => { this.setState({showUpdateModal: true, updateModalClusterName: p.clustername, updateModalCurrentPurchase: p.purchased, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</Col>
                   <Col md={2}>{p.allocated}</Col>
-                  <Col md={2}>{(p.usedDay/clusterinfo.nodecpucount).toFixed(2)}</Col>
-                  <Col md={2}>{(p.usedWeek/(clusterinfo.nodecpucount*7.0)).toFixed(2)}</Col>
+                  <Col md={2}><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></Col>
+                  <Col md={2}><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></Col>
+                  <Col md={2}><ComputeUsage periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></Col>
                 </Row>
-
               ) })
             }
           </Card.Body>
@@ -670,7 +699,7 @@ class FacilityDetails extends Component {
           </Col>
         </Row>
         <Row>
-          <FacilityComputePurchases facility={this.props.facility} clusters={this.props.clusters} isAdmin={this.props.isAdmin} addUpdateComputePurchase={this.props.addUpdateComputePurchase}/>
+          <FacilityComputePurchases facility={this.props.facility} clusters={this.props.clusters} isAdmin={this.props.isAdmin} addUpdateComputePurchase={this.props.addUpdateComputePurchase} recentusagebycluster={this.props.recentusagebycluster}/>
           <FacilityStoragePurchases facility={this.props.facility} storagenames={this.props.storagenames} storagepurposes={this.props.storagepurposes} isAdmin={this.props.isAdmin} addUpdateStoragePurchase={this.props.addUpdateStoragePurchase} />
           <AddRemoveCzar facility={this.props.facility} getUsersMatchingUserName={this.props.getUsersMatchingUserName} onSelDesel={this.props.onSelDesel} showModal={this.state.showCzarModal} setShowModal={(val) => { this.setState({showCzarModal: val})} }/>
           <RegisterNewUser facility={this.props.facility} getUsersMatchingUserName={this.props.getUsersMatchingUserName} getUserForEPPN={this.props.getUserForEPPN} 
@@ -751,12 +780,15 @@ export default function Facility(props) {
   let clusters = data.clusters;
   let storagenames = data.storagenames;
   let storagepurposes = data.storagepurposes;
+  const recentusagebycluster = {pastHour: data.pastHour, pastDay: data.pastDay, pastWeek: data.pastWeek}
+  
 
   return (<div>
     <FacilityDetails facility={facility} isAdmin={isAdmin} getUserForEPPN={getUserForEPPN} clusters={clusters} storagenames={storagenames} storagepurposes={storagepurposes}
     onSelDesel={addRemoveCzar} requestUserAccount={requestAccount} getUsersMatchingUserName={getUsersMatchingUserName}
     addUpdateComputePurchase={addUpdateComputePurchase} addUpdateStoragePurchase={addUpdateStoragePurchase}
     userLookupByUserName={userLookupByUserName} userLookupByFullName={userLookupByFullName} userLookupByPreferredEmail={userLookupByPreferredEmail}
+    recentusagebycluster={recentusagebycluster}
     />
   </div>);
 }
