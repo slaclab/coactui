@@ -48,7 +48,7 @@ export default function Facilities() {
       className="mb-3"
     >
     { facilities.map((facility) => (
-      <Tab key={facility.name} eventKey={facility.name} title={facility.name}>
+      <Tab key={facility.name} eventKey={facility.name} title={facility.name} mountOnEnter={true} unmountOnExit={true}>
         <Facility facilityname={facility.name}/>
       </Tab>
     ))}

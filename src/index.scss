@@ -232,15 +232,18 @@ ol, ul {
 #facilities {
   @include navbg;
 
-  .facrsc {
-    .row:nth-child(even) {
+  .card-header {
+    background-color: $black10;
+    font-weight: bold;
+  }
+
+  .card-body > .row:nth-child(even) {
+    background: $zebrabg;
+  }
+  .card-body {
+    .hdr {
       background: $zebrabg;
-    }
-    .row > div {
-      padding-top: 0.25rem;
-      padding-bottom: 0.25rem;
-      margin: 0px;
-    }
+    }  
   }
 }
 
