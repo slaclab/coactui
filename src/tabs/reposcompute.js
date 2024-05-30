@@ -40,30 +40,9 @@ query{
       usage {
         resourceHours
       }
-      lastWeeksUsage {
-        allocatedResourceHours
-        usedResourceHours
-        percentUsed
-      }
-      last5minsUsage {
-        allocatedResourceHours
-        usedResourceHours
-        percentUsed
-      }
-      last15minsUsage {
-        allocatedResourceHours
-        usedResourceHours
-        percentUsed
-      }
-      last60minsUsage {
-        allocatedResourceHours
-        usedResourceHours
-        percentUsed
-      }
-      last180minsUsage {
-        allocatedResourceHours
-        usedResourceHours
-        percentUsed
+      perDateUsage(pastDays: 31) {
+        date
+        resourceHours
       }
     }
   }
@@ -83,6 +62,27 @@ query{
     name
     nodecpucount
   }
+	pastHour:repoRecentComputeUsage(pastMinutes: 60, skipQoses: "preemptable") {
+    name
+    clustername
+    facility
+    percentUsed
+    resourceHours
+  }  
+  pastDay:repoRecentComputeUsage(pastMinutes: 1440, skipQoses: "preemptable") {
+    name
+    clustername
+    facility
+    percentUsed
+    resourceHours
+  }  
+  pastWeek:repoRecentComputeUsage(pastMinutes: 10080, skipQoses: "preemptable") {
+    name
+    clustername
+    facility
+    percentUsed
+    resourceHours
+  }  
 }`;
 
 const ALLOCATION_REQUEST = gql`
@@ -206,13 +206,22 @@ class UpdateComputeAllocation extends Component {
 }
 
 export function ComputePercent(props) {
-  if(_.isNil(props.percent)) return (<span>(N/A)</span>);
-  if(props.percent > 99999998) return (<span>Inf</span>);
-  if(props.percent == 0) return <span></span>;
-  return (<span title={props.value.toFixed(2) + " resource-hours"}>{props.percent.toFixed(2) + "%"}</span>)
+  if(_.isNil(props.usage) || props.usage < 0.01) return (<span></span>);
+  if(_.isNil(props.allocatedCompute) || props.allocatedCompute <= 0.0 ) return (<span title={props.usage.toFixed(2) + " resource-hours"}>Inf</span>);
+  const percent = props.usage/(props.allocatedCompute*24*props.days)
+  if(percent > 99999998) return (<span title={props.usage.toFixed(2) + " resource-hours"}>Inf</span>);
+  if(percent < 0.01) return (<span></span>);
+  return (<span title={props.usage.toFixed(2) + " resource-hours"}>{percent.toFixed(2) + "%"}</span>)
 }
 
-
+function ComputeUsage(props) {
+  const { periodname, recentusagebycluster, reponame, facilityname, clustername } = props;
+  let usage = _.find(_.get(recentusagebycluster, periodname), {name: reponame, facility: facilityname, clustername: clustername}) ?? { percentUsed: 0, resourceHours: 0 };
+  if(usage.percentUsed <= 0) {
+    return (<span></span>);
+  }
+  return (<span title={usage.resourceHours.toFixed(2) + " resource hours"}>{usage.percentUsed.toFixed(2) + "%"}</span>)
+}
 
 class ReposRows extends Component {
   constructor(props) {
@@ -238,22 +247,11 @@ class ReposRows extends Component {
       if(totalAllocatedCompute == 0 && facilityPurchased != 0 && percentoffacility != 0) {
         totalAllocatedCompute = facilityPurchased*percentoffacility/100.0;
       }
-      let burstPercentOfFacility = _.get(a, "burstPercentOfFacility", 0.0);
-      let totalBurstAllocatedCompute = _.get(a, "burstAllocated", 0.0);
       let clusterNodeCPUCount = _.get(a, "clusterNodeCPUCount", 0.0);
       
       let totalUsedHours = _.sum(_.map(_.get(a, "usage", []), "resourceHours"));
-      let lastWeeksUsage =  _.get(a, "lastWeeksUsage.usedResourceHours", 0);
-      let lastWeeksUsageInPercent = _.get(a, "lastWeeksUsage.percentUsed", 0);
-      let last5minsUsage = _.get(a, "last5minsUsage.usedResourceHours", 0);
-      let last5minsUsageInPercent = _.get(a, "last5minsUsage.percentUsed", 0);
-      let last15minsUsage = _.get(a, "last15minsUsage.usedResourceHours", 0);
-      let last15minsUsageInPercent = _.get(a, "last15minsUsage.percentUsed", 0);
-      let last60minsUsage = _.get(a, "last60minsUsage.usedResourceHours", 0);
-      let last60minsUsageInPercent = _.get(a, "last60minsUsage.percentUsed", 0);
-      let last180minsUsage = _.get(a, "last180minsUsage.usedResourceHours", 0);
-      let last180minsUsageInPercent = _.get(a, "last180minsUsage.percentUsed", 0);
-
+      let lastMonthsUsedHours = _.sum(_.map(_.get(a, "perDateUsage", []), "resourceHours"));
+      let lastMonthsUsedPercent = lastMonthsUsedHours/(31.0*totalAllocatedCompute*24)*100;
 
       if(first) {
         first = false;
@@ -264,11 +262,10 @@ class ReposRows extends Component {
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
             <td>{a.clustername == "N/A" ? "None" : <NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame} title={"Node CPU count=" + clusterNodeCPUCount}>{a.clustername}</NavLink>}</td>
             <td className="text-end"><span title={this.twoPrec(totalAllocatedCompute) + " nodes"}>{ percentoffacility + "%"}</span> {this.props.canEditAllocations && a.clustername != "N/A" ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
-            <td className="text-end"><span><ComputePercent percent={last5minsUsageInPercent} value={last5minsUsage}/></span></td>
-            <td className="text-end"><span><ComputePercent percent={last15minsUsageInPercent} value={last15minsUsage}/></span></td>
-            <td className="text-end"><span><ComputePercent percent={last60minsUsageInPercent} value={last60minsUsage}/></span></td>
-            <td className="text-end"><span><ComputePercent percent={last180minsUsageInPercent} value={last180minsUsage}/></span></td>
-            <td className="text-end"><span><ComputePercent percent={lastWeeksUsageInPercent} value={lastWeeksUsage}/></span></td>
+            <td className="text-end"><span><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername}/></span></td>
+            <td className="text-end"><span><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername}/></span></td>
+            <td className="text-end"><span><ComputeUsage periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername}/></span></td>
+            <td className="text-end"><span><ComputePercent days={31} allocatedCompute={totalAllocatedCompute} usage={lastMonthsUsedHours}/></span></td>
             <td className="text-end"><TwoPrecFloat value={totalUsedHours}/></td>
             <td><DateDisp value={a.start}/></td>
             <td><DateDisp value={a.end}/></td>
@@ -278,11 +275,10 @@ class ReposRows extends Component {
             <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame} className="text-start px-2">
               <td><NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame} title={"Node CPU count=" + clusterNodeCPUCount}>{a.clustername}</NavLink></td>
               <td className="text-end"><span title={this.twoPrec(totalAllocatedCompute) + " nodes"}>{ percentoffacility + "%"}</span> {this.props.canEditAllocations ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
-              <td className="text-end"><span><ComputePercent percent={last5minsUsageInPercent} value={last5minsUsage}/></span></td>
-              <td className="text-end"><span><ComputePercent percent={last15minsUsageInPercent} value={last15minsUsage}/></span></td>
-              <td className="text-end"><span><ComputePercent percent={last60minsUsageInPercent} value={last60minsUsage}/></span></td>
-              <td className="text-end"><span><ComputePercent percent={last180minsUsageInPercent} value={last180minsUsage}/></span></td>
-              <td className="text-end"><span><ComputePercent percent={lastWeeksUsageInPercent} value={lastWeeksUsage}/></span></td>
+              <td className="text-end"><span><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername}/></span></td>
+              <td className="text-end"><span><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername}/></span></td>
+              <td className="text-end"><span><ComputeUsage periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername}/></span></td>
+              <td className="text-end"><span><ComputePercent days={31} allocatedCompute={totalAllocatedCompute} usage={lastMonthsUsedHours}/></span></td>
               <td className="text-end"><TwoPrecFloat value={totalUsedHours}/></td>
               <td><DateDisp value={a.start}/></td>
               <td><DateDisp value={a.end}/></td>
@@ -372,9 +368,9 @@ class ReposTable extends Component {
         </ToastContainer>
         <table className="table table-condensed table-striped table-bordered">
           <thead>
-            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th>Past 5 mins</th><th>Past 15 mins</th><th>Past hour</th><th>Past 3 hours</th><th title="Includes data for 7 days">Last week's usage</th><th title="Resource-hours consumed for the lifetime of the repo">Total compute used</th><th>Start</th><th>End</th></tr>
+            <tr><th>Repo name</th><th>Facility</th><th>PI</th><th>ClusterName</th><th>Total compute allocation</th><th>Past hour</th><th>Past day</th><th>Past week</th><th>Past month</th><th title="Resource-hours consumed for the lifetime of the repo">Total compute used</th><th>Start</th><th>End</th></tr>
           </thead>
-          { _.map(this.props.repos, (r) => { return (<ReposRows key={r.facility+"_"+r.name} repo={r} facilities={this.props.facilities} clusterInfo={this.clusterInfo} canEditAllocations={this.props.canEditAllocations} showUpdateModal={this.showUpdateModal} showAddModal={this.showAddModal}/>) }) }
+          { _.map(this.props.repos, (r) => { return (<ReposRows key={r.facility+"_"+r.name} repo={r} facilities={this.props.facilities} clusterInfo={this.clusterInfo} recentusagebycluster={this.props.recentusagebycluster} canEditAllocations={this.props.canEditAllocations} showUpdateModal={this.showUpdateModal} showAddModal={this.showAddModal}/>) }) }
           </table>
         </div>
         <UpdateComputeAllocation reponame={this.state.repo} facilityname={this.state.facility} clustername={this.state.cluster} currentAllocation={this.state.currentAllocation} facilityPurchased={this.state.facilityPurchased} showModal={this.state.showUpdateModal} showUpdateModal={this.showUpdateModal} hideModal={this.hideUpdateModal} isError={this.state.modalError} errorMessage={this.state.modalErrorMessage} applyUpdateAllocation={this.applyUpdateAllocation}/>
@@ -397,6 +393,7 @@ export default function ReposComputeListView() {
   let username = _.get(data, "whoami.username");
   let facilities = _.map(_.get(data, "facilities"), "name");
   console.log(data);
+  const recentusagebycluster = {pastHour: data.pastHour, pastDay: data.pastDay, pastWeek: data.pastWeek}
 
   let canEditAllocations = _.get(data, "whoami.isAdmin", false) ||  _.get(data, "whoami.isCzar", false);
   let approveRequest = function(reqid, callWhenDone, callOnError) {
@@ -414,8 +411,8 @@ export default function ReposComputeListView() {
   }
   return (
     <>
-    <ReposTable repos={data.myRepos} facilities={data.facilities} clusters={data.clusters} canEditAllocations={canEditAllocations} 
-      actuallyChangeAllocation={actuallyChangeAllocation}
+    <ReposTable repos={data.myRepos} facilities={data.facilities} clusters={data.clusters} recentusagebycluster={recentusagebycluster}
+      canEditAllocations={canEditAllocations} actuallyChangeAllocation={actuallyChangeAllocation}
       toolbaritems={toolbaritems} setToolbaritems={setToolbaritems}/>
     </>
   );
