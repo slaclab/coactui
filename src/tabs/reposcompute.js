@@ -166,10 +166,16 @@ class AddComputeAllocation extends Component {
 class UpdateComputeAllocation extends Component {
   constructor(props) {
     super(props);
-    this.state = { currentAllocation: props.currentAllocation, currentBurstAllocation: props.currentBurstAllocation ?? 0 }
-    this.setAllocation = (event) => { this.setState({currentAllocation: event.target.value}) }
-    this.setBurstAllocation = (event) => { this.setState({currentBurstAllocation: event.target.value}) }
+    this.state = { currentAllocation: props.currentAllocation, currentBurstAllocation: props.currentBurstAllocation ?? 0, changed: false }
+    this.setAllocation = (event) => { this.setState({currentAllocation: event.target.value, changed: true}) }
+    this.setBurstAllocation = (event) => { this.setState({currentBurstAllocation: event.target.value, changed: true}) }
   }
+
+  static getDerivedStateFromProps(props, state) {
+    const newstate = { currentAllocation: props.currentAllocation, currentBurstAllocation: props.currentBurstAllocation ?? 0, changed: false }
+    console.log(newstate);
+    return newstate;
+  }  
 
   render() {
     return (
@@ -196,7 +202,14 @@ class UpdateComputeAllocation extends Component {
           <Button onClick={() => {this.props.hideModal()}}>
             Close
           </Button>
-          <Button onClick={() => { this.props.applyUpdateAllocation(this.state.currentAllocation, this.state.currentBurstAllocation) }}>
+          <Button onClick={() => { 
+            if(!this.state.changed) {
+              console.log("Nothing changed; simply hide the modal");
+              this.props.hideModal();
+              return;
+            }
+            this.props.applyUpdateAllocation(this.state.currentAllocation, this.state.currentBurstAllocation) 
+            }}>
             Done
           </Button>
         </ModalFooter>
