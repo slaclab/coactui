@@ -153,12 +153,12 @@ class UsersTab extends React.Component {
 
   componentDidMount() {
     if(this.props.amILeader || this.props.amICzar) {
-      this.props.setToolbaritems(oldItems => [...oldItems, ["Add user to repo", this.props.setShowModal]]);
+      this.props.setToolbaritems(oldItems => [...oldItems, ["Manage Users", this.props.setShowModal]]);
     }
   }
 
   componentWillUnmount() {
-    this.props.setToolbaritems(oldItems => _.filter(oldItems, (x) => { return x[0] != "Add user to repo" }));
+    this.props.setToolbaritems(oldItems => _.filter(oldItems, (x) => { return x[0] != "Manage Users" }));
   }
 
   render() {
