@@ -16,7 +16,10 @@ import { useQuery, useMutation, gql } from "@apollo/client";
 
 const FACNAMES = gql`
 query facilityNames {
-  facilityNames
+  facilityNames {
+    name
+    description
+  }
   amIRegistered {
     isRegistered
     isRegistrationPending
@@ -57,7 +60,7 @@ class ReqUserAccount extends Component {
     this.handleClose = () => { this.props.setShow(false); }
     this.requestAccount = () => {
       const selFac = this.state.facility, requestContext = this.state.requestContext;
-      if(_.isEmpty(selFac) || !_.includes(this.props.facilityNames, selFac)) {
+      if(_.isEmpty(selFac) || !_.includes(_.map(this.props.facilityNames, "name"), selFac)) {
         this.setState({facilityInvalid: true});
         return;
       }
@@ -84,7 +87,7 @@ class ReqUserAccount extends Component {
             <InputGroup hasValidation>
               <Form.Select name="facility" onChange={this.setFacility} isInvalid={this.state.facilityInvalid}>
                 <option value="">Please choose a facility</option>
-                { _.map(_.sortBy(this.props.facilityNames), (f) => { return (<option key={f} value={f}>{f}</option>)}) }
+                { _.map(_.sortBy(this.props.facilityNames, "name"), (f) => { return (<option key={f.name} value={f.name}>{f.name + " - " + _.truncate(f.description, {length: 80})}</option>)}) }
               </Form.Select>
               <Form.Control.Feedback type="invalid">Please choose a valid facility.</Form.Control.Feedback>
             </InputGroup>
