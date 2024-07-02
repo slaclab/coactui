@@ -178,7 +178,7 @@ class UsersTab extends React.Component {
         </Modal>
         <div className="container-fluid" id="users_content">
           <Row>
-            <Col><div className="brdcrmb"><Link to={"../users"}>Users</Link> / {this.props.repodata.name}</div></Col>
+            <Col><div className="brdcrmb"><Link to={"../info"}>Users</Link> / {this.props.repodata.name}</div></Col>
             <Col><div className="sectiontitle">Users for repo <span className="ref">{this.props.repodata.name}</span></div></Col>
             <Col className="mb-2">
             </Col>
