@@ -56,18 +56,19 @@ class ReqUserAccount extends Component {
     super(props);
     this.handleClose = () => { this.props.setShow(false); }
     this.requestAccount = () => {
-      const selFac = this.state.facility;
+      const selFac = this.state.facility, requestContext = this.state.requestContext;
       if(_.isEmpty(selFac) || !_.includes(this.props.facilityNames, selFac)) {
         this.setState({facilityInvalid: true});
         return;
       }
 
-      this.props.requestUserAccount(selFac, 
+      this.props.requestUserAccount(selFac, requestContext,
         () => { this.props.setShow(false); }, 
         (errormsg) => { if(errormsg.message.includes('requests already exists')) { this.setState({showError: true, errorMessage: "A request already exists and is pending for this facility"}) } else { this.setState({showError: true, errorMessage: errormsg.message})}});
     }
-    this.state = { facility: "", facilityInvalid: false, showError: false, errorMessage: "" }
+    this.state = { facility: "", facilityInvalid: false, showError: false, errorMessage: "", requestContext: "" }
     this.setFacility = (event) => { this.setState({ facility: event.target.value }); }
+    this.setRequestContext = (event) => { this.setState({ requestContext: event.target.value }) }
   }
 
   render() {
@@ -87,9 +88,11 @@ class ReqUserAccount extends Component {
               </Form.Select>
               <Form.Control.Feedback type="invalid">Please choose a valid facility.</Form.Control.Feedback>
             </InputGroup>
-            <Form.Text className="py-2">Please provide some context for your S3DF account</Form.Text>
+            <Form.Text className="py-2">Please provide some context for your S3DF account request</Form.Text>
             <InputGroup>
-              <Form.Control as="textarea" rows={3}  placeholder="I am a PhD student in Dr. A's lab working on project Z and need compute resources to run simulations"/>
+              <Form.Control as="textarea" rows={3}  
+                onChange={this.setRequestContext}
+                placeholder="I am a PhD student in Dr. A's lab working on project Z and need compute resources to run simulations"/>
             </InputGroup>
           </Row>
         </Modal.Body>
@@ -126,10 +129,10 @@ export default function RegisterUser(props) {
   let notes = _.get(data, "amIRegistered.requestObj.notes", "");
   
 
-  const requestAccount = (selectedFacility, onSuccess, onError) => {
+  const requestAccount = (selectedFacility, requestContext, onSuccess, onError) => {
     const preferredUserName = username;
     console.log("Account requested for eppn " + eppn + " in facility "  + selectedFacility + " with preferred username " + preferredUserName);
-    requestUserAccount({ variables: { request: { reqtype: "UserAccount", eppn: eppn, preferredUserName: preferredUserName, "facilityname": selectedFacility }}, 
+    requestUserAccount({ variables: { request: { reqtype: "UserAccount", eppn: eppn, preferredUserName: preferredUserName, "facilityname": selectedFacility, notes: requestContext }}, 
       onCompleted: () => { onSuccess() },
       onError: (error) => { onError(error)},
       refetchQueries: [ FACNAMES, 'amIRegistered' ]});

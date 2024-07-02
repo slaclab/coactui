@@ -54,6 +54,7 @@ query Requests($fetchprocessed: Boolean, $showmine: Boolean, $filter: CoactReque
       notes
       previous
     }
+    notes
   }
   myreposandfacility {
     name
@@ -359,7 +360,7 @@ class RequestDetails extends Component {
     if(this.props.req.reqtype == "UserAccount") {
       return (
         <ListGroup>
-          {_.map(["eppn", "preferredUserName", "facilityname"], function(x){
+          {_.map(["eppn", "preferredUserName", "facilityname", "notes"], function(x){
             return(
               <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.get(req, x)}</span></ListGroup.Item>
             )
