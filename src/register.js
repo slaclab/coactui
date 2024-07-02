@@ -83,9 +83,13 @@ class ReqUserAccount extends Component {
             <InputGroup hasValidation>
               <Form.Select name="facility" onChange={this.setFacility} isInvalid={this.state.facilityInvalid}>
                 <option value="">Please choose a facility</option>
-                { _.map(this.props.facilityNames, (f) => { return (<option key={f} value={f}>{f}</option>)}) }
+                { _.map(_.sortBy(this.props.facilityNames), (f) => { return (<option key={f} value={f}>{f}</option>)}) }
               </Form.Select>
               <Form.Control.Feedback type="invalid">Please choose a valid facility.</Form.Control.Feedback>
+            </InputGroup>
+            <Form.Text className="py-2">Please provide some context for your S3DF account</Form.Text>
+            <InputGroup>
+              <Form.Control as="textarea" rows={3}  placeholder="I am a PhD student in Dr. A's lab working on project Z and need compute resources to run simulations"/>
             </InputGroup>
           </Row>
         </Modal.Body>
