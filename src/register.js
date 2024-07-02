@@ -16,7 +16,7 @@ import { useQuery, useMutation, gql } from "@apollo/client";
 
 const FACNAMES = gql`
 query facilityNames {
-  facilityNames {
+  facilityNameDescs {
     name
     description
   }
@@ -33,6 +33,9 @@ query facilityNames {
       eppn
       facilityname
       notes
+      audit {
+        notes
+      }
     }
   }
 }
@@ -60,7 +63,7 @@ class ReqUserAccount extends Component {
     this.handleClose = () => { this.props.setShow(false); }
     this.requestAccount = () => {
       const selFac = this.state.facility, requestContext = this.state.requestContext;
-      if(_.isEmpty(selFac) || !_.includes(_.map(this.props.facilityNames, "name"), selFac)) {
+      if(_.isEmpty(selFac) || !_.includes(_.map(this.props.facilityNameDescs, "name"), selFac)) {
         this.setState({facilityInvalid: true});
         return;
       }
@@ -87,7 +90,7 @@ class ReqUserAccount extends Component {
             <InputGroup hasValidation>
               <Form.Select name="facility" onChange={this.setFacility} isInvalid={this.state.facilityInvalid}>
                 <option value="">Please choose a facility</option>
-                { _.map(_.sortBy(this.props.facilityNames, "name"), (f) => { return (<option key={f.name} value={f.name}>{f.name + " - " + _.truncate(f.description, {length: 80})}</option>)}) }
+                { _.map(_.sortBy(this.props.facilityNameDescs, "name"), (f) => { return (<option key={f.name} value={f.name}>{f.name + " - " + _.truncate(f.description, {length: 80})}</option>)}) }
               </Form.Select>
               <Form.Control.Feedback type="invalid">Please choose a valid facility.</Form.Control.Feedback>
             </InputGroup>
@@ -129,7 +132,7 @@ export default function RegisterUser(props) {
   let isRegistrationApproved = _.get(data, "amIRegistered.requestObj.approvalstatus", "") == "Approved";
   let isRegistrationPreapproved = _.get(data, "amIRegistered.requestObj.approvalstatus", "") == "PreApproved";
   let isRegistrationRejected = _.get(data, "amIRegistered.requestObj.approvalstatus", "") == "Rejected";
-  let notes = _.get(data, "amIRegistered.requestObj.notes", "");
+  let notes = _.get(data, "amIRegistered.requestObj.audit[0].notes", "");
   
 
   const requestAccount = (selectedFacility, requestContext, onSuccess, onError) => {
@@ -188,7 +191,7 @@ export default function RegisterUser(props) {
             <button type="button" className="btn btn-primary" onClick={handleShow}>Enable my S3DF account</button>
             <div><i>{notes}</i></div>
           </div>
-          <ReqUserAccount show={show} setShow={setShow} eppn={eppn} requestUserAccount={requestAccount} facilityNames={data.facilityNames} />
+          <ReqUserAccount show={show} setShow={setShow} eppn={eppn} requestUserAccount={requestAccount} facilityNameDescs={data.facilityNameDescs} />
           <Footer/>
         </div>
         </>
@@ -253,7 +256,7 @@ export default function RegisterUser(props) {
         If you would like to request your account be enabled for S3DF, please click here -
         <button type="button" className="btn btn-primary" onClick={handleShow}>Enable my S3DF account</button>
       </div>
-      <ReqUserAccount show={show} setShow={setShow} eppn={eppn} requestUserAccount={requestAccount} facilityNames={data.facilityNames} />
+      <ReqUserAccount show={show} setShow={setShow} eppn={eppn} requestUserAccount={requestAccount} facilityNameDescs={data.facilityNameDescs} />
       <Footer/>
     </div>
     </>
