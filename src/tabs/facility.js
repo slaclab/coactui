@@ -161,6 +161,14 @@ query userlookup($preferredemail: String!) {
 }
 `
 
+const UPDATE_FACILITY_DESC = gql`
+mutation facilityUpdateDescription($facilityinput: FacilityInput!, $newdescription: String!) {
+  facilityUpdateDescription(facility: $facilityinput, newdescription: $newdescription){
+    Id
+  }
+}
+`
+
 
 
 class AddComputePurchase extends Component {
@@ -653,10 +661,58 @@ class AddRemoveCzar extends Component {
 }
 
 
+class EditDescriptionModal extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {description: "", modalError: false, modalErrorMessage: ""};
+    this.setDescription = (event) => { this.setState({description: event.target.value, modalError: false, modalErrorMessage: ""})}
+    this.changeDescription = (event) => { 
+      this.props.updateFacilityDesc(
+        this.state.description, 
+        () => {props.setShowModal(false)},
+        (message) => { this.setState({modalError: true, modalErrorMessage: message})}
+      )
+    }
+  }
+
+  componentDidMount() {
+    this.setState({description: this.props.facility.description, modalError: false, modalErrorMessage: ""});
+  }
+
+
+  render() {
+    return (
+      <Modal show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+        <ModalHeader closeButton={true}>
+          <ModalTitle>Edit the description for facility {this.props.facility.name}</ModalTitle>
+        </ModalHeader>
+        <ModalBody>
+          <Form>
+            <Form.Group hasValidation>
+              <Form.Label>Description:</Form.Label>
+              <Form.Control as="textarea" rows={3} isInvalid={this.state.modalError} onChange={this.setDescription} defaultValue={this.props.facility.description}></Form.Control>
+              <Form.Control.Feedback type="invalid">{this.state.modalErrorMessage}</Form.Control.Feedback>
+            </Form.Group>
+          </Form>
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="secondary" onClick={() => {this.props.setShowModal(false)}}>
+            Close
+          </Button>
+          <Button onClick={() => {this.changeDescription()}}>
+            Change
+          </Button>
+        </ModalFooter>
+      </Modal>
+    )
+  }
+}
+
+
 class FacilityDetails extends Component {
   constructor(props) {
     super(props);
-    this.state = { showCzarModal: false, showRegisterUserModal: false }
+    this.state = { showCzarModal: false, showRegisterUserModal: false, showEditDescModal: false }
   }
 
   render() {
@@ -669,8 +725,13 @@ class FacilityDetails extends Component {
               <Card.Body>
                 <Row>
                   <Col md={9}>
-                    <Row><Col md={3}><span className="tbllbl">Name</span></Col><Col>{this.props.facility.name}</Col></Row>
-                    <Row><Col md={3}><span className="tbllbl">Description</span></Col><Col>{this.props.facility.description}</Col></Row>
+                    <Row><Col md={4}><span className="tbllbl">Name</span></Col><Col>{this.props.facility.name}</Col></Row>
+                    <Row><Col md={4}>
+                      <span className="tbllbl">Description
+                        <span className="ps-1 text-warning" title="Edit description" onClick={() => this.setState({showEditDescModal : true})}><FontAwesomeIcon icon={faEdit}/></span>
+                      </span></Col>
+                      <Col><span>{this.props.facility.description}</span></Col>
+                    </Row>
                   </Col>
                   <Col md={3}>
                     <Button variant="secondary" onClick={() => { this.setState({showRegisterUserModal: true})}}>Register new users</Button>
@@ -709,6 +770,11 @@ class FacilityDetails extends Component {
           <RegisterNewUser facility={this.props.facility} getUsersMatchingUserName={this.props.getUsersMatchingUserName} getUserForEPPN={this.props.getUserForEPPN} 
             userLookupByUserName={this.props.userLookupByUserName} userLookupByFullName={this.props.userLookupByFullName} userLookupByPreferredEmail={this.props.userLookupByPreferredEmail}
             showModal={this.state.showRegisterUserModal} setShowModal={(val) => { this.setState({showRegisterUserModal: val})} } requestUserAccount={this.props.requestUserAccount }/>
+          <EditDescriptionModal facility={this.props.facility}
+            showModal={this.state.showEditDescModal} 
+            setShowModal={(val) => { this.setState({showEditDescModal: val})} }
+            updateFacilityDesc={this.props.updateFacilityDesc}
+            />
         </Row>
       </Container>
     )
@@ -734,7 +800,7 @@ export default function Facility(props) {
   const [ requestUserAccount ] = useMutation(REQUEST_USERACCOUNT_MUTATION);
   const [ addUpdtComputePurchase ] = useMutation(ADDUPDT_COMPUTE_PURCHASE);
   const [ addUpdtStoragePurchase ] = useMutation(ADDUPDT_STORAGE_PURCHASE);
-
+  const [ updateFacilityDesc ] = useMutation(UPDATE_FACILITY_DESC);
 
   let addRemoveCzar = function(username, selected) {
     if(selected) {
@@ -774,6 +840,15 @@ export default function Facility(props) {
       onError: (error) => { console.log(error); onError(error.message) } })
   }
 
+  let actuallyChangeDescription = function(newdescription, callWhenDone, onError){
+    updateFacilityDesc({ 
+      variables: { facilityinput: { name: props.facilityname }, newdescription: newdescription }, 
+      refetchQueries: [ FACILITYDETAILS, 'Facility' ], 
+      onCompleted: (data) => { callWhenDone(data)},
+      onError: (error) => { console.log(error); onError(error.message) } })        
+  }
+
+
 
   if (loading) return <p>Loading...</p>;
 //  if (error) return <p>Error :</p>;
@@ -792,7 +867,7 @@ export default function Facility(props) {
     onSelDesel={addRemoveCzar} requestUserAccount={requestAccount} getUsersMatchingUserName={getUsersMatchingUserName}
     addUpdateComputePurchase={addUpdateComputePurchase} addUpdateStoragePurchase={addUpdateStoragePurchase}
     userLookupByUserName={userLookupByUserName} userLookupByFullName={userLookupByFullName} userLookupByPreferredEmail={userLookupByPreferredEmail}
-    recentusagebycluster={recentusagebycluster}
+    recentusagebycluster={recentusagebycluster} updateFacilityDesc={actuallyChangeDescription}
     />
   </div>);
 }
