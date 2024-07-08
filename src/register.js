@@ -103,7 +103,7 @@ class ReqUserAccount extends Component {
           </Row>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.props.handleClose}>Close</Button>
+          <Button variant="secondary" onClick={this.handleClose}>Close</Button>
           <Button type="submit" onClick={this.requestAccount} >Request Account</Button>
         </Modal.Footer>
       </Modal>
