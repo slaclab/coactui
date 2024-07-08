@@ -72,8 +72,8 @@ class ReqUserAccount extends Component {
         () => { this.props.setShow(false); }, 
         (errormsg) => { if(errormsg.message.includes('requests already exists')) { this.setState({showError: true, errorMessage: "A request already exists and is pending for this facility"}) } else { this.setState({showError: true, errorMessage: errormsg.message})}});
     }
-    this.state = { facility: "", facilityInvalid: false, showError: false, errorMessage: "", requestContext: "" }
-    this.setFacility = (event) => { this.setState({ facility: event.target.value }); }
+    this.state = { facility: "", facilityInvalid: false, facilityDescription: "", showError: false, errorMessage: "", requestContext: "" }
+    this.setFacility = (event) => { this.setState({ facility: event.target.value, facilityDescription: _.get(_.find(props.facilityNameDescs, ["name", event.target.value]), "description") }); }
     this.setRequestContext = (event) => { this.setState({ requestContext: event.target.value }) }
   }
 
@@ -90,10 +90,11 @@ class ReqUserAccount extends Component {
             <InputGroup hasValidation>
               <Form.Select name="facility" onChange={this.setFacility} isInvalid={this.state.facilityInvalid}>
                 <option value="">Please choose a facility</option>
-                { _.map(_.sortBy(this.props.facilityNameDescs, "name"), (f) => { return (<option key={f.name} value={f.name}>{f.name + " - " + _.truncate(f.description, {length: 80})}</option>)}) }
+                { _.map(_.sortBy(this.props.facilityNameDescs, "name"), (f) => { return (<option key={f.name} value={f.name}>{f.name}</option>)}) }
               </Form.Select>
               <Form.Control.Feedback type="invalid">Please choose a valid facility.</Form.Control.Feedback>
             </InputGroup>
+            <Form.Text className="py-2">{this.state.facilityDescription}</Form.Text>
             <Form.Text className="py-2">Please provide some context for your S3DF account request</Form.Text>
             <InputGroup>
               <Form.Control as="textarea" rows={3}  
