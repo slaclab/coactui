@@ -29,8 +29,11 @@ export default function FacilityComputeOverall(props) {
 
 
   return (
-  <div className="facoverall">
-    <Plot data={traces} layout={layout} style={{width: "100%", height: "100%"}} />
-  </div>
+    <div className="text-center">
+      <h5>Overall compute usage for cluster <span className="text-primary">{props.clustername}</span></h5>
+      <div className="facoverall">
+        <Plot data={traces} layout={layout} style={{width: "100%", height: "100%"}} />
+      </div>
+    </div>
 );
 }

@@ -35,11 +35,14 @@ export default function FacilityComputeByDay(props) {
   let usage = data.reportFacilityComputeByDay;
 
   return (
-    <Table bordered>
-      <thead><tr><th>Repo</th><th>Facility</th><th>Date</th><th>Compute hours used</th></tr></thead>
-      <tbody>
-        { _.map(usage, (u) => { return (<tr key={u.facility+u.repo+u.date}><td>{u.repo}</td><td>{u.facility}</td><td><DateDisp value={u.date}/></td><td><TwoPrecFloat value={u.resourceHours}/></td></tr>) }) }
-      </tbody>
-    </Table>
+    <div className="text-center">
+      <h5>Compute usage for cluster <span className="text-primary">{props.clustername}</span></h5>
+      <Table bordered>
+        <thead><tr><th>Repo</th><th>Facility</th><th>Date</th><th>Compute hours used</th></tr></thead>
+        <tbody>
+          { _.map(usage, (u) => { return (<tr key={u.facility+u.repo+u.date}><td>{u.repo}</td><td>{u.facility}</td><td><DateDisp value={u.date}/></td><td><TwoPrecFloat value={u.resourceHours}/></td></tr>) }) }
+        </tbody>
+      </Table>
+    </div>
   );
 }

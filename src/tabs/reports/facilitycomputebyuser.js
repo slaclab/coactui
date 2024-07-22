@@ -35,11 +35,14 @@ export default function FacilityComputeByUser(props) {
   let usage = data.reportFacilityComputeByUser;
 
   return (
-    <Table bordered>
-      <thead><tr><th>Facility</th><th>Repo</th><th>User</th><th>Compute hours used</th></tr></thead>
-      <tbody>
-        { _.map(usage, (u) => { return (<tr key={u.facility+u.repo+u.username}><td>{u.facility}</td><td>{u.repo}</td><td>{u.username}</td><td><TwoPrecFloat value={u.resourceHours}/></td></tr>) }) }
-      </tbody>
-    </Table>
+    <div className="text-center">
+      <h5>Compute usage for cluster <span className="text-primary">{props.clustername}</span></h5>
+      <Table bordered>
+        <thead><tr><th>Facility</th><th>Repo</th><th>User</th><th>Compute hours used</th></tr></thead>
+        <tbody>
+          { _.map(usage, (u) => { return (<tr key={u.facility+u.repo+u.username}><td>{u.facility}</td><td>{u.repo}</td><td>{u.username}</td><td><TwoPrecFloat value={u.resourceHours}/></td></tr>) }) }
+        </tbody>
+      </Table>
+    </div>
   );
 }
