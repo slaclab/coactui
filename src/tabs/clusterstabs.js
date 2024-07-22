@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 
 import FacilityComputeByDay from "./reports/facilitycomputebyday";
 import FacilityComputeByUser from "./reports/facilitycomputebyuser";
+import FacilityComputeOverall from "./reports/facilitycomputeoverall";
 
 const WHOAMI = gql`
 query{
@@ -56,6 +57,15 @@ export default function ClusterTabs() {
       </Tab>
       <Tab eventKey="by_user_month" title="By user - month">
         <FacilityComputeByUser clustername={clustername} startDate={dayjs().subtract(1, 'month').toDate()} endDate={dayjs().toDate()} />
+      </Tab>
+      <Tab eventKey="by_facility_daily" title="By facility, daily">
+        <FacilityComputeOverall clustername={clustername}  group="Day" />
+      </Tab>
+      <Tab eventKey="by_facility_weekly" title="By facility, weekly">
+        <FacilityComputeOverall clustername={clustername}  group="Week" />
+      </Tab>
+      <Tab eventKey="by_facility_monthly" title="By facility, monthly">
+        <FacilityComputeOverall clustername={clustername}  group="Month" />
       </Tab>
       </Tabs>
     </Tab.Container>
