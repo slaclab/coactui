@@ -171,12 +171,6 @@ class UpdateComputeAllocation extends Component {
     this.setBurstAllocation = (event) => { this.setState({currentBurstAllocation: event.target.value, changed: true}) }
   }
 
-  static getDerivedStateFromProps(props, state) {
-    const newstate = { currentAllocation: props.currentAllocation, currentBurstAllocation: props.currentBurstAllocation ?? 0, changed: false }
-    console.log(newstate);
-    return newstate;
-  }  
-
   render() {
     return (
       <Modal show={this.props.showModal} onHide={() => {this.props.hideModal()}}>
