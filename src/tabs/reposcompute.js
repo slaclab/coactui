@@ -325,7 +325,7 @@ class ReposTable extends Component {
         ret.facility = repoObj.facility;
         ret.facilityPurchased = facilityPurchased;
         const purchases = _.get(_.keyBy(this.props.facilities, "name"), repoObj.facility + ".computepurchases");
-        ret.clustersunallocated = _.difference(_.map(_.filter(purchases, p => p.purchased > 0), "clustername"), _.map(_.get(repoObj, "currentComputeAllocations"), "clustername", []));
+        ret.clustersunallocated = _.difference(_.map(_.filter(purchases, p => p.purchased >= 0), "clustername"), _.map(_.get(repoObj, "currentComputeAllocations"), "clustername", []));
         ret.allocationStartTime = (new Date()).toISOString();
         ret.showAddModal = true;
         return ret;
