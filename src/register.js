@@ -68,11 +68,16 @@ class ReqUserAccount extends Component {
         return;
       }
 
+      if(_.isEmpty(requestContext)) {
+        this.setState({contextInvalid: true});
+        return;
+      }
+
       this.props.requestUserAccount(selFac, requestContext,
         () => { this.props.setShow(false); }, 
         (errormsg) => { if(errormsg.message.includes('requests already exists')) { this.setState({showError: true, errorMessage: "A request already exists and is pending for this facility"}) } else { this.setState({showError: true, errorMessage: errormsg.message})}});
     }
-    this.state = { facility: "", facilityInvalid: false, facilityDescription: "", showError: false, errorMessage: "", requestContext: "" }
+    this.state = { facility: "", facilityInvalid: false, facilityDescription: "", showError: false, errorMessage: "", requestContext: "", contextInvalid: false }
     this.setFacility = (event) => { this.setState({ facility: event.target.value, facilityDescription: _.get(_.find(props.facilityNameDescs, ["name", event.target.value]), "description") }); }
     this.setRequestContext = (event) => { this.setState({ requestContext: event.target.value }) }
   }
@@ -99,7 +104,9 @@ class ReqUserAccount extends Component {
             <InputGroup>
               <Form.Control as="textarea" rows={3}  
                 onChange={this.setRequestContext}
+                isInvalid={this.state.contextInvalid}
                 placeholder="I am a PhD student in Dr. A's lab working on project Z and need compute resources to run simulations"/>
+                <Form.Control.Feedback type="invalid">Please provide some context.</Form.Control.Feedback>
             </InputGroup>
           </Row>
         </Modal.Body>
