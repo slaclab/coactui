@@ -80,7 +80,7 @@ class ChangePI extends Component {
           <InputGroup hasValidation>
             <Form.Select name="newPI" value={this.state.newPI} onChange={this.changePI}  isInvalid={this.state.isError}>
                 <option value="">Please choose a new PI</option>
-                { _.map(this.props.repo.users, (s) => { return (<option key={s} value={s}>{s}</option>)}) }
+                { _.map(_.sortBy(this.props.repo.users), (s) => { return (<option key={s} value={s}>{s}</option>)}) }
               </Form.Select>
             <Form.Control.Feedback type="invalid">{this.state.errMsg}</Form.Control.Feedback>
           </InputGroup>
