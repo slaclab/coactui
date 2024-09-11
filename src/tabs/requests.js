@@ -13,7 +13,7 @@ import Form from 'react-bootstrap/Form';
 import Fade from 'react-bootstrap/Fade';
 import Card from 'react-bootstrap/Card';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faMultiply, faClockRotateLeft, faRefresh, faSearch, faMotorcycle } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faMultiply, faClockRotateLeft, faRefresh, faSearch, faShuffle } from '@fortawesome/free-solid-svg-icons'
 import { DateTimeDisp, ErrorMsgModal } from "./widgets";
 import dayjs from "dayjs";
 import { Table } from "react-bootstrap";
@@ -345,7 +345,7 @@ class Approve extends React.Component {
         <Button className={cNm + actionCNm} onClick={this.requestApprove}><FontAwesomeIcon icon={faCheck}/></Button>
         <Button className={actionCNm} variant="primary" onClick={() => { this.showHideReasonForRejection(true) }}><FontAwesomeIcon icon={faMultiply}/></Button>
         <Button className={cNm + userDetailsCNm} title="Lookup user details" onClick={() => { this.showUserDetails()}}><FontAwesomeIcon icon={faSearch}/></Button>
-        <Button className={cNm + reassignFacilityCNm} title="Reassign this user to a new facility" onClick={() => { this.setState({showReassignFacility: true})}}><FontAwesomeIcon icon={faMotorcycle}/></Button>
+        <Button className={cNm + reassignFacilityCNm} title="Reassign this user to a new facility" onClick={() => { this.setState({showReassignFacility: true})}}><FontAwesomeIcon icon={faShuffle}/></Button>
       </span>
     )
   }
