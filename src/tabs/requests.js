@@ -13,7 +13,7 @@ import Form from 'react-bootstrap/Form';
 import Fade from 'react-bootstrap/Fade';
 import Card from 'react-bootstrap/Card';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faMultiply, faClockRotateLeft, faRefresh, faSearch, faShuffle } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faMultiply, faClockRotateLeft, faRefresh, faSearch, faShuffle, faLockOpen } from '@fortawesome/free-solid-svg-icons'
 import { DateTimeDisp, ErrorMsgModal } from "./widgets";
 import dayjs from "dayjs";
 import { Table } from "react-bootstrap";
@@ -84,6 +84,13 @@ mutation RefireRequest($Id: String!){
   requestRefire(id: $Id)
 }
 `;
+
+const REOPEN_REQUEST_MUTATION = gql`
+mutation ReopenRequest($Id: String!){
+  requestReopen(id: $Id)
+}
+`;
+
 
 const LOOKUP_USER_DETAILS = gql`
 query usersLookupFromService($username: String!) {
@@ -287,6 +294,10 @@ class Approve extends React.Component {
       this.actuallyApproveRequest();
     }
 
+    this.requestReopen = (event) => { 
+      this.props.reopen(props.req)
+    }
+
     this.showUserDetails = () => { 
       this.props.usersLookupFromService({
         variables: { username: this.props.req.preferredUserName},
@@ -302,7 +313,7 @@ class Approve extends React.Component {
   render() {
     let cNm = "rqAuto mx-1";
     if(_.includes(["NewFacility"], this.props.req.reqtype)) { cNm = "rqManual mx-1"; }
-    let actionCNm = "", refireCNm = "", userDetailsCNm = "", reassignFacilityCNm = " d-none";
+    let actionCNm = "", refireCNm = "", userDetailsCNm = "", reassignFacilityCNm = " d-none", reopenRequestCNm = " d-none";
     if(!this.props.req.canapprove) {
       actionCNm =  " d-none";
     }
@@ -318,6 +329,9 @@ class Approve extends React.Component {
       reassignFacilityCNm = "";
     }
 
+    if(this.props.req.approvalstatus == "Rejected") {
+      reopenRequestCNm = "";
+    }
 
     if(!this.state.showActions) {
       if(!this.props.showmine && _.includes(["Approved", "Incomplete", "Completed"], this.props.req.approvalstatus)) {
@@ -331,6 +345,13 @@ class Approve extends React.Component {
         return (
           <span>
             <Button title="Mark this request as being approved" className={"rqAuto mx-1"} onClick={this.requestApprove}><FontAwesomeIcon icon={faCheck}/></Button>
+          </span>
+        )
+      }
+      if(!this.props.showmine && _.includes(["Rejected"], this.props.req.approvalstatus)) {
+        return (
+          <span>
+            <Button className={cNm + reopenRequestCNm} title="Reopen this request" onClick={this.requestReopen}><FontAwesomeIcon icon={faLockOpen}/></Button>
           </span>
         )
       }
@@ -567,7 +588,7 @@ class RequestsRow extends Component {
         <Col className="py-2" md={1}><DateTimeDisp value={this.props.req.timeofrequest}/></Col>
         <Col md={6}><RequestDetails req={this.props.req} /></Col>
         <Col className="py-2" md={1}><ApprovalStatus req={this.props.req}/> <span title="See history of changes to this request" className="float-end text-primary" onClick={() => { this.setState({showHistory: true})}}><FontAwesomeIcon icon={faClockRotateLeft} size="lg" /></span></Col>
-        <Col md={1}><Approve req={this.props.req} approve={this.props.approve} reject={this.props.reject} refire={this.props.refire} showmine={this.props.showmine} usersLookupFromService={this.props.usersLookupFromService} facilitynames={this.props.facilitynames} updateRequestFacility={this.props.updateRequestFacility} /></Col>
+        <Col md={1}><Approve req={this.props.req} approve={this.props.approve} reject={this.props.reject} refire={this.props.refire} showmine={this.props.showmine} usersLookupFromService={this.props.usersLookupFromService} facilitynames={this.props.facilitynames} updateRequestFacility={this.props.updateRequestFacility} reopen={this.props.reopen} /></Col>
         <RequestHistory req={this.props.req} show={this.state.showHistory} setShow={(v) => { this.setState({showHistory: v}) }} />
       </Row>
     )
@@ -597,7 +618,7 @@ class RequestsTable extends Component {
       </Row>
       {
         _.map(this.props.requests, (r) => { return (
-        <RequestsRow key={r.Id} req={r} approve={this.props.approve} reject={this.props.reject} refire={this.props.refire} showmine={this.props.showmine} usersLookupFromService={this.props.usersLookupFromService} facilitynames={this.props.facilitynames} updateRequestFacility={this.props.updateRequestFacility}/>
+        <RequestsRow key={r.Id} req={r} approve={this.props.approve} reject={this.props.reject} refire={this.props.refire} showmine={this.props.showmine} usersLookupFromService={this.props.usersLookupFromService} facilitynames={this.props.facilitynames} updateRequestFacility={this.props.updateRequestFacility} reopen={this.props.reopen}/>
       )})}
       </Container>
      )
@@ -742,6 +763,8 @@ export default function Requests(props) {
   const [ requestRejectMutation ] = useMutation(REJECT_REQUEST_MUTATION);
   const [ requestRefireMutation ] = useMutation(REFIRE_REQUEST_MUTATION);
   const [ requestUpdateFacilityMutation ] = useMutation(REQUEST_CHANGE_FACILITY_MUTATION);
+  const [ requestReopenMutation ] = useMutation(REOPEN_REQUEST_MUTATION);
+  
   const [ usersLookupFromService ] = useLazyQuery(LOOKUP_USER_DETAILS);
 
   const [showErr, setShowErr] = useState(false);
@@ -769,6 +792,11 @@ export default function Requests(props) {
     requestRefireMutation({ variables: { Id: request.Id }, onError: (error) => { setErrMessage("Error refiring request " + error);  setShowErr(true); }, refetchQueries: [ REQUESTS, 'Requests' ] });
   }
 
+  let reOpen = function(request) {
+    console.log("Reopening..");
+    requestReopenMutation({ variables: { Id: request.Id }, onError: (error) => { setErrMessage("Error reopening request " + error);  setShowErr(true); }, refetchQueries: [ REQUESTS, 'Requests' ] });
+  }
+  
   let updateRequestFacility = function(request, newfacility, callWhenDone) {
     console.log("Changing facility for " + request.Id + " to " + newfacility);
     requestUpdateFacilityMutation({ variables: { Id: request.Id, newfacility: newfacility }, onCompleted: callWhenDone, onError: (error) => { setErrMessage("Error refiring request " + error);  setShowErr(true); }, refetchQueries: [ REQUESTS, 'Requests' ] });
@@ -811,7 +839,7 @@ export default function Requests(props) {
     <Container fluid id="requests">
       <RequestFilters filter={filter} applyFilter={applyFilter} timeWindowLabel={twlabel} setTimeWindow={setTimeWindow} requestTypes={data.requestTypes} requestStatuses={data.requestStatuses} repofacs={data.myreposandfacility}/>
       <ErrorMsgModal show={showErr} setShow={setShowErr} title={errTitle} message={errMessage}/>
-      <RequestsTable requests={data.requests} approve={approve} reject={reject} refire={refire} showmine={props.showmine} setRequestsActiveTab={props.setRequestsActiveTab} usersLookupFromService={usersLookupFromService} facilitynames={facilitynames} updateRequestFacility={updateRequestFacility}/>
+      <RequestsTable requests={data.requests} approve={approve} reject={reject} refire={refire} showmine={props.showmine} setRequestsActiveTab={props.setRequestsActiveTab} usersLookupFromService={usersLookupFromService} facilitynames={facilitynames} updateRequestFacility={updateRequestFacility} reopen={reOpen}/>
     </Container>
     </>
   );
