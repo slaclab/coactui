@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import React, { Component, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEdit, faUser, faHistory, faIdBadge } from '@fortawesome/free-solid-svg-icons'
+import { faEdit, faUser, faHistory, faIdBadge, faSliders } from '@fortawesome/free-solid-svg-icons'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import ModalHeader from 'react-bootstrap/ModalHeader';
@@ -225,6 +225,9 @@ class ReposRows extends Component {
         <tr key={this.props.repo.name} className="text-start">
           <td className="vmid px-2">
             {this.props.repo.name}
+            <NavLink to={"/repos/features/"+this.props.repo.facility+"/"+this.props.repo.name} className="float-end px-1">
+              <span className="text-warning" title="Enable/disable features for this repo"><FontAwesomeIcon icon={faSliders}/></span>
+            </NavLink>
             <NavLink to={"/repos/audit/"+this.props.repo.facility+"/"+this.props.repo.name} className="float-end px-1">
               <span className="text-warning" title="See the history of changes to this repo" onClick={this.changePI}><FontAwesomeIcon icon={faHistory}/></span>
             </NavLink>

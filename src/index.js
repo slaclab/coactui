@@ -36,6 +36,7 @@ import ReposGroupsListView from "./tabs/reposgroups";
 import UserAuditTrail from "./tabs/useraudit";
 import ReposAuditListView from "./tabs/reposaudit";
 import RepoAuditTrail from "./tabs/repoaudit";
+import RepoFeatures from "./tabs/repofeatures";
 import ReposInfoListView from "./tabs/reposinfo";
 import Requests from "./tabs/requests";
 import './index.css';
@@ -118,6 +119,7 @@ function App() {
             <Route exact path={`audit`} element = { <ReposAuditListView/>} />
             <Route exact path={`audit/:facility/:name`} element = { <RepoAuditTrail />} />
             <Route exact path={`info`} element = { <ReposInfoListView />} />
+            <Route exact path={`features/:facility/:name`} element = { <RepoFeatures />} />
           </Route>
           <Route exact path={`requests`} element={<Requests showall={true} showmine={false} setRequestsActiveTab={setRequestsActiveTab} />} />
         </Routes>
