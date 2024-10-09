@@ -220,26 +220,20 @@ class AddComputePurchase extends Component {
         <ModalBody>
           <Row>
             <InputGroup hasValidation>
-                <Col md={3}><Form.Label className="px-2" >Cluster:</Form.Label></Col>
-                <Col>
-                  <Form.Control required as="select" type="select" onChange={this.setCluster} isInvalid={this.state.clusterInvalid}>
-                  <option value="">Please select a cluster</option>
-                  {
-                    _.map(clusterswithoutpurchases, function(x){ return ( <option key={x} value={x}>{x}</option> ) })
-                  }
-                  </Form.Control>
-                  <Form.Control.Feedback type="invalid">Please select a cluster</Form.Control.Feedback>
-                </Col>
+              <InputGroup.Text>Cluster:</InputGroup.Text>
+              <Form.Control required as="select" type="select" onChange={this.setCluster} isInvalid={this.state.clusterInvalid}>
+                <option value="">Please select a cluster</option>
+                { _.map(clusterswithoutpurchases, function(x){ return ( <option key={x} value={x}>{x}</option> ) }) }
+              </Form.Control>
+              <Form.Control.Feedback type="invalid">Please select a cluster</Form.Control.Feedback>
             </InputGroup>
           </Row>
           <Row>
-            <Col md={2}><Form.Label className="px-2" >Purchase (in slachours):</Form.Label></Col>
-            <Col>
-              <InputGroup hasValidation>
+            <InputGroup hasValidation>
+              <InputGroup.Text>Purchase (in servers):</InputGroup.Text>
               <Form.Control type="number" onBlur={this.setPurchase} isInvalid={this.props.isError} defaultValue={this.props.currentpurchase}/>
               <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
-          </InputGroup>
-            </Col>
+            </InputGroup>
           </Row>
         </ModalBody>
         <ModalFooter>
@@ -270,6 +264,7 @@ class UpdateComputePurchase extends Component {
         </ModalHeader>
         <ModalBody>
           <InputGroup hasValidation>
+            <InputGroup.Text>Purchase (in servers):</InputGroup.Text>
             <Form.Control type="number" onBlur={this.setPurchase} isInvalid={this.props.isError} defaultValue={this.props.currentpurchase}/>
             <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
           </InputGroup>
