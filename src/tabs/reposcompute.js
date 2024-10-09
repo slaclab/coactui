@@ -341,6 +341,10 @@ class ReposTable extends Component {
         this.setState({modalError: true, modalErrorMessage: "Please enter a number >= 0"});
         return;
       }
+      if(this.state.facilityPurchased <= 0 && curalloc > 0.0) {
+        this.setState({modalError: true, modalErrorMessage: "This facility has not purchased any compute resources in this cluster. To make this clear, please set this to 0."});
+        return;
+      }
       this.props.actuallyChangeAllocation(this.state.facility, this.state.repo, this.state.cluster, this.state.allocationStartTime, curalloc, currburstalloc,
         () => { 
           this.hideUpdateModal();
@@ -356,6 +360,10 @@ class ReposTable extends Component {
       }
       if(currburstalloc < 0.0) {
         this.setState({modalError: true, modalErrorMessage: "Please enter a number >= 0"});
+        return;
+      }
+      if(this.state.facilityPurchased <= 0 && curalloc > 0.0) {
+        this.setState({modalError: true, modalErrorMessage: "The facility has not purchased any compute resources in this cluster. To make this clear, please set this to 0."});
         return;
       }
       this.props.actuallyChangeAllocation(this.state.facility, this.state.repo, clustername, this.state.allocationStartTime, curalloc, currburstalloc,
