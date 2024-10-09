@@ -9,10 +9,11 @@ import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import { Nav, Navbar } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
+import InputGroup from 'react-bootstrap/InputGroup';
 import SLACLogo from '../images/SLAC_primary_red_small.png';
 import StanfordDOELogo from '../images/Stanford_DOE_black.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faRocket } from '@fortawesome/free-solid-svg-icons'
+import { faRocket, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 export function TwoPrecFloat(props) {
   if(_.isNil(props.value)) return "N/A";
@@ -221,5 +222,42 @@ export function submitOnEnter(submitfn) {
     if(event.key === "Enter") {
       submitfn();
     }
+  }
+}
+
+
+export class StringListManager extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { newItem: "", validationError: false, validationErrorMsg: "" }
+    this.setNewItem = (ev) => { this.setState({newItem: ev.target.value})}
+    this.addItem = (ev) => { 
+      if(_.isEmpty(this.state.newItem)) {
+        this.setState({validationError: true, validationErrorMsg: "Please enter a valid string value"});
+        return;
+      }
+      props.addItem(this.state.newItem);
+      this.setState({ newItem: "", validationError: false, validationErrorMsg: ""})
+    }
+    this.removeItem = (item) => { 
+      props.removeItem(item);
+    }
+  }
+
+  render() {
+    return(
+      <div className="table-responsive">
+        <div className="stringlistmgr">
+          { _.map(this.props.items, (u) => { return (<Row className="item" key={u}><Col>{u}</Col><Col md={1} className="text-primary"><span onClick={() => this.removeItem(u)}><FontAwesomeIcon icon={faTrash}/></span></Col></Row>) })}
+        </div>
+        <Form.Group className="my-3">
+          <InputGroup hasValidation>
+            <Form.Control type="text" isInvalid={this.state.validationError} onChange={this.setNewItem} value={this.state.newItem}/>
+            <Form.Control.Feedback type="invalid">{this.state.validationErrorMsg}</Form.Control.Feedback>
+          </InputGroup>
+          <Button className="my-2" variant="secondary" onClick={this.addItem}>{this.props.addLabel}</Button>
+          </Form.Group>
+        </div>
+    );
   }
 }

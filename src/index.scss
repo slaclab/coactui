@@ -109,6 +109,17 @@ ol, ul {
   }
 }    
 
+.stringlistmgr {
+  .item:nth-child(even) {
+    background: $zebrabg;
+  }
+  .item {
+    padding: 0.25rem;
+    margin-top: 0;
+    margin-bottom: 0;  
+  }
+}
+
 .tbl-selectable {
   tr.selected {
     background-color: $selected;
