@@ -102,17 +102,18 @@ mutation requestApprove($Id: String!){
 class AddComputeAllocation extends Component {
   constructor(props) {
     super(props);
-    this.state = { currentCluster: "", facilityPurchased: 0.0, currentAllocation: 0, currentBurstAllocation: 0, showalloc: false }
+    this.state = { currentCluster: "", facilityPurchased: 0.0, currentAllocation: 0, currentBurstAllocation: 0, showalloc: false, zeroalloc: false }
     this.setCluster = (event) => { 
       let clustername = event.target.value;
       let facilityData = _.find(this.props.facilities, ["name", this.props.facilityname]);
       let facilityPurchased = _.get(_.find(_.get(facilityData, "computepurchases", {}), ["clustername", clustername]), "purchased", 0.0);
-      this.setState({currentCluster: clustername, facilityPurchased: facilityPurchased, showalloc: true}) 
+      let fixedzero = facilityPurchased <= 0 || this.props.reponame == "default";
+      this.setState({currentCluster: clustername, facilityPurchased: facilityPurchased, showalloc: !fixedzero, zeroalloc: fixedzero, currentAllocation: fixedzero ? 0 : 20}) 
     }
     this.setAllocation = (event) => { this.setState({currentAllocation: event.target.value}) }
     this.setBurstAllocation = (event) => { this.setState({currentBurstAllocation: event.target.value}) }
     this.hideModal = () => { 
-      this.setState({currentCluster: "", facilityPurchased: 0.0, currentAllocation: 0, showalloc: false});
+      this.setState({currentCluster: "", facilityPurchased: 0.0, currentAllocation: 0, showalloc: false, zeroalloc: false});
       this.props.hideModal();
     }
   }
@@ -136,8 +137,16 @@ class AddComputeAllocation extends Component {
             <p>The facility <b className="em">{this.props.facilityname}</b> has purchased <b className="em">{this.state.facilityPurchased}</b> on the <b className="em">{this.props.clustername}</b> cluster</p>
             <InputGroup hasValidation>
               <InputGroup.Text>Current Percent:</InputGroup.Text>
-              <Form.Control type="number" onBlur={this.setAllocation} isInvalid={this.props.isError} defaultValue={this.props.currentAllocation}/>
+              <Form.Control type="number" onChange={this.setAllocation} isInvalid={this.props.isError} value={this.state.currentAllocation}/>
               <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
+            </InputGroup>
+          </div>
+          <div className={this.state.zeroalloc ? "py-2" : "d-none"}>
+            <p className={this.state.facilityPurchased <= 0 ? "" : "d-none"}>The facility <b className="em">{this.props.facilityname}</b> has not purchased any resources on the <b className="em">{this.state.currentCluster}</b> cluster.</p>
+            <p>We only allow an allocation of 0% in this case. This implies that only pre-emptable jobs are allowed on this cluster for this repo.</p>
+            <InputGroup>
+                <InputGroup.Text>Current Percent:</InputGroup.Text>
+                <Form.Control type="number" onBlur={this.setAllocation} isInvalid={this.props.isError} defaultValue={this.state.currentAllocation} readOnly/>
             </InputGroup>
           </div>
           <div className={"d-none"}>
@@ -169,22 +178,39 @@ class UpdateComputeAllocation extends Component {
     this.state = { currentAllocation: props.currentAllocation, currentBurstAllocation: props.currentBurstAllocation ?? 0, changed: false }
     this.setAllocation = (event) => { this.setState({currentAllocation: event.target.value, changed: true}) }
     this.setBurstAllocation = (event) => { this.setState({currentBurstAllocation: event.target.value, changed: true}) }
+    this.hideModal = () => { 
+      this.setState({currentAllocation: 0, currentBurstAllocation: 0, changed: false});
+      this.props.hideModal();
+    }
   }
 
   render() {
+    const fixedzero = this.props.facilityPurchased <= 0 || this.props.reponame == "default";
+    const showalloc = !fixedzero, zeroalloc = fixedzero;
+
     return (
-      <Modal show={this.props.showModal} onHide={() => {this.props.hideModal()}}>
+      <Modal show={this.props.showModal} onHide={() => {this.hideModal()}}>
         <ModalHeader closeButton={true}>
           <ModalTitle>Update the compute allocation for the repo <b className="em">{this.props.reponame}</b> on the cluster <b className="em">{this.props.clustername}</b></ModalTitle>
         </ModalHeader>
         <ModalBody>
-          <p>A compute allocation is specified as a percentage of the facility's allocation.</p>
-          <p>The facility <b className="em">{this.props.facilityname}</b> has purchased <b className="em">{this.props.facilityPurchased}</b> on the <b className="em">{this.props.clustername}</b> cluster</p>
-          <InputGroup hasValidation>
-            <InputGroup.Text>Current Percent:</InputGroup.Text>
-            <Form.Control type="number" onBlur={this.setAllocation} isInvalid={this.props.isError} defaultValue={this.props.currentAllocation}/>
-            <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
-          </InputGroup>
+          <div className={showalloc ? "py-2" : "d-none"}>
+            <p>A compute allocation is specified as a percentage of the facility's allocation.</p>
+            <p>The facility <b className="em">{this.props.facilityname}</b> has purchased <b className="em">{this.props.facilityPurchased}</b> on the <b className="em">{this.props.clustername}</b> cluster</p>
+            <InputGroup hasValidation>
+              <InputGroup.Text>Current Percent:</InputGroup.Text>
+              <Form.Control type="number" onBlur={this.setAllocation} isInvalid={this.props.isError} defaultValue={this.props.currentAllocation}/>
+              <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
+            </InputGroup>
+          </div>
+          <div className={zeroalloc ? "py-2" : "d-none"}>
+            <p className={this.props.facilityPurchased <= 0 ? "" : "d-none"}>The facility <b className="em">{this.props.facilityname}</b> has not purchased any resources on the <b className="em">{this.props.clustername}</b> cluster.</p>
+            <p>We only allow an allocation of 0% in this case. This implies that only pre-emptable jobs are allowed on this cluster for this repo.</p>
+            <InputGroup>
+                <InputGroup.Text>Current Percent:</InputGroup.Text>
+                <Form.Control type="number" onBlur={this.setAllocation} isInvalid={this.props.isError} defaultValue={this.state.currentAllocation} readOnly/>
+            </InputGroup>
+          </div>
           <p className="d-none mt-2">One can also specify the max fraction of the facility's resources that can be at any instant in time as a cap on burst usage.</p>
           <InputGroup className="d-none" hasValidation>
             <InputGroup.Text>Current Burst Percent:</InputGroup.Text>
@@ -202,7 +228,7 @@ class UpdateComputeAllocation extends Component {
               this.props.hideModal();
               return;
             }
-            this.props.applyUpdateAllocation(this.state.currentAllocation, this.state.currentBurstAllocation) 
+            this.props.applyUpdateAllocation(this.props.clustername, this.state.currentAllocation, this.state.currentBurstAllocation) 
             }}>
             Done
           </Button>
@@ -248,6 +274,9 @@ class ReposRows extends Component {
     let cas = _.get(this.props.repo, "currentComputeAllocations", [{}]), rows = cas.length;
     if(cas.length == 0) { cas = [{"clustername": "N/A"}] }
     let trs = _.map(cas, (a) => {
+      const clustersPurchased = _.map(_.get(this.facilityData, "computepurchases", []), "clustername");
+      const clustersAllocated  = _.map(_.get(this.props.repo, "currentComputeAllocations", []), "clustername");
+      const unAllocatedClusters = _.difference(clustersPurchased, clustersAllocated);
       let facilityPurchased = _.get(_.find(this.facilityData.computepurchases, ["clustername", a.clustername]), "purchased", 0.0);
       let percentoffacility = _.get(a, "percentOfFacility", 0.0);
       let totalAllocatedCompute = _.get(a, "allocated", 0.0);
@@ -260,17 +289,18 @@ class ReposRows extends Component {
       let lastMonthsUsedHours = _.sum(_.map(_.get(a, "perDateUsage", []), "resourceHours"));
       let lastMonthsUsedPercent = lastMonthsUsedHours/(31.0*totalAllocatedCompute*24)*100;
 
-      let showEditButtons = this.props.isAdmin || (this.props.canEditAllocations && this.reponame != "default");
+      let showPlusButton = this.props.canEditAllocations && unAllocatedClusters.length > 0;
+      let showEditButton = this.props.isAdmin || (this.props.canEditAllocations && this.reponame != "default");
 
       if(first) {
         first = false;
         return (
           <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame} className="text-start px-2">
-            <td rowSpan={rows} className="vmid">{this.reponame} {showEditButtons ? <span className="float-end"><span className="px-2 text-warning" title="Allocate compute on a new cluster" onClick={() => { this.props.showAddModal(this.props.repo, facilityPurchased) }}><FontAwesomeIcon icon={faPlus}/></span></span> : <span></span>}</td>
+            <td rowSpan={rows} className="vmid">{this.reponame} {showPlusButton ? <span className="float-end"><span className="px-2 text-warning" title="Allocate compute on a new cluster" onClick={() => { this.props.showAddModal(this.props.repo, facilityPurchased) }}><FontAwesomeIcon icon={faPlus}/></span></span> : <span></span>}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.facilityObj.name}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
             <td>{a.clustername == "N/A" ? "None" : <NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame} title={"Node CPU count=" + clusterNodeCPUCount}>{a.clustername}</NavLink>}</td>
-            <td className="text-end"><span title={this.twoPrec(totalAllocatedCompute) + " nodes"}>{ percentoffacility + "%"}</span> {showEditButtons && a.clustername != "N/A" ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
+            <td className="text-end"><span title={this.twoPrec(totalAllocatedCompute) + " nodes"}>{ percentoffacility + "%"}</span> {showEditButton && a.clustername != "N/A" ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
             <td className="text-end"><span><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername}/></span></td>
             <td className="text-end"><span><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername}/></span></td>
             <td className="text-end"><span><ComputeUsage periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername}/></span></td>
@@ -283,7 +313,7 @@ class ReposRows extends Component {
           return (
             <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame} className="text-start px-2">
               <td><NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame} title={"Node CPU count=" + clusterNodeCPUCount}>{a.clustername}</NavLink></td>
-              <td className="text-end"><span title={this.twoPrec(totalAllocatedCompute) + " nodes"}>{ percentoffacility + "%"}</span> {showEditButtons ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
+              <td className="text-end"><span title={this.twoPrec(totalAllocatedCompute) + " nodes"}>{ percentoffacility + "%"}</span> {showEditButton ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
               <td className="text-end"><span><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername}/></span></td>
               <td className="text-end"><span><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername}/></span></td>
               <td className="text-end"><span><ComputeUsage periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername}/></span></td>
@@ -334,16 +364,18 @@ class ReposTable extends Component {
       })
   }
     
-    this.applyUpdateAllocation = (curalloc, currburstalloc) => { 
-      if(curalloc < 0.0) {
-        this.setState({modalError: true, modalErrorMessage: "Please enter a number >= 0"});
+    this.applyUpdateAllocation = (clustername, curalloc, currburstalloc) => { 
+      if(curalloc < 0.0 || curalloc > 100.0) {
+        this.setState({modalError: true, modalErrorMessage: "Please enter a number >= 0.0 and <= 100.0"});
         return;
       }
       if(currburstalloc < 0.0) {
         this.setState({modalError: true, modalErrorMessage: "Please enter a number >= 0"});
         return;
       }
-      if(this.state.facilityPurchased <= 0 && curalloc > 0.0) {
+      const facilityData = _.keyBy(this.props.facilities, "name")[this.state.facility]
+      const facilityPurchased = _.get(_.keyBy(_.get(facilityData, "computepurchases", []), "clustername"), clustername + ".purchased", 0);
+      if(facilityPurchased <= 0 && curalloc > 0.0) {
         this.setState({modalError: true, modalErrorMessage: "This facility has not purchased any compute resources in this cluster. To make this clear, please set this to 0."});
         return;
       }
@@ -356,15 +388,17 @@ class ReposTable extends Component {
     }
 
     this.applyNewAllocation = (clustername, curalloc, currburstalloc) => { 
-      if(curalloc < 0.0) {
-        this.setState({modalError: true, modalErrorMessage: "Please enter a number >= 0"});
+      if(curalloc < 0.0 || curalloc > 100.0) {
+        this.setState({modalError: true, modalErrorMessage: "Please enter a number >= 0.0 and <= 100.0"});
         return;
       }
       if(currburstalloc < 0.0) {
         this.setState({modalError: true, modalErrorMessage: "Please enter a number >= 0"});
         return;
       }
-      if(this.state.facilityPurchased <= 0 && curalloc > 0.0) {
+      const facilityData = _.keyBy(this.props.facilities, "name")[this.state.facility]
+      const facilityPurchased = _.get(_.keyBy(_.get(facilityData, "computepurchases", []), "clustername"), clustername + ".purchased", 0);
+      if(facilityPurchased <= 0 && curalloc > 0.0) {
         this.setState({modalError: true, modalErrorMessage: "The facility has not purchased any compute resources in this cluster. To make this clear, please set this to 0."});
         return;
       }
@@ -391,7 +425,7 @@ class ReposTable extends Component {
           { _.map(this.props.repos, (r) => { return (<ReposRows key={r.facility+"_"+r.name} repo={r} facilities={this.props.facilities} clusterInfo={this.clusterInfo} recentusagebycluster={this.props.recentusagebycluster} canEditAllocations={this.props.canEditAllocations} isAdmin={this.props.isAdmin} showUpdateModal={this.showUpdateModal} showAddModal={this.showAddModal}/>) }) }
           </table>
         </div>
-        <UpdateComputeAllocation reponame={this.state.repo} facilityname={this.state.facility} clustername={this.state.cluster} currentAllocation={this.state.currentAllocation} facilityPurchased={this.state.facilityPurchased} showModal={this.state.showUpdateModal} showUpdateModal={this.showUpdateModal} hideModal={this.hideUpdateModal} isError={this.state.modalError} errorMessage={this.state.modalErrorMessage} applyUpdateAllocation={this.applyUpdateAllocation}/>
+        <UpdateComputeAllocation reponame={this.state.repo} facilityname={this.state.facility} facilities={this.props.facilities} clustername={this.state.cluster} currentAllocation={this.state.currentAllocation} facilityPurchased={this.state.facilityPurchased} showModal={this.state.showUpdateModal} showUpdateModal={this.showUpdateModal} hideModal={this.hideUpdateModal} isError={this.state.modalError} errorMessage={this.state.modalErrorMessage} applyUpdateAllocation={this.applyUpdateAllocation}/>
         <AddComputeAllocation reponame={this.state.repo} facilityname={this.state.facility} facilities={this.props.facilities} clustersunallocated={this.state.clustersunallocated} showModal={this.state.showAddModal} hideModal={this.hideUpdateModal} isError={this.state.modalError} errorMessage={this.state.modalErrorMessage} applyNewAllocation={this.applyNewAllocation}/>
       </>
      )
