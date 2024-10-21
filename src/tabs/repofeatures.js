@@ -28,6 +28,8 @@ query repoFeatures($repo: String!, $facility: String!){
   }
   whoami {
     username
+    isAdmin
+    isCzar
   }
 }`;
 
@@ -193,7 +195,9 @@ class RepoFeaturesTable extends Component {
   }
 
   componentDidMount() {
-    this.props.setToolbaritems(oldItems => [...oldItems, ["Add new feature", (state) => { this.setState({featureBeingEdited: "", showModal: true});; this.setShowModal(state)}]]);
+    if(this.props.isAdmin) {
+      this.props.setToolbaritems(oldItems => [...oldItems, ["Add new feature", (state) => { this.setState({featureBeingEdited: "", showModal: true});; this.setShowModal(state)}]]);
+    }
   }
 
   componentWillUnmount() {
@@ -215,15 +219,17 @@ class RepoFeaturesTable extends Component {
               <Card.Body>
                 <Card.Title>
                   {ft["name"]}
+                  { this.props.isAdmin ? (
                   <span className="float-end text-primary fs-6">
                     <span className="px-1" onClick={() => this.editFeature(ft["name"])}><FontAwesomeIcon icon={faEdit}/></span>
                     <span className="px-1" onClick={() => this.deleteFeature(ft["name"])}><FontAwesomeIcon icon={faTrash}/></span>
                   </span>
+                  ) : "" }
                 </Card.Title>
                 <Card.Text as={"div"}>
                   <Row>
                     <Col xs={2}>
-                      <Form.Check type="switch" id={ft["name"]} defaultChecked={ft.state} onChange={(ev) => { this.toggleFeature(ft["name"], ev) }}/>
+                      <Form.Check type="switch" id={ft["name"]} defaultChecked={ft.state} disabled={this.props.isAdminOrCzar ? false : true } onChange={(ev) => { this.toggleFeature(ft["name"], ev) }}/>
                     </Col>
                     <Col>
                       <ul>
@@ -260,6 +266,9 @@ export default function RepoFeatures() {
   let username = _.get(data, "whoami.username");
   console.log(data);
 
+  const isAdmin = data.whoami.isAdmin;
+  const isAdminOrCzar = data.whoami.isAdmin || data.whoami.isCzar;  
+
   const addNewFeature = (feature, onSuccess, onError) => {
     addFeatureMutation({ variables: { reposinput: { name: reponame, facility: facilityname }, feature: feature }, 
       refetchQueries: [ REPOFEATURES ], 
@@ -284,7 +293,7 @@ export default function RepoFeatures() {
 
   return (
     <>
-    <RepoFeaturesTable repo={data.repo}
+    <RepoFeaturesTable isAdmin={isAdmin} isAdminOrCzar={isAdminOrCzar} repo={data.repo}
       toolbaritems={toolbaritems} setToolbaritems={setToolbaritems}
       addNewFeature={addNewFeature} deleteFeature={deleteFeature} updateFeature={updateFeature}
     />
