@@ -164,7 +164,7 @@ export default function Storage() {
   const [ repostgallocfn, { repostgallocdata, repostgallocloading, repostgallocerror }] = useMutation(REPO_STORAGE_ALLOCATION_REQUEST);
 
   const [ allocMdlShow, setAllocMdlShow] = useState(false);
-  const [ toolbaritems, setToolbaritems ] = useOutletContext();
+  const [ toolbaritems, setToolbaritems, statusbaritems, setStatusbaritems ] = useOutletContext();
 
 
   if (loading) return <p>Loading...</p>;

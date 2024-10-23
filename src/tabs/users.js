@@ -233,7 +233,7 @@ export default function Users(props) {
   const [ addUserMutation ] = useMutation(ADD_USER_MUTATION);
   const [ removeUserMutation ] = useMutation(REMOVE_USER_MUTATION);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
-  const [ toolbaritems, setToolbaritems ] = useOutletContext();
+  const [ toolbaritems, setToolbaritems, statusbaritems, setStatusbaritems ] = useOutletContext();
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;

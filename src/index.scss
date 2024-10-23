@@ -328,6 +328,11 @@ ol, ul {
 
 #repotabs {
   @include navbg;
+  .statusbar {
+    .item {
+      vertical-align: text-bottom;
+    }
+  }
 }
 
 @keyframes inPlaceSuccessAnimation {

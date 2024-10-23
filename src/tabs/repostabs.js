@@ -290,6 +290,7 @@ export default function RepoTabs(props) {
     ["Request Repo Membership", setRepMemShow ],
     ["Request New Repo", setNewRepShow ]
   ]);
+  const [statusbaritems, setStatusbaritems] = useState([]);
   const [ repomemnrshipfn ] = useMutation(REQUEST_REPOMEMBERSHIP_MUTATION);
   const [ newrepofn ] = useMutation(REQUEST_NEWREPO_MUTATION);
   const [ facaccessfn ] = useMutation(REQUEST_FACILTY_ACCESS_MUTATION);
@@ -326,7 +327,7 @@ export default function RepoTabs(props) {
 
   return (<Tab.Container activeKey={props.reposActiveTab}>
         <Row id="repotabs">
-          <Col>
+          <Col md={2}>
             <Nav variant="tabs" onSelect={(selKey) => { props.setReposActiveTab(selKey); }}>
             <Nav.Item>
                 <Nav.Link eventKey="info" as={Link} to={`info`}>Info</Nav.Link>
@@ -336,8 +337,11 @@ export default function RepoTabs(props) {
                 </Nav.Item>
               </Nav>
             </Col>
-            <Col md={5}>
+            <Col>
+              <span className="statusbar me-1 align-bottom">
+              </span>
               <span className="float-end me-1">
+              { _.map(statusbaritems, (x, i) => { return <span key={`statusbar_${i}`} className="item px-1">{x}</span> }) }
               {
                 _.map(toolbaritems, (x) => { return <ToolbarButton key={x[0]} label={x[0]} setShow={x[1]} /> })
               }
@@ -345,7 +349,7 @@ export default function RepoTabs(props) {
             </Col>
         </Row>
         <Tab.Content>
-          <Outlet context={[toolbaritems, setToolbaritems]}/>
+          <Outlet context={[toolbaritems, setToolbaritems, statusbaritems, setStatusbaritems]}/>
         </Tab.Content>
         <ReqRepMembership show={repMemShow} setShow={setRepMemShow} username={username} requestRepoMembership={requestRepoMembership} facilities={myfacilities} allreposquery={allreposquery} />
         <ReqNewRepo show={newRepShow} setShow={setNewRepShow} username={username} requestNewRepo={requestNewRepo}  facilities={myfacilities}/>

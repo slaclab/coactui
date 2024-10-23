@@ -257,7 +257,7 @@ export default function RepoFeatures() {
   const [ addFeatureMutation ] = useMutation(ADD_FEATURE_MUTATION);
   const [ deleteFeatureMutation ] = useMutation(DELETE_FEATURE_MUTATION);
   const [ updateFeatureMutation ] = useMutation(UPDATE_FEATURE_MUTATION);
-  const [ toolbaritems, setToolbaritems ] = useOutletContext();
+  const [ toolbaritems, setToolbaritems, statusbaritems, setStatusbaritems ] = useOutletContext();
 
 
   if (loading) return <p>Loading...</p>;

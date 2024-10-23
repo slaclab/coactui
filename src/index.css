@@ -10759,6 +10759,9 @@ ol, ul {
   background-color: rgb(224, 79, 57);
   color: rgb(255, 255, 255);
 }
+#repotabs .statusbar .item {
+  vertical-align: text-bottom;
+}
 
 @keyframes inPlaceSuccessAnimation {
   0% {

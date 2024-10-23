@@ -256,7 +256,7 @@ export default function Groups() {
   const [ toggleGrpMutation] = useMutation(TOGGLE_GROUPMEMBERSHIP_MUTATION);
   const [ newusergrpfn, { newusergrpdata, newusergrploading, newusergrperror }] = useMutation(NEW_USERGROUP_MUTATION);
   const [showAddGroupModal, setShowAddGroupModal] = useState(false);
-  const [ toolbaritems, setToolbaritems ] = useOutletContext();
+  const [ toolbaritems, setToolbaritems, statusbaritems, setStatusbaritems ] = useOutletContext();
 
 
   if (loading) return <p>Loading...</p>;

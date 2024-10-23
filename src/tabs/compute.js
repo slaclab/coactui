@@ -388,7 +388,7 @@ export default function Compute() {
   const [ approveRequest, { arD, arL, arE } ] = useMutation(APPROVE_REQUEST_MUTATION);
   const [ getPastXJobs ] = useLazyQuery(REPO_PAST_X_JOBS);
   const [ allocMdlShow, setAllocMdlShow] = useState(false);
-  const [ toolbaritems, setToolbaritems ] = useOutletContext();
+  const [ toolbaritems, setToolbaritems, statusbaritems, setStatusbaritems ] = useOutletContext();
 
 
   if (loading) return <p>Loading...</p>;
