@@ -712,10 +712,10 @@ class RequestFilters extends Component {
               <Col>
                 <Form.Group className="mb-3">
                   <Form.Label>Repo</Form.Label>
-                  <Form.Select name="reponame" value={this.props.filter.reponame} onChange={this.setRepo}>
-                    <option value="">All repos</option>
+                  <datalist id="repos">
                     { _.map(this.state.selectablerepos, (q) => { return (<option key={q} value={q}>{q}</option>)}) }
-                  </Form.Select>
+                  </datalist>
+                  <Form.Control type="text" name="reponame" list="repos" placeholder="Reponame regex; eg CR.*" defaultValue={this.props.filter.reponame} onBlur={this.setRepo}/>
                 </Form.Group>
               </Col>
               <Col>
