@@ -147,7 +147,7 @@ class ReqNewRepo extends Component {
         this.setState({ reponameInvalid: true });
         return;
       }
-      if(!/^[\w_]+$/.test(this.state.reponame)) {
+      if(!/^[\w-_]+$/.test(this.state.reponame)) {
         this.setState({ reponameInvalid: true });
         return;
       }
