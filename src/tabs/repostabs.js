@@ -147,6 +147,12 @@ class ReqNewRepo extends Component {
         this.setState({ reponameInvalid: true });
         return;
       }
+      if(!/^[\w_]+$/.test(this.state.reponame)) {
+        this.setState({ reponameInvalid: true });
+        return;
+      }
+
+
       this.setState({ reponameInvalid: false });
       if(_.isEmpty(this.state.facility)) {
         this.setState({ facilityInvalid: true });
@@ -176,7 +182,7 @@ class ReqNewRepo extends Component {
                 <Col md={3}><Form.Label className="px-2" >Repo name:</Form.Label></Col>
                 <Col>
                   <Form.Control type="text" placeholder="Enter name of the repo" onChange={this.setRepoName} isInvalid={this.state.reponameInvalid}/>
-                  <Form.Control.Feedback type="invalid">Please enter a valid repo name</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">Please enter a valid repo name (alphanumeric - and _ ok) </Form.Control.Feedback>
                 </Col>
             </InputGroup>
           </Row>
