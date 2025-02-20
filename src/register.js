@@ -243,8 +243,8 @@ export default function RegisterUser(props) {
          <NoNavHeader/>
          <h6 className="p-2">Hi <span className="text-primary">{fullname}</span>, welcome to Coact; the portal for using the S3DF.</h6>
          <div className="p-2 flex-grow-1">
-          We are not able to unambiguously determine your user id. 
-          It's likely that your user account setup has not completed yet. 
+          We are not able to determine your user id with certainty.
+          It's likely that your user account setup has not completed yet or we may be having an outage upstream.
           Could you please try again later?
           If you continue to experience this error, please contact <b>s3df-help@slac.stanford.edu</b>
          </div>
