@@ -264,7 +264,7 @@ class ReqFacilityAccess extends Component {
                   <Form.Control required as="select" type="select" onChange={this.setFacility} isInvalid={this.state.isError}>
                   <option value="">Please select a facility</option>
                   {
-                    _.map(this.props.facilities, function(x){ return ( <option key={x} value={x}>{x}</option> ) })
+                    _.map(_.sortBy(this.props.facilities), function(x){ return ( <option key={x} value={x}>{x}</option> ) })
                   }
                   </Form.Control>
                   <Form.Control.Feedback type="invalid">{this.state.errorMsg}</Form.Control.Feedback>
