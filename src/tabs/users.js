@@ -30,6 +30,8 @@ query Repos($reposinput: RepoInput){
       Id
       username
       uidnumber
+      preferredemail
+      fullname
       eppnObjs {
         eppn
         fullname
@@ -78,12 +80,12 @@ mutation AddUserToRepo($reposinput: RepoInput!, $user: UserInput!) {
 
 class Eppn extends React.Component {
   render() {
-    return _.map(_.get(this.props.user, "eppnObjs", []), (e) => {
+    return _.map(_.get(this.props.user, "eppnObjs", []), (e, i) => {
       return(
         <div key={e.fullname} className="row">
+          <span className="col-4">{(i == 0) ? this.props.user.fullname : ""}</span>
+          <span className="col-4">{(i == 0) ? this.props.user.preferredemail : ""}</span>
           <span className="col-4">{e.eppn}</span>
-          <span className="col-4">{e.fullname}</span>
-          <span className="col-4">{e.organization}</span>
         </div>
       )
     })
@@ -191,9 +193,9 @@ class UsersTab extends React.Component {
                   <th>Role</th>
                   <th colSpan="3">
                     <div className="row">
-                      <span className="col-4">Username</span>
-                      <span className="col-4">User email</span>
-                      <span className="col-4">Organization</span>
+                      <span className="col-4">Full name</span>
+                      <span className="col-4">User preferred email</span>
+                      <span className="col-4">EPPN</span>
                     </div>
                   </th>
                   <th>Account state</th>
