@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useLazyQuery, gql } from "@apollo/client";
 import _ from "lodash";
 import React, { Component, useState } from 'react';
-import { NavLink } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Row from "react-bootstrap/Row";
@@ -783,8 +783,8 @@ class RequestNewFacility extends Component {
 }
 
 export default function Facility(props) {
-  //let params = useParams(), facilityname = params.facilityname;
-  const { loading, error, data } = useQuery(FACILITYDETAILS, { variables: { facilityinput: { name: props.facilityname }}},  { errorPolicy: 'all'} );
+  let params = useParams();
+  const { loading, error, data } = useQuery(FACILITYDETAILS, { variables: { facilityinput: { name: params.facilityname ?? props.facilityname }}},  { errorPolicy: 'all'} );
   const [ getUsersMatchingUserName ] = useLazyQuery(USERMATCHINGUSERNAME);
   const [ getUserForEPPN ] = useLazyQuery(USERFOREPPN);
   const [ userLookupByUserName ] = useLazyQuery(USER_LOOKUP_BY_USERNAME);
