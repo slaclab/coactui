@@ -499,6 +499,17 @@ class RequestDetails extends Component {
         </ListGroup>
       )
     }
+    if(this.props.req.reqtype == "FacilityComputeAllocation") {
+      return (
+        <ListGroup>
+          {_.map(["facilityname", "clustername", "allocated"], function(x){
+            return(
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.toString(_.get(req, x, false))}</span></ListGroup.Item>
+            )
+          })}
+        </ListGroup>
+      )
+    }
 
     return (
       <span>Details!!!</span>
