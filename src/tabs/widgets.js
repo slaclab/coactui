@@ -18,7 +18,7 @@ import { faRocket, faTrash } from '@fortawesome/free-solid-svg-icons'
 export function TwoPrecFloat(props) {
   if(_.isNil(props.value)) return "N/A";
   if(props.value > 99999998) return "Inf";
-  if(props.value == 0) return "";
+  if(props.value == 0) return props.onzero ?? "";
   return (props.value).toFixed(2);
 }
 

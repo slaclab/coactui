@@ -17,7 +17,10 @@ import Toast from 'react-bootstrap/Toast';
 import ToastContainer from 'react-bootstrap/ToastContainer';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
-
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Popover from 'react-bootstrap/Popover';
+import Table from 'react-bootstrap/Table';
 
 const REPOS = gql`
 query myRepos($skipQoses: [String!]!){
@@ -323,7 +326,7 @@ class ReposRows extends Component {
             <td rowSpan={rows} className="vmid">{this.props.repo.facility}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
             <td>{a.clustername == "N/A" ? "None" : <NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame} title={"Node CPU count=" + clusterNodeCPUCount}>{a.clustername}</NavLink>}</td>
-            <td className="text-end"><span title={this.twoPrec(totalAllocatedCompute) + " nodes"}>{ percentoffacility + "%"}</span> {showEditButton && a.clustername != "N/A" ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
+            <td className="text-end"><CompAllocDetails facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount}><span>{ percentoffacility + "%"}</span></CompAllocDetails> {showEditButton && a.clustername != "N/A" ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
             <td className="text-end"><span><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
             <td className="text-end"><span><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
             <td className="text-end"><span><ComputeUsage periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
@@ -336,7 +339,7 @@ class ReposRows extends Component {
           return (
             <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame} className="text-start px-2">
               <td><NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame} title={"Node CPU count=" + clusterNodeCPUCount}>{a.clustername}</NavLink></td>
-              <td className="text-end"><span title={this.twoPrec(totalAllocatedCompute) + " nodes"}>{ percentoffacility + "%"}</span> {showEditButton ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
+              <td className="text-end"><CompAllocDetails facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} title={this.twoPrec(totalAllocatedCompute) + " nodes"}><span>{ percentoffacility + "%"}</span></CompAllocDetails> {showEditButton ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
               <td className="text-end"><span><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
               <td className="text-end"><span><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
               <td className="text-end"><span><ComputeUsage periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
@@ -350,6 +353,23 @@ class ReposRows extends Component {
     return ( <tbody>{trs}</tbody> )
   }
 }
+
+const CompAllocDetails = ({ children, facilityPurchased, clusterNodeCPUCount, repoAllocation }) => (
+  <OverlayTrigger placement={"auto"} overlay={<Popover id="repocompute-popover">
+    <Popover.Header as="h3">Compute Allocation</Popover.Header>
+    <Popover.Body className="striped \">
+      <Table striped bordered><tbody>
+        <tr><th>Purchased</th><td><TwoPrecFloat value={facilityPurchased} onzero={"0"}/> nodes</td></tr>
+        <tr><th>Allocated</th><td><TwoPrecFloat value={repoAllocation} onzero={"0"}/> nodes</td></tr>
+        <tr><th>Resource-hours available to the facility</th><td><TwoPrecFloat value={facilityPurchased*clusterNodeCPUCount} onzero={"0"}/> per hour</td></tr>
+        <tr><th>Resource-hours allocated to the repo </th><td><TwoPrecFloat value={repoAllocation*clusterNodeCPUCount} onzero={"0"}/> per hour</td></tr>
+      </tbody></Table>
+    </Popover.Body>
+  </Popover>}>
+    <span>{children}</span>
+  </OverlayTrigger>
+);
+
 
 const Header = ({ id, children, title }) => (
   <OverlayTrigger overlay={<Tooltip id={id}>{title}</Tooltip>}>

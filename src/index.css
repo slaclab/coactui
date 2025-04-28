@@ -10779,6 +10779,14 @@ ol, ul {
     background-color: inherit;
   }
 }
+#repocompute-popover {
+  max-width: 80vw;
+  font: 14px Lato, Merriweather, sans-serif;
+}
+#repocompute-popover th {
+  font-size: 12px;
+}
+
 .inplacesuccess {
   animation-name: inPlaceSuccessAnimation;
   animation-duration: 3s;
