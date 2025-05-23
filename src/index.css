@@ -10571,6 +10571,16 @@ ol, ul {
   vertical-align: middle;
 }
 
+#repocomputetbl .vmid {
+  vertical-align: middle;
+}
+#repocomputetbl :nth-child(odd of tr.reporow) td.vmid {
+  background-color: rgb(244, 244, 244);
+}
+#repocomputetbl tr:nth-child(odd) td:not(.vmid) {
+  background-color: rgb(244, 244, 244);
+}
+
 .sectiontitle {
   font-size: 1.1rem;
   padding-bottom: 0.25rem;

@@ -135,6 +135,22 @@ ol, ul {
   vertical-align: middle;
 }
 
+#repocomputetbl {
+  .vmid {
+    vertical-align: middle;
+  }
+  :nth-child(odd of tr.reporow) {
+    td.vmid {
+      background-color: $zebrabg;
+    }
+  }
+  tr:nth-child(odd) {
+    td:not(.vmid) {
+      background-color: $zebrabg;
+    }
+  }
+}
+
 .sectiontitle {
   font-size: 1.1rem;
   .ref {

@@ -294,9 +294,16 @@ class ReposRows extends Component {
   }
   render() {
     var first = true;
-    let cas = _.get(this.props.repo, "currentComputeAllocations", [{}]), rows = cas.length;
-    if(cas.length == 0) { cas = [{"clustername": "N/A"}] }
-    let trs = _.reject(_.map(cas, (a) => {
+    let cas = _.sortBy(_.get(this.props.repo, "currentComputeAllocations", [{}]), "clustername");
+    if(cas.length == 0) { cas = [{"clustername": "N/A"}] };
+    if(this.props.hideUnused) {
+      cas = _.reject(cas, (a) => {
+        let lastMonthsUsedHours = this.props.lastMonthsUsages.getUsage(this.props.repo.facility, this.props.repo.name, a.clustername);
+        return lastMonthsUsedHours <= 0;
+      } )
+    }
+    let rows = cas.length;
+    let trs = _.map(cas, (a) => {
       const clustersPurchased = _.map(_.get(this.facilityData, "computepurchases", []), "clustername");
       const clustersAllocated  = _.map(_.get(this.props.repo, "currentComputeAllocations", []), "clustername");
       const unAllocatedClusters = _.difference(clustersPurchased, clustersAllocated);
@@ -309,10 +316,8 @@ class ReposRows extends Component {
       let clusterNodeCPUCount = _.get(a, "clusterNodeCPUCount", 0.0);
       
       let totalUsedHours = _.sum(_.map(_.get(a, "usage", []), "resourceHours"));
+      
       let lastMonthsUsedHours = this.props.lastMonthsUsages.getUsage(this.props.repo.facility, this.props.repo.name, a.clustername);
-      if(this.props.hideUnused && lastMonthsUsedHours <=0) {
-        return null;
-      }
       let lastMonthsUsedPercent = lastMonthsUsedHours/(31.0*totalAllocatedCompute*24)*100;
 
       let showPlusButton = this.props.canEditAllocations && unAllocatedClusters.length > 0;
@@ -321,7 +326,7 @@ class ReposRows extends Component {
       if(first) {
         first = false;
         return (
-          <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame} className="text-start px-2">
+          <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame} className="text-start px-2 reporow">
             <td rowSpan={rows} className="vmid">{this.reponame} {showPlusButton ? <span className="float-end"><span className="px-2 text-warning" title="Allocate compute on a new cluster" onClick={() => { this.props.showAddModal(this.props.repo, facilityPurchased) }}><FontAwesomeIcon icon={faPlus}/></span></span> : <span></span>}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.facility}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
@@ -349,8 +354,8 @@ class ReposRows extends Component {
               <td><DateDisp value={a.end}/></td>
             </tr>)
         }
-    }), _.isNil);
-    return ( <tbody>{trs}</tbody> )
+    });
+    return ( <React.Fragment>{trs}</React.Fragment> )
   }
 }
 
@@ -495,7 +500,7 @@ class ReposTable extends Component {
         <ToastContainer className="p-3" position={"top-end"} containerPosition={"fixed"} style={{ zIndex: 1 }}>
           <Toast show={this.state.showToast} onClose={() => { this.setState({showToast: false, toastMsg: ""})}} delay={10000} autohide><Toast.Header>Info</Toast.Header><Toast.Body>{this.state.toastMsg}</Toast.Body></Toast>
         </ToastContainer>
-        <table className="table table-condensed table-striped table-bordered">
+        <table className="table table-condensed table-bordered" id="repocomputetbl">
           <thead>
             <tr>
               <th>Repo name</th>
@@ -512,7 +517,9 @@ class ReposTable extends Component {
               <th>End</th>
             </tr>
           </thead>
+          <tbody>
           { _.map(this.props.repos, (r) => { return (<ReposRows key={r.facility+"_"+r.name} repo={r} facilities={this.props.facilities} clusterInfo={this.clusterInfo} recentusagebycluster={this.props.recentusagebycluster} canEditAllocations={this.props.canEditAllocations} isAdmin={this.props.isAdmin} showUpdateModal={this.showUpdateModal} showAddModal={this.showAddModal} hideUnused={this.props.hideUnused} lastMonthsUsages={this.props.lastMonthsUsages} showAsPercentOfRepo={this.props.showAsPercentOfRepo}/>) }) }
+          </tbody>          
           </table>
         </div>
         <UpdateComputeAllocation reponame={this.state.repo} facilityname={this.state.facility} facilities={this.props.facilities} clustername={this.state.cluster} currentAllocation={this.state.currentAllocation} facilityPurchased={this.state.facilityPurchased} showModal={this.state.showUpdateModal} showUpdateModal={this.showUpdateModal} hideModal={this.hideUpdateModal} isError={this.state.modalError} errorMessage={this.state.modalErrorMessage} applyUpdateAllocation={this.applyUpdateAllocation}/>
