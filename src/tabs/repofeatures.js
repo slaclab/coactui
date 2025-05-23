@@ -229,7 +229,7 @@ class RepoFeaturesTable extends Component {
                 <Card.Text as={"div"}>
                   <Row>
                     <Col xs={2}>
-                      <Form.Check type="switch" id={ft["name"]} defaultChecked={ft.state} disabled={this.props.isAdminOrCzar ? false : true } onChange={(ev) => { this.toggleFeature(ft["name"], ev) }}/>
+                      <Form.Check type="switch" id={ft["name"]} defaultChecked={ft.state} disabled={this.props.isAdmin ? false : true } onChange={(ev) => { this.toggleFeature(ft["name"], ev) }}/>
                     </Col>
                     <Col>
                       <ul>
