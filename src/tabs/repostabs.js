@@ -227,7 +227,7 @@ class ReqNewRepo extends Component {
 class ReqFacilityAccess extends Component {
   constructor(props) {
     super(props);
-    this.state = { facility: "", isError: false, errorMsg: "", isDone: false }
+    this.state = { facility: "", isError: false, errorMsg: "", isDone: false, requestContext: "", contextInvalid: false }
     this.handleClose = () => { this.props.setShow(false); }
     let timer = null;
     this.requestFacilityAccess = () => {
@@ -236,7 +236,11 @@ class ReqFacilityAccess extends Component {
         this.setState({ isError: true, errorMsg: "Please choose a valid facility" });
         return;
       }
-      this.props.requestFacilityAccess(this.state.facility, 
+      if(_.isEmpty(this.state.requestContext)) {
+        this.setState({contextInvalid: true});
+        return;
+      }
+      this.props.requestFacilityAccess(this.state.facility, this.state.requestContext,
         () => { 
           this.setState({isDone: true}); 
           timer = setTimeout(() => this.props.setShow(false), 3000)
@@ -247,6 +251,7 @@ class ReqFacilityAccess extends Component {
       );
     }
     this.setFacility = (event) => { this.setState({ facility: event.target.value, isError: false, errorMsg: "" }) }
+    this.setRequestContext = (event) => { this.setState({ requestContext: event.target.value }) }
 
   }
   render() {
@@ -258,17 +263,28 @@ class ReqFacilityAccess extends Component {
         <Modal.Body>
           {this.state.isDone ? <Alert key={"success"} variant={"success"}><p>A request for access to the facility <b>{this.state.facility}</b> has been made.</p><p>You should be able to access the resources in the facility once this has been approved.</p></Alert> : ""}
           <Row>
+            <Form.Text className="py-2">Please choose a facility</Form.Text>
             <InputGroup hasValidation>
-                <Col md={3}><Form.Label className="px-2" >Facility:</Form.Label></Col>
-                <Col>
-                  <Form.Control required as="select" type="select" onChange={this.setFacility} isInvalid={this.state.isError}>
-                  <option value="">Please select a facility</option>
-                  {
-                    _.map(_.sortBy(this.props.facilities), function(x){ return ( <option key={x} value={x}>{x}</option> ) })
-                  }
-                  </Form.Control>
-                  <Form.Control.Feedback type="invalid">{this.state.errorMsg}</Form.Control.Feedback>
-                </Col>
+              <Form.Control required as="select" type="select" onChange={this.setFacility} isInvalid={this.state.isError}>
+                <option value="">Please select a facility</option>
+                {
+                  _.map(_.sortBy(this.props.facilities), function(x){ return ( <option key={x} value={x}>{x}</option> ) })
+                }
+              </Form.Control>
+              <Form.Control.Feedback type="invalid">{this.state.errorMsg}</Form.Control.Feedback>
+              </InputGroup>
+              </Row>
+              <Row>
+              <InputGroup hasValidation>
+              <Form.Text className="py-2">{this.state.facilityDescription}</Form.Text>
+                  <Form.Text className="py-2">Please provide some context for your S3DF account request</Form.Text>
+                  <InputGroup>
+                    <Form.Control as="textarea" rows={3}  
+                      onChange={this.setRequestContext}
+                      isInvalid={this.state.contextInvalid}
+                      placeholder="I am a PhD student in Dr. A's lab working on project Z and need compute resources to run simulations"/>
+                      <Form.Control.Feedback type="invalid">Please provide some context.</Form.Control.Feedback>
+                  </InputGroup>
             </InputGroup>
           </Row>
         </Modal.Body>
@@ -324,9 +340,9 @@ export default function RepoTabs(props) {
     setNewRepShow(false);
   };
 
-  const requestFacilityAccess = (facility, onSuccess, onError) => {
+  const requestFacilityAccess = (facility, requestContext, onSuccess, onError) => {
     console.log("Access requsted to facility " + facility);
-    facaccessfn({ variables: { request: { reqtype: "UserAccount", eppn: _.get(data, "whoami.eppns[0]", username + "@slac.stanford.edu"), preferredUserName: username, "facilityname": facility }}, 
+    facaccessfn({ variables: { request: { reqtype: "UserAccount", eppn: _.get(data, "whoami.eppns[0]", username + "@slac.stanford.edu"), preferredUserName: username, "facilityname": facility, notes: requestContext }}, 
       onCompleted: onSuccess, onError: (error) => { onError(error)}});
     setNewRepShow(false);
   };
