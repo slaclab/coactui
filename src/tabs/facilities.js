@@ -38,7 +38,7 @@ export default function Facilities() {
   }
 
   console.log(data);
-  let facilities = data.facilitiesIManage;
+  let facilities = _.sortBy(data.facilitiesIManage, "name");
   let firstFacility = _.get(facilities, "[0].name", "");
 
   return (<div id="facilities">
