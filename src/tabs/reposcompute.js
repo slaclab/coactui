@@ -293,7 +293,7 @@ function ComputeUsage(props) {
           </td></tr>
           <tr><th className="text-center"><span>{`\u21AA `}</span></th><td><TwoPrecFloat value={props.facilityPurchased*props.clusterNodeCPUCount} onzero={"0"}/> per hour</td></tr>
           <tr><th>Resource-hours available to the facility in this time period</th><td><TwoPrecFloat value={props.facilityPurchased*props.clusterNodeCPUCount*props.numHours} onzero={"0"}/></td></tr>
-          <tr><th>Resource-hours allocated to the repo in this time period</th><td><TwoPrecFloat value={props.repoAllocation*props.clusterNodeCPUCount*props.numHours} onzero={"0"}/></td></tr>
+          <tr><th>Resource-hours available to the repo in this time period</th><td><TwoPrecFloat value={props.repoAllocation*props.clusterNodeCPUCount*props.numHours} onzero={"0"}/></td></tr>
           <tr><th>Resource-hours used in this time period</th><td><TwoPrecFloat value={usage.resourceHours} onzero={"0"}/></td></tr>
           <tr><th>Fractional usage of facility</th><td><TwoPrecFloat value={fac_percentusage} onzero={"0"}/>%</td></tr>
           <tr><th>Fractional usage of repo</th><td><TwoPrecFloat value={repo_percentusage} onzero={"0"}/>%</td></tr>
@@ -399,7 +399,7 @@ const CompAllocDetails = ({ children, facilityPurchased, clusterNodeCPUCount, re
           <TwoPrecFloat value={clusterNodeCPUCount} onzero={"0"}/>
         </td></tr>
         <tr><th className="text-center"><span>{`\u21AA `}</span></th><td><TwoPrecFloat value={facilityPurchased*clusterNodeCPUCount} onzero={"0"}/> per hour</td></tr>
-        <tr><th>Resource-hours allocated to the repo </th><td><TwoPrecFloat value={repoAllocation*clusterNodeCPUCount} onzero={"0"}/> per hour</td></tr>
+        <tr><th>Resource-hours available to the repo </th><td><TwoPrecFloat value={repoAllocation*clusterNodeCPUCount} onzero={"0"}/> per hour</td></tr>
       </tbody></Table>
     </Popover.Body>
   </Popover>}>
