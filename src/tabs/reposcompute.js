@@ -266,17 +266,43 @@ export function ComputePercent(props) {
 function ComputeUsage(props) {
   const { periodname, recentusagebycluster, reponame, facilityname, clustername } = props;
   let usage = _.find(_.get(recentusagebycluster, periodname), {name: reponame, facility: facilityname, clustername: clustername}) ?? { percentUsed: 0, resourceHours: 0 };
-  if(usage.percentUsed <= 0) {
-    return (<span></span>);
-  }
-  
   let percentusage = usage.percentUsed;
-  if(props.showAsPercentOfRepo) {
+  let fac_percentusage = percentusage;
+  let repo_percentusage = fac_percentusage;
+  if(percentusage > 0) {
     const facPurchased = _.get(_.keyBy(_.get(_.keyBy(props.facilities, "name"), props.facilityname + ".computepurchases", []), "clustername", {}), props.clustername + ".purchased", 0);
     const repoAllocated = _.get(_.keyBy(_.get(props.repo, "currentComputeAllocations", []), "clustername"), props.clustername + ".allocated", 0);
-    percentusage =  percentusage * (facPurchased/repoAllocated);
+    repo_percentusage = percentusage * (facPurchased/repoAllocated);
+    if(props.showAsPercentOfRepo) {
+      percentusage =  repo_percentusage;
+    }  
   }
-  return (<span title={usage.resourceHours.toFixed(2) + " resource hours"}>{percentusage.toFixed(2) + "%"}</span>)
+
+  return(
+    <OverlayTrigger placement={"auto"} overlay={<Popover id="repocompute-popover">
+      <Popover.Header as="h3">Compute Usage of <span className={"em"}>{props.reponame}</span> in <span className={"em"}>{props.clustername}</span></Popover.Header>
+      <Popover.Body className="striped \">
+        <Table striped bordered><tbody>
+          <tr><th>Purchased</th><td><TwoPrecFloat value={props.facilityPurchased} onzero={"0"}/> nodes</td></tr>
+          <tr><th>Allocated</th><td><TwoPrecFloat value={props.repoAllocation} onzero={"0"}/> nodes</td></tr>
+          <tr><th>CPUs per node</th><td><TwoPrecFloat value={props.clusterNodeCPUCount} onzero={"0"}/></td></tr>
+          <tr><th>Resource-hours available to the facility per hour</th><td>
+            <TwoPrecFloat value={props.facilityPurchased} onzero={"0"}/>
+            <b> * </b>
+            <TwoPrecFloat value={props.clusterNodeCPUCount} onzero={"0"}/>
+          </td></tr>
+          <tr><th className="text-center"><span>{`\u21AA `}</span></th><td><TwoPrecFloat value={props.facilityPurchased*props.clusterNodeCPUCount} onzero={"0"}/> per hour</td></tr>
+          <tr><th>Resource-hours available to the facility in this time period</th><td><TwoPrecFloat value={props.facilityPurchased*props.clusterNodeCPUCount*props.numHours} onzero={"0"}/></td></tr>
+          <tr><th>Resource-hours allocated to the repo in this time period</th><td><TwoPrecFloat value={props.repoAllocation*props.clusterNodeCPUCount*props.numHours} onzero={"0"}/></td></tr>
+          <tr><th>Resource-hours used in this time period</th><td><TwoPrecFloat value={usage.resourceHours} onzero={"0"}/></td></tr>
+          <tr><th>Fractional usage of facility</th><td><TwoPrecFloat value={fac_percentusage} onzero={"0"}/>%</td></tr>
+          <tr><th>Fractional usage of repo</th><td><TwoPrecFloat value={repo_percentusage} onzero={"0"}/>%</td></tr>
+        </tbody></Table>
+      </Popover.Body>
+    </Popover>}>
+      {usage.percentUsed <= 0 ? (<span></span>) : (<span title={usage.resourceHours.toFixed(2) + " resource hours"}>{percentusage.toFixed(2) + "%"}</span>)}
+    </OverlayTrigger>  
+  );
 }
 
 class ReposRows extends Component {
@@ -331,10 +357,10 @@ class ReposRows extends Component {
             <td rowSpan={rows} className="vmid">{this.props.repo.facility}</td>
             <td rowSpan={rows} className="vmid">{this.props.repo.principal}</td>
             <td>{a.clustername == "N/A" ? "None" : <NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame} title={"Node CPU count=" + clusterNodeCPUCount}>{a.clustername}</NavLink>}</td>
-            <td className="text-end"><CompAllocDetails facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount}><span>{ percentoffacility + "%"}</span></CompAllocDetails> {showEditButton && a.clustername != "N/A" ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
-            <td className="text-end"><span><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
-            <td className="text-end"><span><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
-            <td className="text-end"><span><ComputeUsage periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
+            <td className="text-end"><CompAllocDetails facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername}><span>{ percentoffacility + "%"}</span></CompAllocDetails> {showEditButton && a.clustername != "N/A" ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
+            <td className="text-end"><span><ComputeUsage facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} numHours={1} periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
+            <td className="text-end"><span><ComputeUsage facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} numHours={24} periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
+            <td className="text-end"><span><ComputeUsage facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} numHours={24*7} periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
             <td className="text-end"><span><ComputePercent days={31} allocatedCompute={totalAllocatedCompute} usage={lastMonthsUsedHours} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
             <td className="text-end"><TwoPrecFloat value={totalUsedHours}/></td>
             <td><DateDisp value={a.start}/></td>
@@ -344,10 +370,10 @@ class ReposRows extends Component {
           return (
             <tr key={this.facility+this.reponame+a.clustername} data-name={this.reponame} className="text-start px-2">
               <td><NavLink to={"/repos/compute/"+this.props.repo.facility+"/"+this.reponame+"/allocation/"+a.Id} key={this.reponame} title={"Node CPU count=" + clusterNodeCPUCount}>{a.clustername}</NavLink></td>
-              <td className="text-end"><CompAllocDetails facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} title={this.twoPrec(totalAllocatedCompute) + " nodes"}><span>{ percentoffacility + "%"}</span></CompAllocDetails> {showEditButton ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
-              <td className="text-end"><span><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
-              <td className="text-end"><span><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
-              <td className="text-end"><span><ComputeUsage periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
+              <td className="text-end"><CompAllocDetails facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} title={this.twoPrec(totalAllocatedCompute) + " nodes"} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} ><span>{ percentoffacility + "%"}</span></CompAllocDetails> {showEditButton ? <span className="float-end"><span className="px-2 text-warning" title="Edit allocated amount" onClick={() => { this.props.showUpdateModal(this.props.repo, a, facilityPurchased) }}><FontAwesomeIcon icon={faEdit}/></span></span> : <span></span>}</td>
+              <td className="text-end"><span><ComputeUsage facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} numHours={1} periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
+              <td className="text-end"><span><ComputeUsage facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} numHours={24} periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
+              <td className="text-end"><span><ComputeUsage facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} numHours={24*7} periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
               <td className="text-end"><span><ComputePercent days={31} allocatedCompute={totalAllocatedCompute} usage={lastMonthsUsedHours} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
               <td className="text-end"><TwoPrecFloat value={totalUsedHours}/></td>
               <td><DateDisp value={a.start}/></td>
@@ -359,14 +385,20 @@ class ReposRows extends Component {
   }
 }
 
-const CompAllocDetails = ({ children, facilityPurchased, clusterNodeCPUCount, repoAllocation }) => (
+const CompAllocDetails = ({ children, facilityPurchased, clusterNodeCPUCount, repoAllocation, reponame, clustername }) => (
   <OverlayTrigger placement={"auto"} overlay={<Popover id="repocompute-popover">
-    <Popover.Header as="h3">Compute Allocation</Popover.Header>
+    <Popover.Header as="h3">Compute Allocation of <span className={"em"}>{reponame}</span> in <span className={"em"}>{clustername}</span></Popover.Header>
     <Popover.Body className="striped \">
       <Table striped bordered><tbody>
         <tr><th>Purchased</th><td><TwoPrecFloat value={facilityPurchased} onzero={"0"}/> nodes</td></tr>
         <tr><th>Allocated</th><td><TwoPrecFloat value={repoAllocation} onzero={"0"}/> nodes</td></tr>
-        <tr><th>Resource-hours available to the facility</th><td><TwoPrecFloat value={facilityPurchased*clusterNodeCPUCount} onzero={"0"}/> per hour</td></tr>
+        <tr><th>CPUs per node</th><td><TwoPrecFloat value={clusterNodeCPUCount} onzero={"0"}/></td></tr>
+        <tr><th>Resource-hours available to the facility</th><td>
+          <TwoPrecFloat value={facilityPurchased} onzero={"0"}/>
+          <b> * </b>
+          <TwoPrecFloat value={clusterNodeCPUCount} onzero={"0"}/>
+        </td></tr>
+        <tr><th className="text-center"><span>{`\u21AA `}</span></th><td><TwoPrecFloat value={facilityPurchased*clusterNodeCPUCount} onzero={"0"}/> per hour</td></tr>
         <tr><th>Resource-hours allocated to the repo </th><td><TwoPrecFloat value={repoAllocation*clusterNodeCPUCount} onzero={"0"}/> per hour</td></tr>
       </tbody></Table>
     </Popover.Body>

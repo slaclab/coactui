@@ -375,6 +375,13 @@ ol, ul {
   th {
     font-size: 12px;
   }
+  .popover-header {
+    background-color: $digitalred;
+    color: $white;
+    .em {
+      color: $secondary;
+    }  
+  }
 }
 
 .inplacesuccess {

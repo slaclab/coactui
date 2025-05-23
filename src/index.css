@@ -10796,6 +10796,13 @@ ol, ul {
 #repocompute-popover th {
   font-size: 12px;
 }
+#repocompute-popover .popover-header {
+  background-color: rgb(177, 4, 14);
+  color: rgb(255, 255, 255);
+}
+#repocompute-popover .popover-header .em {
+  color: rgb(254, 221, 92);
+}
 
 .inplacesuccess {
   animation-name: inPlaceSuccessAnimation;
