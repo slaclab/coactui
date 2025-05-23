@@ -36,6 +36,7 @@ query Requests($fetchprocessed: Boolean, $showmine: Boolean, $filter: CoactReque
     allocationid
     clustername
     storagename
+    previousName
     purpose
     percentOfFacility
     allocated
@@ -503,6 +504,17 @@ class RequestDetails extends Component {
       return (
         <ListGroup>
           {_.map(["facilityname", "clustername", "allocated"], function(x){
+            return(
+              <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.toString(_.get(req, x, false))}</span></ListGroup.Item>
+            )
+          })}
+        </ListGroup>
+      )
+    }
+    if(this.props.req.reqtype == "RenameRepo") {
+      return (
+        <ListGroup>
+          {_.map(["facilityname", "reponame", "previousName"], function(x){
             return(
               <ListGroup.Item key={x} className="d-flex justify-content-between align-items-start text-truncate"><span className="fw-bold">{x}</span><span>{_.toString(_.get(req, x, false))}</span></ListGroup.Item>
             )
