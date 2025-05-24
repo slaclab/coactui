@@ -247,22 +247,6 @@ class UpdateComputeAllocation extends Component {
   }
 }
 
-export function ComputePercent(props) {
-  if(_.isNil(props.usage) || props.usage < 0.01) return (<span></span>);
-  if(_.isNil(props.allocatedCompute) || props.allocatedCompute <= 0.0 ) return (<span title={props.usage.toFixed(2) + " resource-hours"}>Inf</span>);
-  let percent = props.usage/(props.allocatedCompute*24*props.days)
-  if(percent > 99999998) return (<span title={props.usage.toFixed(2) + " resource-hours"}>Inf</span>);
-  if(percent < 0.01) return (<span></span>);
-
-  if(props.showAsPercentOfRepo) {
-    const facPurchased = _.get(_.keyBy(_.get(_.keyBy(props.facilities, "name"), props.facilityname + ".computepurchases", []), "clustername", {}), props.clustername + ".purchased", 0);
-    const repoAllocated = _.get(_.keyBy(_.get(props.repo, "currentComputeAllocations", []), "clustername"), props.clustername + ".allocated", 0);
-    percent =  percent * (facPurchased/repoAllocated);
-  }
-
-  return (<span title={props.usage.toFixed(2) + " resource-hours"}>{percent.toFixed(2) + "%"}</span>)
-}
-
 function ComputeUsage(props) {
   const { periodname, recentusagebycluster, reponame, facilityname, clustername } = props;
   let usage = _.find(_.get(recentusagebycluster, periodname), {name: reponame, facility: facilityname, clustername: clustername}) ?? { percentUsed: 0, resourceHours: 0 };
@@ -300,7 +284,7 @@ function ComputeUsage(props) {
         </tbody></Table>
       </Popover.Body>
     </Popover>}>
-      {usage.percentUsed <= 0 ? (<span></span>) : (<span title={usage.resourceHours.toFixed(2) + " resource hours"}>{percentusage.toFixed(2) + "%"}</span>)}
+      {usage.percentUsed <= 0 ? (<span></span>) : (<span>{percentusage.toFixed(2) + "%"}</span>)}
     </OverlayTrigger>  
   );
 }
@@ -361,7 +345,7 @@ class ReposRows extends Component {
             <td className="text-end"><span><ComputeUsage facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} numHours={1} periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
             <td className="text-end"><span><ComputeUsage facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} numHours={24} periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
             <td className="text-end"><span><ComputeUsage facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} numHours={24*7} periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
-            <td className="text-end"><span><ComputePercent days={31} allocatedCompute={totalAllocatedCompute} usage={lastMonthsUsedHours} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
+            <td className="text-end"><span><ComputeUsage facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} numHours={24*31} periodname={"pastMonth"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
             <td className="text-end"><TwoPrecFloat value={totalUsedHours}/></td>
             <td><DateDisp value={a.start}/></td>
             <td><DateDisp value={a.end}/></td>
@@ -374,7 +358,7 @@ class ReposRows extends Component {
               <td className="text-end"><span><ComputeUsage facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} numHours={1} periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
               <td className="text-end"><span><ComputeUsage facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} numHours={24} periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
               <td className="text-end"><span><ComputeUsage facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} numHours={24*7} periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
-              <td className="text-end"><span><ComputePercent days={31} allocatedCompute={totalAllocatedCompute} usage={lastMonthsUsedHours} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
+              <td className="text-end"><span><ComputeUsage facilityPurchased={facilityPurchased} repoAllocation={totalAllocatedCompute} clusterNodeCPUCount={clusterNodeCPUCount} numHours={24*31} periodname={"pastMonth"} recentusagebycluster={this.props.recentusagebycluster} reponame={this.reponame} facilityname={this.facility} clustername={a.clustername} showAsPercentOfRepo={this.props.showAsPercentOfRepo} repo={this.props.repo} facilities={this.props.facilities}/></span></td>
               <td className="text-end"><TwoPrecFloat value={totalUsedHours}/></td>
               <td><DateDisp value={a.start}/></td>
               <td><DateDisp value={a.end}/></td>
