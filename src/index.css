@@ -10529,6 +10529,21 @@ body {
   color: rgb(255, 255, 255);
 }
 
+#coactnav {
+  background-color: rgb(177, 4, 14);
+}
+#coactnav .nav-link {
+  color: rgb(255, 255, 255);
+}
+#coactnav .nav-item:hover {
+  background-color: rgb(224, 79, 57);
+  color: rgb(255, 255, 255);
+}
+#coactnav .dropdown-item:hover {
+  background-color: rgb(224, 79, 57);
+  color: rgb(255, 255, 255);
+}
+
 ol, ul {
   padding-left: 30px;
 }
@@ -10650,13 +10665,6 @@ ol, ul {
   margin-left: 0.1em;
   margin-right: 0.1em;
   margin-bottom: 0.5em;
-}
-
-#coactnav {
-  background-image: linear-gradient(to right, rgb(177, 4, 14), rgb(229, 8, 8), rgb(177, 4, 14));
-}
-#coactnav .nav-link {
-  color: rgb(255, 255, 255);
 }
 
 .nonavheader {
@@ -10826,23 +10834,7 @@ ol, ul {
   color: rgb(255, 255, 255);
 }
 
-#landingpage {
-  margin: 1em;
-}
-#landingpage .nav-item .active {
-  background-color: rgb(224, 79, 57);
-  color: rgb(255, 255, 255);
-}
-#landingpage .nav-item a {
-  color: white;
-}
-#landingpage .card {
-  margin: 1em;
-}
-#landingpage .card .cardicn {
-  color: rgb(224, 79, 57);
-}
-#landingpage .partner {
+.partner {
   float: right;
   margin-right: 1em;
 }
@@ -10852,8 +10844,9 @@ ol, ul {
   border-color: rgb(224, 79, 57);
 }
 #myprofile .card-header {
-  background-image: linear-gradient(to right, rgb(224, 79, 57), rgb(233, 131, 0));
-  color: rgb(255, 255, 255);
+  background-color: rgb(234, 234, 234);
+  color: #000;
+  font-weight: bold;
 }
 #myprofile .card-subtitle {
   font-size: 14px;

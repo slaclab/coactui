@@ -88,6 +88,20 @@ body {
   @include navbg;
 }
 
+#coactnav {
+  background-color: $primary;
+  .nav-link {
+    color: $white;
+  }
+  .nav-item:hover {
+    background-color: $spirited;
+    color: $white;
+  }
+  .dropdown-item:hover {
+    background-color: $spirited;
+    color: $white;
+  }
+}
 
 ol, ul {
   padding-left: 30px;
@@ -219,13 +233,6 @@ ol, ul {
     margin-left: 0.1em;
     margin-right: 0.1em;
     margin-bottom: 0.5em;
-  }
-}
-
-#coactnav {
-  background-image: linear-gradient(to right, $primary, $digitalredlight, $primary);
-  .nav-link {
-    color: $white;
   }
 }
 
@@ -404,22 +411,9 @@ ol, ul {
   @include navbg;
 }
 
-#landingpage {
-  @include navbg;
-  .nav-item a {
-    color: white;
-  }
-  .card {
-    margin: 1.0em;
-    .cardicn {
-      color: $spirited;
-    }
-  }
-  margin: 1.0em;
-  .partner {
-    float: right;
-    margin-right: 1.0em;
-  }
+.partner {
+  float: right;
+  margin-right: 1.0em;
 }
 
 #myprofile {
@@ -428,8 +422,9 @@ ol, ul {
     border-color: $spirited;
   }
   .card-header {
-    background-image: linear-gradient(to right, $spirited, $poppy);
-    color: $white;
+    background-color: $black10;
+    color: $black;
+    font-weight: bold;
   }
   .card-subtitle {
     font-size: 14px;
