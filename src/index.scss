@@ -222,6 +222,13 @@ ol, ul {
   }
 }
 
+#coactnav {
+  background-image: linear-gradient(to right, $primary, $digitalredlight, $primary);
+  .nav-link {
+    color: $white;
+  }
+}
+
 .nonavheader {
   margin-left: 0;
   padding: 0;
@@ -413,4 +420,30 @@ ol, ul {
     float: right;
     margin-right: 1.0em;
   }
+}
+
+#myprofile {
+  .card {
+    margin-top: 0.5rem;
+    border-color: $spirited;
+  }
+  .card-header {
+    background-image: linear-gradient(to right, $spirited, $poppy);
+    color: $white;
+  }
+  .card-subtitle {
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  ul {
+    list-style: none;
+  }
+    
+  li::before {
+    content: "\0021AA";
+    padding-right: 8px;
+    font-weight: bold;
+    color: $primary;
+  }  
 }

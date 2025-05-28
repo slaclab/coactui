@@ -403,7 +403,7 @@ class UserDetails extends Component {
   render() {
     return (
       <>
-      <Container fluid>
+      <Container fluid id="myprofile">
         <Row>
           <Col>
             <Card>
@@ -462,6 +462,7 @@ class UserDetails extends Component {
                 </Row>
                 </Card.Body>
               </Card>
+              </Row>
               <Row>
                 <Card className="px-0">
                   <Card.Header>Audit Trail</Card.Header>
@@ -469,7 +470,6 @@ class UserDetails extends Component {
                   </Card.Body>
                 </Card>
               </Row>
-            </Row>
           </Col>
         </Row>
       </Container>

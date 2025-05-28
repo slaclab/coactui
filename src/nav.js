@@ -179,7 +179,7 @@ export default function TopNavBar( props ) {
   }
 
   return (
-    <Navbar bg="primary" variant="dark" expand="lg">
+    <Navbar bg="primary" variant="dark" expand="lg" id="coactnav">
       <Navbar.Brand className="ps-2"  onClick={() => { navigate("/") }}><FontAwesomeIcon icon={faRocket} size="lg"/> Coact</Navbar.Brand>
 <Navbar.Toggle onClick={function noRefCheck(){}} />
       <Navbar.Collapse id="basic-navbar-nav">

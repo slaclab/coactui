@@ -10652,6 +10652,13 @@ ol, ul {
   margin-bottom: 0.5em;
 }
 
+#coactnav {
+  background-image: linear-gradient(to right, rgb(177, 4, 14), rgb(229, 8, 8), rgb(177, 4, 14));
+}
+#coactnav .nav-link {
+  color: rgb(255, 255, 255);
+}
+
 .nonavheader {
   margin-left: 0;
   padding: 0;
@@ -10838,6 +10845,28 @@ ol, ul {
 #landingpage .partner {
   float: right;
   margin-right: 1em;
+}
+
+#myprofile .card {
+  margin-top: 0.5rem;
+  border-color: rgb(224, 79, 57);
+}
+#myprofile .card-header {
+  background-image: linear-gradient(to right, rgb(224, 79, 57), rgb(233, 131, 0));
+  color: rgb(255, 255, 255);
+}
+#myprofile .card-subtitle {
+  font-size: 14px;
+  font-weight: bold;
+}
+#myprofile ul {
+  list-style: none;
+}
+#myprofile li::before {
+  content: "↪";
+  padding-right: 8px;
+  font-weight: bold;
+  color: rgb(177, 4, 14);
 }
 
 /*# sourceMappingURL=index.css.map */
