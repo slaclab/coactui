@@ -7,7 +7,7 @@ import Image from 'react-bootstrap/Image'
 import Modal from 'react-bootstrap/Modal';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
-import { Nav, Navbar } from 'react-bootstrap';
+import { ButtonGroup, Nav, Navbar } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import SLACLogo from '../images/SLAC_primary_red_small.png';
@@ -147,14 +147,14 @@ export class BulkSearchAndAdd extends React.Component {
 
   render() {
     return(
-      <div className="table-responsive">
+      <div className="table-responsive srchadd">
         <Form.Group className="mb-3">
           <Form.Label className="pe-2">{this.props.label}</Form.Label>
           <Form.Control type="textarea" as="textarea" rows={3} placeholder={"Please type in a " + _.toLower(this.props.label)} onChange={this.handleTyping}/>
-          <Button className="my-2" onClick={this.lookup}>Lookup</Button>
-          <div class="float-end">
-            <Button className="mx-2 my-2" onClick={this.apply}>Apply</Button>
-            <Button className="mx-2 my-2" onClick={this.props.hideModal}>Close</Button>
+          <div className="btns">
+            <Button variant="light" onClick={this.props.hideModal}>Close</Button>
+            <Button variant="secondary" onClick={this.lookup}>Lookup</Button>
+            <Button onClick={this.apply}>Apply</Button>
           </div>
         </Form.Group>
         <table className="table table-condensed table-striped table-bordered">
@@ -202,7 +202,7 @@ export function ErrorMsgModal(props) { // Sometimes, it's easier to show error m
         <Alert>{props.message}</Alert>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={() => {props.setShow(false)}}>
+        <Button variant="light" onClick={() => {props.setShow(false)}}>
           Close
         </Button>
       </Modal.Footer>
@@ -252,7 +252,7 @@ export class StringListManager extends React.Component {
         </div>
         <Form.Group className="my-3">
           <InputGroup hasValidation>
-            <Form.Control type="text" isInvalid={this.state.validationError} onChange={this.setNewItem} value={this.state.newItem}/>
+            <Form.Control type="text" isInvalid={this.state.validationError} onChange={this.setNewItem} onBlur={this.addItem} value={this.state.newItem}/>
             <Form.Control.Feedback type="invalid">{this.state.validationErrorMsg}</Form.Control.Feedback>
           </InputGroup>
           <Button className="my-2" variant="secondary" onClick={this.addItem}>{this.props.addLabel}</Button>

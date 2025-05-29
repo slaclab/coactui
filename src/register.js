@@ -84,7 +84,7 @@ class ReqUserAccount extends Component {
 
   render() {
     return (
-      <Modal show={this.props.show} onHide={this.handleClose} size="lg">
+      <Modal backdrop="static" className="registerMdl" show={this.props.show} onHide={this.handleClose} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Request a S3DF account</Modal.Title>
         </Modal.Header>
@@ -99,7 +99,7 @@ class ReqUserAccount extends Component {
               </Form.Select>
               <Form.Control.Feedback type="invalid">Please choose a valid facility.</Form.Control.Feedback>
             </InputGroup>
-            <Form.Text className="py-2">{this.state.facilityDescription}</Form.Text>
+            <Form.Text className="py-2 facdesc">{this.state.facilityDescription}</Form.Text>
             <Form.Text className="py-2">Please provide some context for your S3DF account request</Form.Text>
             <InputGroup>
               <Form.Control as="textarea" rows={3}  
@@ -111,7 +111,7 @@ class ReqUserAccount extends Component {
           </Row>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleClose}>Close</Button>
+          <Button variant="light" onClick={this.handleClose}>Close</Button>
           <Button type="submit" onClick={this.requestAccount} >Request Account</Button>
         </Modal.Footer>
       </Modal>

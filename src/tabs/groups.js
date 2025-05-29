@@ -77,7 +77,7 @@ class AddGroupModal extends React.Component {
       }),
     });
     return (
-      <Modal show={this.props.showModal} onHide={this.props.handleClose}>
+      <Modal backdrop="static" show={this.props.showModal} onHide={this.props.handleClose}>
         <ModalHeader closeButton={true}>
           <ModalTitle>Create a new access group for this repo. The access group name must have the repo name as a prefix.</ModalTitle>
         </ModalHeader>
@@ -118,7 +118,7 @@ class AddGroupModal extends React.Component {
                 </Row>
               </ModalBody>
               <ModalFooter>
-                <Button variant="secondary" onClick={this.props.handleClose}>Close</Button>
+                <Button variant="light" onClick={this.props.handleClose}>Close</Button>
                 <Button type="submit">Create group</Button>
               </ModalFooter>
               </Form>

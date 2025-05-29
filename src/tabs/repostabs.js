@@ -94,7 +94,7 @@ class ReqRepMembership extends Component {
   }
   render() {
     return (
-      <Modal show={this.props.show} onHide={this.handleClose}>
+      <Modal backdrop="static" show={this.props.show} onHide={this.handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Request membership in repo</Modal.Title>
         </Modal.Header>
@@ -115,7 +115,7 @@ class ReqRepMembership extends Component {
                   <Form.Control required as="select" type="select" onChange={this.setFacility} isInvalid={this.state.facilityInvalid}>
                   <option value="">Please select a facility</option>
                   {
-                    _.map(this.props.facilities, function(x){ return ( <option key={x} value={x}>{x}</option> ) })
+                    _.map(_.sortBy(this.props.facilities), function(x){ return ( <option key={x} value={x}>{x}</option> ) })
                   }
                   </Form.Control>
                   <Form.Control.Feedback type="invalid">Please select a facility</Form.Control.Feedback>
@@ -124,7 +124,7 @@ class ReqRepMembership extends Component {
           </Row>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleClose}>
+          <Button variant="light" onClick={this.handleClose}>
             Close
           </Button>
           <Button variant="primary" onClick={this.requestRepoMembership}>
@@ -172,7 +172,7 @@ class ReqNewRepo extends Component {
   }
   render() {
     return (
-      <Modal show={this.props.show} onHide={this.handleClose}>
+      <Modal backdrop="static" show={this.props.show} onHide={this.handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Request new repo</Modal.Title>
         </Modal.Header>
@@ -211,7 +211,7 @@ class ReqNewRepo extends Component {
           </Row>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleClose}>
+          <Button variant="light" onClick={this.handleClose}>
             Close
           </Button>
           <Button variant="primary" onClick={this.requestNewRepo}>
@@ -256,7 +256,7 @@ class ReqFacilityAccess extends Component {
   }
   render() {
     return (
-      <Modal show={this.props.show} onHide={this.handleClose}>
+      <Modal backdrop="static" show={this.props.show} onHide={this.handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Request access to facility</Modal.Title>
         </Modal.Header>
@@ -289,7 +289,7 @@ class ReqFacilityAccess extends Component {
           </Row>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleClose}>
+          <Button variant="light" onClick={this.handleClose}>
             Close
           </Button>
           <Button variant="primary" onClick={this.requestFacilityAccess}>

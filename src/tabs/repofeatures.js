@@ -129,7 +129,7 @@ class AddEditNewFeature extends Component {
   }
   render() {
     return (
-      <Modal show={this.props.show} onHide={this.handleClose} onShow={this.copyState}>
+      <Modal backdrop="static" show={this.props.show} onHide={this.handleClose} onShow={this.copyState}>
         <Modal.Header closeButton>
           <Modal.Title>{ this.state.isEditing ? "Edit feature " + this.props.featureBeingEdited : "Add New Feature" }</Modal.Title>
         </Modal.Header>
@@ -150,7 +150,7 @@ class AddEditNewFeature extends Component {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleClose}>
+          <Button variant="light" onClick={this.handleClose}>
             Close
           </Button>
           <Button variant="primary" onClick={this.addEditFeature}>

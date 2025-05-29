@@ -80,7 +80,7 @@ class ChangePI extends Component {
 
   render() {
     return (
-      <Modal show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+      <Modal backdrop="static" show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
         <ModalHeader closeButton={true}>
           <ModalTitle>Change the PI for repo <b className="em">{this.props.repo.name}</b> in facility <b className="em">{this.props.repo.facility}</b> </ModalTitle>
         </ModalHeader>
@@ -94,7 +94,7 @@ class ChangePI extends Component {
           </InputGroup>
         </ModalBody>
         <ModalFooter>
-          <Button onClick={() => {this.props.setShowModal(false)}}>
+          <Button variant="light" onClick={() => {this.props.setShowModal(false)}}>
             Close
           </Button>
           <Button onClick={this.changePIOnServer}>
@@ -115,7 +115,7 @@ class ChangeDescription extends Component {
 
   render() {
     return (
-      <Modal show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+      <Modal backdrop="static" show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
         <ModalHeader closeButton={true}>
           <ModalTitle>Change the description for repo <b className="em">{this.props.repo.name}</b> in facility <b className="em">{this.props.repo.facility}</b> </ModalTitle>
         </ModalHeader>
@@ -126,7 +126,7 @@ class ChangeDescription extends Component {
           </InputGroup>
         </ModalBody>
         <ModalFooter>
-          <Button onClick={() => {this.props.setShowModal(false)}}>
+          <Button variant="light" onClick={() => {this.props.setShowModal(false)}}>
             Close
           </Button>
           <Button onClick={() => { this.props.changeRepoDescription(this.props.repo.name, this.props.repo.facility, this.state.newdescription, () => { this.props.setShowModal(false) }, (error) => { console.log(error); this.setState({ isError: true, errMsg: error.message })  } ) }}>
@@ -147,7 +147,7 @@ class ChangeLDAPGroup extends Component {
 
   render() {
     return (
-      <Modal show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+      <Modal backdrop="static" show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
         <ModalHeader closeButton={true}>
           <ModalTitle>Change the LDAP group for repo <b className="em">{this.props.repo.name}</b> in facility <b className="em">{this.props.repo.facility}</b> </ModalTitle>
         </ModalHeader>
@@ -158,7 +158,7 @@ class ChangeLDAPGroup extends Component {
           </InputGroup>
         </ModalBody>
         <ModalFooter>
-          <Button onClick={() => {this.props.setShowModal(false)}}>
+          <Button variant="light" onClick={() => {this.props.setShowModal(false)}}>
             Close
           </Button>
           <Button onClick={() => { this.props.changeRepoGroup(this.props.repo.name, this.props.repo.facility, this.state.newgroup, () => { this.props.setShowModal(false) }, (error) => { console.log(error); this.setState({ isError: true, errMsg: error.message })  } ) }}>
@@ -180,7 +180,7 @@ class RenameRepo extends Component {
 
   render() {
     return (
-      <Modal show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+      <Modal backdrop="static" show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
         <ModalHeader closeButton={true}>
           <ModalTitle>Change the name for repo <b className="em">{this.props.repo.name}</b> in facility <b className="em">{this.props.repo.facility}</b> </ModalTitle>
         </ModalHeader>
@@ -191,7 +191,7 @@ class RenameRepo extends Component {
           </InputGroup>
         </ModalBody>
         <ModalFooter>
-          <Button onClick={() => {this.props.setShowModal(false)}}>
+          <Button variant="light" onClick={() => {this.props.setShowModal(false)}}>
             Close
           </Button>
           <Button onClick={() => { this.props.renameRepo(this.props.repo.name, this.props.repo.facility, this.state.newname, () => { this.props.setShowModal(false) }, (error) => { console.log(error); this.setState({ isError: true, errMsg: error.message })  } ) }}>

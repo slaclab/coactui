@@ -33,22 +33,30 @@ $poppy: rgb(233,131,0);
 $spirited: rgb(224,79,57);
 $fog: rgb(218,215,203);
 
-$primary: $digitalred;
-$secondary: $illuminating;
+$mainbg: $digitalred;
+$lightbg: $illuminating;
+$contrastbg: $spirited;
+$dangerbg: $digitalred;
+$selected: $lagunita;
+$coact_success: $paloverde;
+$coact_becareful: $illuminating;
+
+$primary: $mainbg;
+$secondary: $lightbg;
 
 $zebrabg: rgb(244,244,244);
 
 $theme-colors: (
   "primary": $primary,
   "secondary": $secondary,
-  "warning": $spirited,
-  "danger": $digitalred,
-  "info": $sky
+  "warning": $contrastbg,
+  "danger": $dangerbg,
+  "info": $sky,
+  "light": $black10
 );
 
-$nav-pills-link-active-bg: $spirited;
+$nav-pills-link-active-bg: $contrastbg;
 
-$selected: $lagunita;
 
 @font-face {
   font-family: 'Lato';
@@ -94,11 +102,11 @@ body {
     color: $white;
   }
   .nav-item:hover {
-    background-color: $spirited;
+    background-color: $contrastbg;
     color: $white;
   }
   .dropdown-item:hover {
-    background-color: $spirited;
+    background-color: $contrastbg;
     color: $white;
   }
 }
@@ -131,6 +139,25 @@ ol, ul {
     padding: 0.25rem;
     margin-top: 0;
     margin-bottom: 0;  
+  }
+}
+
+.srchadd {
+  .btns { 
+    display: inline-grid;
+    grid-template-columns: repeat(100, 1fr);
+    .btn:nth-of-type(1) {
+      grid-column: 2 / span 10;
+    }
+    .btn:nth-of-type(2) {
+      grid-column: 75 / span 10;
+    }
+    .btn:nth-of-type(3) {
+      grid-column: 90 / span 10;
+    }
+    .btn {
+      margin-top: 0.75rem;
+    }
   }
 }
 
@@ -233,6 +260,13 @@ ol, ul {
     margin-left: 0.1em;
     margin-right: 0.1em;
     margin-bottom: 0.5em;
+  }
+}
+
+.registerMdl {
+  .facdesc {
+    color: $primary;
+    font-size: 0.8rem;
   }
 }
 
@@ -347,11 +381,11 @@ ol, ul {
     }
   }
   .rqAuto {
-    background-color: $paloverde;
+    background-color: $coact_success;
     border: none;
   }
   .rqManual {
-    background-color: $illuminating;
+    background-color: $coact_becareful;
     border: none;
   }
 }
@@ -367,7 +401,7 @@ ol, ul {
 
 @keyframes inPlaceSuccessAnimation {
     0% {
-        background-color: $lagunita;
+        background-color: $selected;
     }
     100% {
         background-color: inherit;
@@ -376,7 +410,7 @@ ol, ul {
 
 @keyframes inPlaceErrorAnimation {
     0% {
-        background-color: $digitalred;
+        background-color: $mainbg;
     }
     100% {
         background-color: inherit;
@@ -390,7 +424,7 @@ ol, ul {
     font-size: 12px;
   }
   .popover-header {
-    background-color: $digitalred;
+    background-color: $mainbg;
     color: $white;
     .em {
       color: $secondary;
@@ -419,7 +453,7 @@ ol, ul {
 #myprofile {
   .card {
     margin-top: 0.5rem;
-    border-color: $spirited;
+    border-color: $contrastbg;
   }
   .card-header {
     background-color: $black10;

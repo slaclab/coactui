@@ -118,7 +118,7 @@ class ChangePreferredEmail extends Component {
   }
   render() {
     return (
-      <Modal show={this.props.show} onHide={this.handleClose}>
+      <Modal backdrop="static" show={this.props.show} onHide={this.handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Preferred email for {this.props.userdetails.username}</Modal.Title>
         </Modal.Header>
@@ -132,7 +132,7 @@ class ChangePreferredEmail extends Component {
           </Row>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleClose}>
+          <Button variant="light" onClick={this.handleClose}>
             Close
           </Button>
           <Button variant="primary" onClick={this.changePreferredEmail}>
@@ -167,7 +167,7 @@ class ChangeUserShell extends Component {
   }
   render() {
     return (
-      <Modal show={this.props.show} onHide={this.handleClose}>
+      <Modal backdrop="static" show={this.props.show} onHide={this.handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Change shell for {this.props.userdetails.username}</Modal.Title>
         </Modal.Header>
@@ -183,7 +183,7 @@ class ChangeUserShell extends Component {
           </Row>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleClose}>
+          <Button variant="light" onClick={this.handleClose}>
             Close
           </Button>
           <Button variant="primary" onClick={this.userChangeShell}>
@@ -239,7 +239,7 @@ class AddRemoveEPPNs extends Component {
   }
   render() {
     return (
-      <Modal show={this.props.show} onHide={this.handleClose}>
+      <Modal backdrop="static" show={this.props.show} onHide={this.handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Add remove EPPN's for {this.props.userdetails.username}</Modal.Title>
         </Modal.Header>
@@ -258,7 +258,7 @@ class AddRemoveEPPNs extends Component {
           </InputGroup>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleClose}>
+          <Button variant="light" onClick={this.handleClose}>
             Close
           </Button>
         </Modal.Footer>
@@ -284,7 +284,7 @@ class StorageQuotaRequest extends Component {
   }
   render() {
     return (
-      <Modal show={this.props.show} onHide={this.handleClose}>
+      <Modal backdrop="static" show={this.props.show} onHide={this.handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Quota request for {this.props.userdetails.username}</Modal.Title>
         </Modal.Header>
@@ -304,7 +304,7 @@ class StorageQuotaRequest extends Component {
           </Row>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleClose}>
+          <Button variant="light" onClick={this.handleClose}>
             Close
           </Button>
           <Button variant="primary" onClick={this.quotaRequest}>
@@ -360,7 +360,7 @@ class RequestPublicHTML extends Component {
   }
   render() {
     return (
-      <Modal show={this.props.show} onHide={this.handleClose}>
+      <Modal backdrop="static" show={this.props.show} onHide={this.handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Enable public HTML for {this.props.userdetails.username}</Modal.Title>
         </Modal.Header>
@@ -377,7 +377,7 @@ class RequestPublicHTML extends Component {
           </Row>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleClose}>
+          <Button variant="light" onClick={this.handleClose}>
             Close
           </Button>
           <Button variant="primary" onClick={this.enablePublicHTML}>

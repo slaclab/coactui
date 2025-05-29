@@ -129,7 +129,7 @@ class AddComputeAllocation extends Component {
 
   render() {
     return (
-      <Modal show={this.props.showModal} onHide={() => {this.hideModal()}}>
+      <Modal backdrop="static" show={this.props.showModal} onHide={() => {this.hideModal()}}>
         <ModalHeader closeButton={true}>
           <ModalTitle>Allocate some compute for the repo <b className="em">{this.props.reponame}</b> on a new cluster</ModalTitle>
         </ModalHeader>
@@ -169,7 +169,7 @@ class AddComputeAllocation extends Component {
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button onClick={() => {this.hideModal()}}>
+          <Button variant="light" onClick={() => {this.hideModal()}}>
             Close
           </Button>
           <Button onClick={() => { this.props.applyNewAllocation(this.state.currentCluster, this.state.currentAllocation, this.state.currentBurstAllocation) }}>
@@ -198,7 +198,7 @@ class UpdateComputeAllocation extends Component {
     const showalloc = !fixedzero, zeroalloc = fixedzero;
 
     return (
-      <Modal show={this.props.showModal} onHide={() => {this.hideModal()}}>
+      <Modal backdrop="static" show={this.props.showModal} onHide={() => {this.hideModal()}}>
         <ModalHeader closeButton={true}>
           <ModalTitle>Update the compute allocation for the repo <b className="em">{this.props.reponame}</b> on the cluster <b className="em">{this.props.clustername}</b></ModalTitle>
         </ModalHeader>
@@ -228,7 +228,7 @@ class UpdateComputeAllocation extends Component {
           </InputGroup>
         </ModalBody>
         <ModalFooter>
-          <Button onClick={() => {this.props.hideModal()}}>
+          <Button variant="light" onClick={() => {this.props.hideModal()}}>
             Close
           </Button>
           <Button onClick={() => { 

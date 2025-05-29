@@ -126,7 +126,7 @@ class ConfirmStepsModal extends React.Component {
 
   render() {
     return (
-      <Modal show={this.props.show} onHide={() => {this.props.setShow(false)}}>
+      <Modal backdrop="static" show={this.props.show} onHide={() => {this.props.setShow(false)}}>
         <Modal.Header closeButton>
           <Modal.Title>{this.props.title}</Modal.Title>
         </Modal.Header>
@@ -139,7 +139,7 @@ class ConfirmStepsModal extends React.Component {
         </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => {this.props.setShow(false)}}>
+          <Button variant="light" onClick={() => {this.props.setShow(false)}}>
             Close
           </Button>
           <Fade in={this.state.allDone}>
@@ -162,7 +162,7 @@ class ReasonForRejectionModal extends React.Component {
 
   render() {
     return (
-      <Modal show={this.props.show} onHide={() => {this.props.setShow(false)}}>
+      <Modal backdrop="static" show={this.props.show} onHide={() => {this.props.setShow(false)}}>
         <Modal.Header closeButton>
           <Modal.Title>Explanation</Modal.Title>
         </Modal.Header>
@@ -176,7 +176,7 @@ class ReasonForRejectionModal extends React.Component {
         </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => {this.props.setShow(false)}}>
+          <Button variant="light" onClick={() => {this.props.setShow(false)}}>
             Close
           </Button>
           <Button onClick={() => { this.props.setShow(false); this.props.actuallyRejectRequest(this.state.notes)}}>
@@ -194,7 +194,7 @@ class UserDetails extends Component {
   }
   render() {
     return (
-      <Modal show={this.props.show} onHide={() => {this.props.setShow(false)}}>
+      <Modal backdrop="static" show={this.props.show} onHide={() => {this.props.setShow(false)}}>
       <Modal.Header closeButton>
         <Modal.Title>User Details for {this.props.userDetails.username}</Modal.Title>
       </Modal.Header>
@@ -208,7 +208,7 @@ class UserDetails extends Component {
         </Table>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={() => {this.props.setShow(false)}}>
+        <Button variant="light" onClick={() => {this.props.setShow(false)}}>
           Close
         </Button>
       </Modal.Footer>
@@ -235,7 +235,7 @@ class ReassignFacility extends Component {
 
   render() {
     return (
-      <Modal show={this.props.show} onHide={() => {this.props.setShow(false)}}>
+      <Modal backdrop="static" show={this.props.show} onHide={() => {this.props.setShow(false)}}>
       <Modal.Header closeButton>
         <Modal.Title>Reassign user account request for {this.props.req.eppn} to a new facility</Modal.Title>
       </Modal.Header>
@@ -249,7 +249,7 @@ class ReassignFacility extends Component {
         </InputGroup>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={this.makeChangeOnServer}>
+        <Button onClick={this.makeChangeOnServer}>
           Change Facility
         </Button>
       </Modal.Footer>
@@ -576,7 +576,7 @@ class RequestHistory extends Component {
     let cmbads = req2audit(this.props.req);
 
     return (
-      <Modal show={this.props.show} onHide={() => {this.props.setShow(false)}}>
+      <Modal backdrop="static" show={this.props.show} onHide={() => {this.props.setShow(false)}}>
       <Modal.Header closeButton>
         <Modal.Title>History of changes to {this.props.req.Id}</Modal.Title>
       </Modal.Header>
@@ -589,7 +589,7 @@ class RequestHistory extends Component {
         </Table>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={() => {this.props.setShow(false)}}>
+        <Button variant="light" onClick={() => {this.props.setShow(false)}}>
           Close
         </Button>
       </Modal.Footer>

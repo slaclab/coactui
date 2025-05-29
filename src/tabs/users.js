@@ -12,7 +12,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Toast from 'react-bootstrap/Toast';
 import ToastContainer from 'react-bootstrap/ToastContainer';
-import { faPersonArrowUpFromLine, faPersonArrowDownToLine, faClipboard } from '@fortawesome/free-solid-svg-icons'
+import { faPersonArrowUpFromLine, faPersonArrowDownToLine, faClipboard, faTrash } from '@fortawesome/free-solid-svg-icons'
 import _ from "lodash";
 
 const REPODETAILS = gql`
@@ -128,6 +128,37 @@ class ManageRoleAction extends React.Component {
   }
 }
 
+class DeleteUserAction extends React.Component {
+  constructor(props) {
+    super(props);
+    let user = this.props.user;
+    this.state = { is_leader: user.is_leader, maximal_role: user.maximal_role }
+
+    this.deleteUser = (event) => {
+      if(user.is_pi) {
+        alert("NoNo");
+        return;
+      }
+      let donefn = (data) => {
+        console.log("Done function...");
+        let leaders = _.get(data, "repoToggleUserRole.leaders", []);
+        let is_leader = _.includes(leaders, user.username);
+        let maximal_role = is_leader ? "Leader" : "User";
+        this.setState({ is_leader: is_leader, maximal_role: maximal_role })
+      }
+      this.props.removeUserFromRepo(user.username, donefn);
+    }
+  }
+
+  render() {
+    let user = this.props.user;
+    if(this.props.user.is_pi) {
+      return (<span/>);
+    }
+    return (<span className="inlntlbr select_role px-2 text-warning float-end" title="Remove this user from the repo" onClick={this.deleteUser}><FontAwesomeIcon icon={faTrash}/></span>);
+  }
+}
+
 class UsersTab extends React.Component {
   constructor(props) {
     super(props);
@@ -166,7 +197,7 @@ class UsersTab extends React.Component {
   render() {
     return (
       <div className="container-fluid tabcontainer">
-        <Modal show={this.props.showModal} onHide={this.hideModal} size="lg">
+        <Modal backdrop="static" show={this.props.showModal} onHide={this.hideModal} size="lg">
             <ModalHeader closeButton={true}>
               <Modal.Title>Search for users and add/remove them to/from this repo.</Modal.Title>
             </ModalHeader>
@@ -206,8 +237,8 @@ class UsersTab extends React.Component {
               <tbody>
               {_.map(this.props.users, (user) => {
                 return (<tr key={user.username}>
-                  <td>{user.username}</td>
-                  <td className="manage_roles"><ManageRoleAction user={user} onToggleRole={this.props.onToggleRole}/></td>
+                  <td>{user.username}<DeleteUserAction user={user} removeUserFromRepo={this.props.removeUserFromRepo}/></td>
+                  <td><ManageRoleAction user={user} onToggleRole={this.props.onToggleRole}/></td>
                   <td colSpan="3"><Eppn user={user}/></td>
                   <td></td>
                   <td></td>
@@ -269,9 +300,14 @@ export default function Users(props) {
     }
   }
 
+  let removeUserFromRepo = function(username) { 
+    console.log("Removing user " + username + " from the repo " + reponame);
+    removeUserMutation({ variables: { reposinput: { name: reponame, facility: facilityname }, user: { username: username } }, refetchQueries: [ REPODETAILS, 'Repos' ], onError: (error) => { console.log("Error when toggling role " + error); } });
+  }
+
   return (<UsersTab repodata={repodata} users={allusers} getUsersMatchingUserNames={getUsersMatchingUserNames}
     onToggleRole={toggleRole} onSelDesel={addRemoveUser} amILeader={amILeader} amICzar={amICzar}
     showModal={showAddUserModal} setShowModal={setShowAddUserModal}
-    toolbaritems={toolbaritems} setToolbaritems={setToolbaritems}
+    toolbaritems={toolbaritems} setToolbaritems={setToolbaritems} removeUserFromRepo={removeUserFromRepo}
     />);
 }

@@ -318,7 +318,7 @@ class ChangeAllocationModal extends Component {
   }
   render() {
     return (
-      <Modal show={this.props.show} onHide={this.handleClose}>
+      <Modal backdrop="static" show={this.props.show} onHide={this.handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Change compute allocation for {this.props.reponame} on cluster {this.props.clustername}</Modal.Title>
         </Modal.Header>
@@ -340,7 +340,7 @@ class ChangeAllocationModal extends Component {
           </Row>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleClose}>
+          <Button variant="light" onClick={this.handleClose}>
             Close
           </Button>
           <Button variant="primary" onClick={this.changeAllocationRequest}>

@@ -82,7 +82,7 @@ class Impersonate extends Component {
 
   render() {
     return (
-      <Modal show={this.props.show} onHide={this.handleClose} onKeyPress={submitOnEnter(this.impersonate)} onEnter={this.loadUserNames}>
+      <Modal backdrop="static" show={this.props.show} onHide={this.handleClose} onKeyPress={submitOnEnter(this.impersonate)} onEnter={this.loadUserNames}>
         <Modal.Header closeButton>
           <Modal.Title>Impersonate user</Modal.Title>
         </Modal.Header>
@@ -93,7 +93,7 @@ class Impersonate extends Component {
           </InputGroup>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleClose}>
+          <Button variant="light" onClick={this.handleClose}>
             Close
           </Button>
           <Button variant="primary" onClick={this.impersonate}>

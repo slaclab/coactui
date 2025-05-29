@@ -2,14 +2,6 @@ import _ from "lodash";
 import { NavLink } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import React, { Component, useState } from 'react';
-import Button from 'react-bootstrap/Button';
-import Container from 'react-bootstrap/Container';
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
-import Modal from 'react-bootstrap/Modal';
-import Form from 'react-bootstrap/Form';
-import InputGroup from 'react-bootstrap/InputGroup';
-import ListGroup from 'react-bootstrap/ListGroup';
 
 const REPOS = gql`
 query{
