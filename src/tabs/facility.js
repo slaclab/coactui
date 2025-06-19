@@ -18,9 +18,10 @@ import { SearchAndAdd } from "./widgets";
 import { TeraBytes } from './widgets';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faEdit } from '@fortawesome/free-solid-svg-icons'
+import dayjs, { Dayjs } from "dayjs";
 
 const FACILITYDETAILS = gql`
-query Facility($facilityinput: FacilityInput){
+query Facility($facilityinput: FacilityInput, $facilityname: String!, $ytdrange: ReportRangeInput!, $lastyearrange: ReportRangeInput!){
   facility(filter:$facilityinput) {
     name
     description
@@ -57,7 +58,23 @@ query Facility($facilityinput: FacilityInput){
     facility
     percentUsed
     resourceHours
-  }  
+  }
+  ytd:reportFacilityComputeUsageByCluster(facility:$facilityname, range:$ytdrange) {
+    clustername
+    availableResourceHours
+    nodecpucount
+    percentUsed
+    purchased
+    usedResourceHours
+  }
+  lastyear:reportFacilityComputeUsageByCluster(facility:$facilityname, range:$lastyearrange) {
+    clustername
+    availableResourceHours
+    nodecpucount
+    percentUsed
+    purchased
+    usedResourceHours
+  }
   whoami {
     username
     isAdmin
@@ -285,8 +302,15 @@ class UpdateComputePurchase extends Component {
 function ComputeUsage(props) {
   const { periodname, recentusagebycluster, facilityname, clustername } = props;
   let usage = _.find(_.get(recentusagebycluster, periodname), {facility: facilityname, clustername: clustername}) ?? { percentUsed: 0, resourceHours: 0 };
-  return (<span title={usage.resourceHours + " resource hours"}>{usage.percentUsed.toFixed(2) + "%"}</span>)
+  return (<span title={usage.resourceHours.toFixed(2) + " resource hours"}>{usage.percentUsed.toFixed(2) + "%"}</span>)
 }
+
+function YTDComputeUsage(props) {
+  const { usage, clustername } = props;
+  let clusterusage = _.find(usage, ["clustername", clustername]) ?? {usedResourceHours: 0, percentUsed: 0};
+  return (<span title={clusterusage.usedResourceHours.toFixed(2) + " resource hours"}>{clusterusage.percentUsed.toFixed(2) + "%"}</span>)
+}
+
 
 class FacilityComputePurchases extends Component {
   constructor(props) {
@@ -300,36 +324,39 @@ class FacilityComputePurchases extends Component {
 
   render() {
     return (
-      <Col>
+      <Col md={7}>
         <Card className="facrsc">
           <Card.Header>Compute {this.props.isAdmin ? (<span className="px-1 text-warning" title="Add new compute purchase" onClick={() => { this.setState({showAddModal: true, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faPlus}/></span>) : (<span></span>)}</Card.Header>
           <Card.Body className="pt-0">
-            <Row className="hdr">
-              <Col md={6}><span className="tbllbl"></span></Col>
-              <Col md={6} className="text-center"><span className="tbllbl">% Used</span></Col>
-            </Row>
-            <Row className="hdr py-2">
-              <Col md={2}><span className="tbllbl">Cluster</span></Col>
-              <Col md={2}><span className="tbllbl" title="Number of nodes">Acquired nodes</span></Col>
-              <Col md={2} className="text-end"><span className="tbllbl">Total allocated (%)</span></Col>
-              <Col md={2} className="text-end"><span className="tbllbl">Past hour</span></Col>
-              <Col md={2} className="text-end"><span className="tbllbl">Past day</span></Col>
-              <Col md={2} className="text-end"><span className="tbllbl">Past week</span></Col>
-            </Row>
+            <div className="fcprnt subtitle">
+              <span className="blnk"></span>
+              <span className="used">% Used</span>
+            </div>
+            <div className="py-2 fcprnt fcrow title">
+              <span className="cluster">Cluster</span>
+              <span className="purchased" title="Number of nodes">Purchased</span>
+              <span className="allocated">Allocated</span>
+              <span className="hour">Past hour</span>
+              <span className="day">Past day</span>
+              <span className="week">Past week</span>
+              <span className="year">Last year</span>
+              <span className="ytd">Year to date</span>
+            </div>
             {
               _.map(_.sortBy(this.props.facility.computepurchases, "clustername"), (p) => { 
                 let clusterinfo = this.clusterInfos[p.clustername];
                 // console.log(_.get(_.find(_.get(this.props.recentusagebycluster, "pastHour"), {facility: this.props.facility.name, clustername: p.clustername}), "percent"));
-                console.log(this.props.recentusagebycluster);
                 return (
-                <Row key={p.clustername} className="py-2 text-end">
-                  <Col md={2} className="text-start"><NavLink to={"/clusterusage/"+p.clustername} key={p.clustername}>{p.clustername}</NavLink></Col>
-                  <Col md={2}>{p.purchased} {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased amount" onClick={() => { this.setState({showUpdateModal: true, updateModalClusterName: p.clustername, updateModalCurrentPurchase: p.purchased, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</Col>
-                  <Col md={2}>{p.allocated}</Col>
-                  <Col md={2} className="text-end"><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></Col>
-                  <Col md={2} className="text-end"><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></Col>
-                  <Col md={2} className="text-end"><ComputeUsage periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></Col>
-                </Row>
+                <div key={p.clustername} className="py-2 fcprnt fcrow">
+                  <span className="cluster"><span>{p.clustername}</span></span>
+                  <span className="purchased"><span>{p.purchased} {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased amount" onClick={() => { this.setState({showUpdateModal: true, updateModalClusterName: p.clustername, updateModalCurrentPurchase: p.purchased, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</span></span>
+                  <span className="allocated">{p.allocated}%</span>
+                  <span className="hour"><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></span>
+                  <span className="day"><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></span>
+                  <span className="week"><ComputeUsage periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></span>
+                  <span className="year"><YTDComputeUsage usage={this.props.recentusagebycluster.lastyear} clustername={p.clustername}></YTDComputeUsage></span>
+                  <span className="ytd"><YTDComputeUsage usage={this.props.recentusagebycluster.ytd} clustername={p.clustername}></YTDComputeUsage></span>
+                </div>
               ) })
             }
           </Card.Body>
@@ -784,7 +811,13 @@ class RequestNewFacility extends Component {
 
 export default function Facility(props) {
   let params = useParams();
-  const { loading, error, data } = useQuery(FACILITYDETAILS, { variables: { facilityinput: { name: params.facilityname ?? props.facilityname }}},  { errorPolicy: 'all'} );
+  const { loading, error, data } = useQuery(FACILITYDETAILS, { 
+    variables: { 
+      facilityinput: { name: params.facilityname ?? props.facilityname },
+      facilityname: params.facilityname ?? props.facilityname,
+      ytdrange: { "start": dayjs().startOf('year'), "end": dayjs().startOf('day').add(1, "day") },
+      lastyearrange: { "start": dayjs().startOf('year').subtract(1, "year"), "end": dayjs().startOf('year') }
+    }, errorPolicy: 'all'} );
   const [ getUsersMatchingUserName ] = useLazyQuery(USERMATCHINGUSERNAME);
   const [ getUserForEPPN ] = useLazyQuery(USERFOREPPN);
   const [ userLookupByUserName ] = useLazyQuery(USER_LOOKUP_BY_USERNAME);
@@ -854,7 +887,7 @@ export default function Facility(props) {
   let clusters = data.clusters;
   let storagenames = data.storagenames;
   let storagepurposes = data.storagepurposes;
-  const recentusagebycluster = {pastHour: data.pastHour, pastDay: data.pastDay, pastWeek: data.pastWeek}
+  const recentusagebycluster = {pastHour: data.pastHour, pastDay: data.pastDay, pastWeek: data.pastWeek, lastyear: data.lastyear, ytd: data.ytd}
   
 
   return (<div>

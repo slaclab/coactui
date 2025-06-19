@@ -316,9 +316,70 @@ ol, ul {
     background: $zebrabg;
   }
   .card-body {
+    padding-left: 0;
+    margin-left: 0;
+    padding-right: 0;
+    margin-right: 0;
     .hdr {
       background: $zebrabg;
     }  
+    .fcprnt {
+      display: grid;
+      grid-template-columns: repeat(100, 1fr);
+    }
+    .subtitle {
+      font-weight: bold;
+      text-align: center;
+      background: $zebrabg;
+      .blnk {
+        grid-column: 0 / 40;
+      }
+      .used {
+        grid-column: 50 / 100;
+      }
+    }
+    .title {
+      font-weight: bold;
+      text-align: center;
+    }
+    .fcrow:nth-child(even) {
+      background: $zebrabg;
+    }
+    .fcrow {
+      .cluster {
+        grid-column: 1 / span 14;
+        text-align: left;
+        padding-left: 0.5rem;
+      }
+      .purchased {
+        grid-column: 15 / span 14;
+        text-align: right;
+      }
+      .allocated {
+        grid-column: 30 / span 14;
+        text-align: right;
+      }
+      .hour {
+        grid-column: 50 / span 10;
+        text-align: right;
+      }
+      .day {
+        grid-column: 60 / span 10;
+        text-align: right;
+      }
+      .week {
+        grid-column: 70 / span 10;
+        text-align: right;
+      }
+      .year {
+        grid-column: 80 / span 10;
+        text-align: right;
+      }
+      .ytd {
+        grid-column: 90 / span 10;
+        text-align: right;
+      }
+    }
   }
 }
 
