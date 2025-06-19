@@ -357,7 +357,7 @@ class FacilityComputePurchases extends Component {
                 // console.log(_.get(_.find(_.get(this.props.recentusagebycluster, "pastHour"), {facility: this.props.facility.name, clustername: p.clustername}), "percent"));
                 return (
                 <div key={p.clustername} className="py-2 fcprnt fcrow">
-                  <span className="cluster"><span>{p.clustername}</span></span>
+                  <span className="cluster"><span><NavLink to={"/clusterusage/"+p.clustername} key={p.clustername}>{p.clustername}</NavLink></span></span>
                   <span className="purchased"><span>{p.purchased} {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased amount" onClick={() => { this.setState({showUpdateModal: true, updateModalClusterName: p.clustername, updateModalCurrentPurchase: p.purchased, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</span></span>
                   <span className="allocated">{p.allocated}%</span>
                   <span className="hour"><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></span>
@@ -755,7 +755,7 @@ class FacilityDetails extends Component {
             <Card>
               <Card.Header>Details</Card.Header>
               <Card.Body>
-                <Row>
+                <Row className="px-2">
                   <Col md={9}>
                     <Row><Col md={4}><span className="tbllbl">Name</span></Col><Col>{this.props.facility.name}</Col></Row>
                     <Row><Col md={4}>
@@ -788,7 +788,7 @@ class FacilityDetails extends Component {
           <Col>
             <Card>
               <Card.Header>Service Accounts</Card.Header>
-              <Card.Body>
+              <Card.Body className="px-2">
                 <Row><Col md={3}><span className="tbllbl">User</span></Col><Col md={5}>{_.get(this.props.facility, "serviceaccount")}</Col></Row>
                 <Row><Col md={3}><span className="tbllbl">Group</span></Col><Col md={5}>{_.get(this.props.facility, "servicegroup")}</Col></Row>
               </Card.Body>
