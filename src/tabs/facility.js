@@ -21,7 +21,7 @@ import { faPlus, faEdit } from '@fortawesome/free-solid-svg-icons'
 import dayjs, { Dayjs } from "dayjs";
 
 const FACILITYDETAILS = gql`
-query Facility($facilityinput: FacilityInput, $facilityname: String!, $ytdrange: ReportRangeInput!, $lastyearrange: ReportRangeInput!){
+query Facility($facilityinput: FacilityInput, $facilityname: String!, $ytdrange: ReportRangeInput!, $lastyearrange: ReportRangeInput!, $monthrange: ReportRangeInput!){
   facility(filter:$facilityinput) {
     name
     description
@@ -58,6 +58,14 @@ query Facility($facilityinput: FacilityInput, $facilityname: String!, $ytdrange:
     facility
     percentUsed
     resourceHours
+  }
+  pastMonth:reportFacilityComputeUsageByCluster(facility:$facilityname, range:$monthrange) {
+    clustername
+    availableResourceHours
+    nodecpucount
+    percentUsed
+    purchased
+    usedResourceHours
   }
   ytd:reportFacilityComputeUsageByCluster(facility:$facilityname, range:$ytdrange) {
     clustername
@@ -339,7 +347,8 @@ class FacilityComputePurchases extends Component {
               <span className="hour">Past hour</span>
               <span className="day">Past day</span>
               <span className="week">Past week</span>
-              <span className="year">Last year</span>
+              <span className="month">Past month</span>
+              <span className="year" title="Usage for all of last year">Last year</span>
               <span className="ytd">Year to date</span>
             </div>
             {
@@ -354,6 +363,7 @@ class FacilityComputePurchases extends Component {
                   <span className="hour"><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></span>
                   <span className="day"><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></span>
                   <span className="week"><ComputeUsage periodname={"pastWeek"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></span>
+                  <span className="month"><YTDComputeUsage usage={this.props.recentusagebycluster.pastMonth} clustername={p.clustername}></YTDComputeUsage></span>
                   <span className="year"><YTDComputeUsage usage={this.props.recentusagebycluster.lastyear} clustername={p.clustername}></YTDComputeUsage></span>
                   <span className="ytd"><YTDComputeUsage usage={this.props.recentusagebycluster.ytd} clustername={p.clustername}></YTDComputeUsage></span>
                 </div>
@@ -815,6 +825,7 @@ export default function Facility(props) {
     variables: { 
       facilityinput: { name: params.facilityname ?? props.facilityname },
       facilityname: params.facilityname ?? props.facilityname,
+      monthrange: { "start": dayjs().startOf('day').subtract(31, "day"), "end": dayjs().startOf('day').add(1, "day") },
       ytdrange: { "start": dayjs().startOf('year'), "end": dayjs().startOf('day').add(1, "day") },
       lastyearrange: { "start": dayjs().startOf('year').subtract(1, "year"), "end": dayjs().startOf('year') }
     }, errorPolicy: 'all'} );
@@ -887,7 +898,7 @@ export default function Facility(props) {
   let clusters = data.clusters;
   let storagenames = data.storagenames;
   let storagepurposes = data.storagepurposes;
-  const recentusagebycluster = {pastHour: data.pastHour, pastDay: data.pastDay, pastWeek: data.pastWeek, lastyear: data.lastyear, ytd: data.ytd}
+  const recentusagebycluster = {pastHour: data.pastHour, pastDay: data.pastDay, pastWeek: data.pastWeek, pastMonth: data.pastMonth, lastyear: data.lastyear, ytd: data.ytd}
   
 
   return (<div>
