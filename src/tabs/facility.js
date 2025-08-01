@@ -537,27 +537,26 @@ class FacilityStoragePurchases extends Component {
         <Card className="facrsc">
           <Card.Header>Storage {this.props.isAdmin ? (<span className="px-1 text-warning" title="Add new compute purchase" onClick={() => { this.setState({showAddModal: true, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faPlus}/></span>) : (<span></span>)}</Card.Header>
           <Card.Body className="pt-0">
-            <Row className="hdr">
-              <Col md={6}><span className="tbllbl"></span></Col>
-              <Col md={6} className="text-center"><span className="tbllbl">In TB</span></Col>
-            </Row>
-            <Row className="hdr py-2">
-              <Col md={3}><span className="tbllbl">Storage Class</span></Col>
-              <Col md={3}><span className="tbllbl">Purpose</span></Col>
-              <Col md={2} className="text-end"><span className="tbllbl">Acquired</span></Col>
-              <Col md={2} className="text-end"><span className="tbllbl">Allocated</span></Col>
-              <Col md={2} className="text-end"><span className="tbllbl">Used</span></Col>
-            </Row>
+            <div className="fsprnt subtitle">
+              <span className="blnk"></span>
+              <span className="intb">In TB</span>
+            </div>
+            <div className="py-2 fsprnt fsrow title">
+              <span className="sclass">Storage Class</span>
+              <span className="purpose">Purpose</span>
+              <span className="acquired">Acquired</span>
+              <span className="allocated">Allocated</span>
+              <span className="used">Used</span>
+            </div>
             {
               _.map(_.sortBy(this.props.facility.storagepurchases, "purpose"), (p) => { return (
-                <Row key={p.storagename+p.purpose} className="py-2">
-                  <Col md={3}><NavLink to={"/storageusage/"+p.storagename} key={p.storagename}>{p.storagename}</NavLink></Col>
-                  <Col md={3}><NavLink to={"/storageusage/"+p.storagename+"/purpose/"+p.purpose} key={p.storagename+p.purpose}>{p.purpose}</NavLink></Col>
-                  <Col md={2} className="text-end"><TeraBytes value={p.purchased}/> {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased storage" onClick={() => { this.setState({showUpdateModal: true, updateModalPurpose: p.purpose, updateModalStorageName: p.storagename, updateModalCurrentPurchase: p.purchased, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</Col>
-                  <Col md={2} className="text-end"><TeraBytes value={p.allocated}/></Col>
-                  <Col md={2} className="text-end"><TeraBytes value={p.used}/></Col>
-                </Row>
-
+                <div key={p.storagename+p.purpose} className="py-2 fsprnt fsrow">
+                  <span className="sclass"><NavLink to={"/storageusage/"+p.storagename} key={p.storagename}>{p.storagename}</NavLink></span>
+                  <span className="purpose"><NavLink to={"/storageusage/"+p.storagename+"/purpose/"+p.purpose} key={p.storagename+p.purpose}>{p.purpose}</NavLink></span>
+                  <span className="acquired"><TeraBytes value={p.purchased}/> {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased storage" onClick={() => { this.setState({showUpdateModal: true, updateModalPurpose: p.purpose, updateModalStorageName: p.storagename, updateModalCurrentPurchase: p.purchased, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</span>
+                  <span className="allocated"><TeraBytes value={p.allocated}/></span>
+                  <span className="used"><TeraBytes value={p.used}/></span>
+                </div>
               ) })
             }
           </Card.Body>
