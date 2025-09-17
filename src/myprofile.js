@@ -415,8 +415,6 @@ class UserDetails extends Component {
                 <Row className="my-1"><Col md={3}><span className="tbllbl">User as of</span></Col><Col><DateTimeDisp value={this.props.userdetails.earliestCompletedUserAccountRegistration}/></Col></Row>
                 
                 <hr/>
-                <Row><Col md={3}><span className="tbllbl">Preferred Email</span></Col><Col md={5}>{this.props.userdetails.preferredemail}</Col><Col><Button variant="secondary" onClick={this.showPrefEmailModal}>Change</Button></Col></Row>
-                <hr/>
                 <Row><Col md={3}><span className="tbllbl">Shell</span></Col><Col md={5}>{this.props.userdetails.shell}</Col><Col><Button disabled={false} variant="secondary" onClick={this.showUserShellModal}>Change my shell</Button></Col></Row>
                 <hr/>
                 <Col>
