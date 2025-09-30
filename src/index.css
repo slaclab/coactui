@@ -10842,50 +10842,57 @@ ol, ul {
   grid-column: 0/30;
 }
 #facilities .card-body .fcprnt.subtitle .used {
-  grid-column: 31/100;
+  grid-column: 41/100;
 }
 #facilities .card-body .title {
   font-weight: bold;
   text-align: center;
 }
+#facilities .card-body .title .past {
+  color: rgb(83, 86, 90);
+}
 #facilities .card-body .fcrow:nth-child(even) {
   background: rgb(244, 244, 244);
 }
 #facilities .card-body .fcrow .cluster {
-  grid-column: 1/span 10;
+  grid-column: 1/span 9;
   text-align: left;
   padding-left: 0.5rem;
 }
 #facilities .card-body .fcrow .purchased {
-  grid-column: 11/span 10;
+  grid-column: 10/span 7;
+  text-align: right;
+}
+#facilities .card-body .fcrow .burst {
+  grid-column: 18/span 7;
   text-align: right;
 }
 #facilities .card-body .fcrow .allocated {
-  grid-column: 21/span 10;
+  grid-column: 30/span 9;
   text-align: right;
 }
 #facilities .card-body .fcrow .hour {
-  grid-column: 31/span 11;
+  grid-column: 40/span 9;
   text-align: right;
 }
 #facilities .card-body .fcrow .day {
-  grid-column: 42/span 11;
+  grid-column: 50/span 9;
   text-align: right;
 }
 #facilities .card-body .fcrow .week {
-  grid-column: 53/span 11;
+  grid-column: 60/span 9;
   text-align: right;
 }
 #facilities .card-body .fcrow .month {
-  grid-column: 64/span 11;
+  grid-column: 70/span 9;
   text-align: right;
 }
 #facilities .card-body .fcrow .year {
-  grid-column: 75/span 11;
+  grid-column: 80/span 9;
   text-align: right;
 }
 #facilities .card-body .fcrow .ytd {
-  grid-column: 86/span 14;
+  grid-column: 90/span 9;
   text-align: right;
   padding-right: 0.5rem;
 }

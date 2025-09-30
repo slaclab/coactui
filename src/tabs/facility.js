@@ -16,6 +16,7 @@ import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { SearchAndAdd } from "./widgets";
 import { TeraBytes } from './widgets';
+import { TwoPrecFloat } from './widgets';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faEdit } from '@fortawesome/free-solid-svg-icons'
 import dayjs, { Dayjs } from "dayjs";
@@ -31,6 +32,7 @@ query Facility($facilityinput: FacilityInput, $facilityname: String!, $ytdrange:
     computepurchases {
       clustername
       purchased
+      burstPercent
       allocated
     }
     storagepurchases {
@@ -144,8 +146,8 @@ mutation requestNewSDFAccount($request: CoactRequestInput!){
 `;
 
 const ADDUPDT_COMPUTE_PURCHASE = gql`
-mutation facilityAddUpdateComputePurchase($facilityinput: FacilityInput!, $clusterinput: ClusterInput!, $purchase: Float!) {
-  facilityAddUpdateComputePurchase(facility: $facilityinput, cluster: $clusterinput, purchase: $purchase){
+mutation facilityAddUpdateComputePurchase($facilityinput: FacilityInput!, $clusterinput: ClusterInput!, $purchase: Float!, $burstPercent: Float!) {
+  facilityAddUpdateComputePurchase(facility: $facilityinput, cluster: $clusterinput, purchase: $purchase, burstPercent: $burstPercent){
     Id
   }
 }
@@ -199,8 +201,9 @@ mutation facilityUpdateDescription($facilityinput: FacilityInput!, $newdescripti
 class AddComputePurchase extends Component {
   constructor(props) {
     super(props);
-    this.state = { clustername: "", currentPurchase: props.currentpurchase, clusterInvalid: false }
+    this.state = { clustername: "", currentPurchase: props.currentpurchase, burstPercent: 0, clusterInvalid: false }
     this.setPurchase = (event) => { this.setState({currentPurchase: event.target.value}) }
+    this.setBurst = (event) => { this.setState({burstPercent: event.target.value}) }
     this.setCluster = (event) => {
       let clustername = event.target.value;
       if (_.isEmpty(clustername)) {
@@ -214,7 +217,7 @@ class AddComputePurchase extends Component {
         this.setState({clusterInvalid: true})
         return
       }
-      this.props.applyNewPurchase(this.state.clustername, this.state.currentPurchase);
+      this.props.applyNewPurchase(this.state.clustername, this.state.currentPurchase, this.state.burstPercent);
     }
   }
 
@@ -259,6 +262,11 @@ class AddComputePurchase extends Component {
               <Form.Control type="number" onBlur={this.setPurchase} isInvalid={this.props.isError} defaultValue={this.props.currentpurchase}/>
               <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
             </InputGroup>
+            <InputGroup hasValidation>
+              <InputGroup.Text>Burst Percent:</InputGroup.Text>
+              <Form.Control type="number" onBlur={this.setBurst} isInvalid={this.props.isError} defaultValue={this.props.burstPercent}/>
+              <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
+            </InputGroup>
           </Row>
         </ModalBody>
         <ModalFooter>
@@ -277,13 +285,20 @@ class AddComputePurchase extends Component {
 class UpdateComputePurchase extends Component {
   constructor(props) {
     super(props);
-    this.state = { currentPurchase: props.currentpurchase }
+    this.state = { currentPurchase: props.currentpurchase, burstPercent: props.burstPercent }
     this.setPurchase = (event) => { this.setState({currentPurchase: event.target.value}) }
+    this.setBurst = (event) => { this.setState({burstPercent: event.target.value}) }
   }
 
   render() {
     return (
-      <Modal backdrop="static" show={this.props.showModal} onHide={() => {this.props.setShowModal(false)}}>
+      <Modal backdrop="static"
+        show={this.props.showModal}
+        onShow={() => {this.setState({
+          currentPurchase: this.props.currentpurchase,
+          burstPercent: this.props.burstPercent
+        })}} 
+        onHide={() => {this.props.setShowModal(false)}}>
         <ModalHeader closeButton={true}>
           <ModalTitle>Update the compute purchase for the facility <b className="em">{this.props.facility.name}</b> on the cluster <b className="em">{this.props.clustername}</b></ModalTitle>
         </ModalHeader>
@@ -293,12 +308,17 @@ class UpdateComputePurchase extends Component {
             <Form.Control type="number" onBlur={this.setPurchase} isInvalid={this.props.isError} defaultValue={this.props.currentpurchase}/>
             <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
           </InputGroup>
+          <InputGroup hasValidation>
+            <InputGroup.Text>Burst Percent:</InputGroup.Text>
+            <Form.Control type="number" onBlur={this.setBurst} isInvalid={this.props.isError} defaultValue={this.props.burstPercent}/>
+            <Form.Control.Feedback type="invalid">{this.props.errorMessage}</Form.Control.Feedback>
+          </InputGroup>
         </ModalBody>
         <ModalFooter>
           <Button variant="light" onClick={() => {this.props.setShowModal(false)}}>
             Close
           </Button>
-          <Button onClick={() => { this.props.applyNewPurchase(this.props.clustername, this.state.currentPurchase) }}>
+          <Button onClick={() => { this.props.applyNewPurchase(this.props.clustername, this.state.currentPurchase, this.state.burstPercent) }}>
             Done
           </Button>
         </ModalFooter>
@@ -324,8 +344,8 @@ class FacilityComputePurchases extends Component {
   constructor(props) {
     super(props);
     this.state = { showAddModal: false, showUpdateModal: false, updateModalClusterName: "", updateModalCurrentPurchase: 0, modalError: false, modalErrorMessage: ""};
-    this.applyNewPurchase = (clustername, newPurchase) => {
-      this.props.addUpdateComputePurchase(clustername, newPurchase, () => {this.setState({showAddModal: false, showUpdateModal: false})}, (message) => { this.setState({modalError: true, modalErrorMessage: message})})
+    this.applyNewPurchase = (clustername, newPurchase, burstPercent) => {
+      this.props.addUpdateComputePurchase(clustername, newPurchase, burstPercent, () => {this.setState({showAddModal: false, showUpdateModal: false})}, (message) => { this.setState({modalError: true, modalErrorMessage: message})})
     }
     this.clusterInfos = _.keyBy(this.props.clusters, "name");
   }
@@ -343,13 +363,14 @@ class FacilityComputePurchases extends Component {
             <div className="py-2 fcprnt fcrow title">
               <span className="cluster">Cluster</span>
               <span className="purchased" title="Number of nodes">Purchased</span>
+              <span className="burst" title="A facility wide limit on the number of nodes to burst">Burst</span>
               <span className="allocated">Allocated</span>
-              <span className="hour">Past hour</span>
-              <span className="day">Past day</span>
-              <span className="week">Past week</span>
-              <span className="month">Past month</span>
-              <span className="year" title="Usage for all of last year">Last year</span>
-              <span className="ytd">Year to date</span>
+              <span className="hour past">Past hour</span>
+              <span className="day past">Past day</span>
+              <span className="week past">Past week</span>
+              <span className="month past">Past month</span>
+              <span className="year past" title="Usage for all of last year">Last year</span>
+              <span className="ytd past">Year to date</span>
             </div>
             {
               _.map(_.sortBy(this.props.facility.computepurchases, "clustername"), (p) => { 
@@ -358,7 +379,8 @@ class FacilityComputePurchases extends Component {
                 return (
                 <div key={p.clustername} className="py-2 fcprnt fcrow">
                   <span className="cluster"><span><NavLink to={"/clusterusage/"+p.clustername} key={p.clustername}>{p.clustername}</NavLink></span></span>
-                  <span className="purchased"><span>{p.purchased} {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased amount" onClick={() => { this.setState({showUpdateModal: true, updateModalClusterName: p.clustername, updateModalCurrentPurchase: p.purchased, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</span></span>
+                  <span className="purchased"><span>{p.purchased} {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased amount" onClick={() => { this.setState({showUpdateModal: true, updateModalClusterName: p.clustername, updateModalCurrentPurchase: p.purchased, updateModalBurstPercent: p.burstPercent, modalError: false, modalErrorMessage: ""})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</span></span>
+                  <span className="burst"><span><TwoPrecFloat value={p.burstPercent}/></span></span>
                   <span className="allocated">{p.allocated}%</span>
                   <span className="hour"><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></span>
                   <span className="day"><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></span>
@@ -372,7 +394,7 @@ class FacilityComputePurchases extends Component {
           </Card.Body>
         </Card>
         <AddComputePurchase facility={this.props.facility} clusters={this.props.clusters} showModal={this.state.showAddModal} setShowModal={(val) => { this.setState({showAddModal: val})}} isError={this.state.modalError} errorMessage={this.state.modalErrorMessage} applyNewPurchase={this.applyNewPurchase} />
-        <UpdateComputePurchase facility={this.props.facility} showModal={this.state.showUpdateModal} setShowModal={(val) => { this.setState({showUpdateModal: val})}} clustername={this.state.updateModalClusterName} currentpurchase={this.state.updateModalCurrentPurchase} isError={this.state.modalError} errorMessage={this.state.modalErrorMessage} applyNewPurchase={this.applyNewPurchase}/>
+        <UpdateComputePurchase facility={this.props.facility} showModal={this.state.showUpdateModal} setShowModal={(val) => { this.setState({showUpdateModal: val})}} clustername={this.state.updateModalClusterName} currentpurchase={this.state.updateModalCurrentPurchase} burstPercent={this.state.updateModalBurstPercent} isError={this.state.modalError} errorMessage={this.state.modalErrorMessage} applyNewPurchase={this.applyNewPurchase}/>
       </Col>
     )
   }
@@ -860,10 +882,10 @@ export default function Facility(props) {
     }).catch(err => { console.log(err); onError(err.message)});
   };
 
-  let addUpdateComputePurchase = function(clustername, newPurchase, callWhenDone, onError) {
-    console.log("Updating compute for " + clustername + " to " + newPurchase);
+  let addUpdateComputePurchase = function(clustername, newPurchase, burstPercent, callWhenDone, onError) {
+    console.log("Updating compute for " + clustername + " to " + newPurchase + " and burst to " + burstPercent);
     addUpdtComputePurchase({ 
-      variables: { facilityinput: { name: props.facilityname }, clusterinput: { name: clustername }, purchase: _.toNumber(newPurchase) }, 
+      variables: { facilityinput: { name: props.facilityname }, clusterinput: { name: clustername }, purchase: _.toNumber(newPurchase), burstPercent: _.toNumber(burstPercent) }, 
       refetchQueries: [ FACILITYDETAILS, 'Facility' ], 
       onCompleted: (data) => { callWhenDone(data)},
       onError: (error) => { console.log(error); onError(error.message) } })
