@@ -1,4 +1,4 @@
-import React, { Component, useState } from "react";
+import React, { Component, useState, useEffect } from "react";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import { NavLink } from "react-router-dom";
 import _ from "lodash";
@@ -12,11 +12,10 @@ import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
 import Alert from 'react-bootstrap/Alert';
 import InputGroup from 'react-bootstrap/InputGroup';
+import ListGroup from 'react-bootstrap/ListGroup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faXmark, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faXmark, faPlus, faRefresh, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { DateTimeDisp, TwoPrecFloat } from './tabs/widgets'
-
-
 
 const HOMEDETAILS = gql`
 query {
@@ -93,6 +92,205 @@ mutation requestUserQuota($request: CoactRequestInput!){
   }
 }
 `;
+
+const SSHKeysService = process.env.REACT_APP_SLAC_MFA_SSH_KEYS_SERVER;
+
+function SSHKeysComponent(props) {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [upModal, setUpModal] = useState(false);
+  const [ref, setref] = useState(0); // Use this to force a refresh
+  const user = props.username;
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch(SSHKeysService + "/api/list/"+user);
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const result = await response.json();
+        setData(result);
+      } catch (error) {
+        setError(error);
+      }
+    }
+
+    fetchData();
+  }, [ref]); // Empty dependency array means this runs once on mount
+
+  if (error) return <div>Error: {error.message}</div>;
+  if (!data) return <div>Loading...</div>;
+
+  console.log(data);
+
+  const refreshSSHKey = async function(fingerprint) {
+    console.log("Need to refresh fingerprint", fingerprint);
+    const response = await fetch(SSHKeysService + "refresh/"+user+"/"+fingerprint, {method: "PATCH"});
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const result = await response.json();
+    console.log(result);
+    setref((ref) => ref + 1);
+  }
+
+  const inactivateSSHKey = async function(fingerprint) {
+    console.log("Inactivating fingerprint", fingerprint);
+    const response = await fetch(SSHKeysService + "inactivate/"+user+"/"+fingerprint, {method: "DELETE"});
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const result = await response.text();
+    console.log(result);
+    setref((ref) => ref + 1);
+  }
+
+  const showSSHKeyUploadModal = function() {
+    setUpModal(true);
+  }
+
+  const closeSSHKeyModal = function() { 
+    setUpModal(false);
+    setref((ref) => ref + 1);    
+  }
+
+  return (<div>
+    <div className="sshkey header">
+      <span className="fp">Fingerprint</span>
+      <span className="ac">Is Active</span>
+      <span className="ca">Created At</span>
+      <span className="vu">Valid Until</span>
+      <span className="ea">Expires At</span>
+      <span className="actions">
+        <Button variant="secondary" className="mx-1" onClick={showSSHKeyUploadModal} ><FontAwesomeIcon icon={faPlus} title="Upload a new SSH public key"/></Button>
+      </span>
+    </div>{_.map(data, (sk) => (
+    <div key={sk["finger_print"]} className="sshkey">
+      <span className="fp">{sk["finger_print"]}</span>
+      <span className="ac">{sk["is_active"]}</span>
+      <span className="ca"><DateTimeDisp value={sk["created_at"]}/></span>
+      <span className="vu"><DateTimeDisp value={sk["valid_until"]}/></span>
+      <span className="ea"><DateTimeDisp value={sk["expires_at"]}/></span>
+      <span className="actions">
+        <Button variant="secondary" className="mx-1" onClick={() => refreshSSHKey(sk["finger_print"])} title="Renew the SSH public key for another 24 hours"><FontAwesomeIcon icon={faRefresh}/></Button>
+        <Button variant="secondary" className="mx-1" onClick={() => inactivateSSHKey(sk["finger_print"])} title="Invalide this SSH public key"><FontAwesomeIcon icon={faXmark}/></Button>
+      </span>
+    </div>
+    ))}
+    <UploadSSHKeyModal show={upModal} closeModal={closeSSHKeyModal} username={user}/>
+    </div>);
+}
+
+
+class UploadSSHKeyModal extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {isInvalid: false, validationMsg: "", pubkey: ""}
+    this.uploadPublicKey = () => {
+      if(_.isNil(this.state.pubkey) || this.state.pubkey.length <=0) {
+        this.setState({isInvalid: true, validationMsg: "Please enter a valid SSH public key"});
+        return;
+      }
+      const processResponse = async (resp) => { 
+        if(resp.ok) {
+          return resp.json()
+        } else {
+          const respdata = await resp.text(); 
+          return Promise.reject(new Error(resp.statusText + " --> " + respdata));
+        }
+      }
+      fetch(SSHKeysService + "upload/"+this.props.username, {
+        method: "POST", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: this.props.username, public_key: this.state.pubkey })
+      })
+      .then((resp) => { return processResponse(resp) })
+      .then((status) => { props.closeModal() })
+      .catch((err) => { this.setState({isInvalid: true, validationMsg: err.message})})
+    }
+    this.handleClose = function() { 
+      props.closeModal();
+    }
+  }
+  render() {
+    const placeholder = `---- BEGIN SSH2 PUBLIC KEY ----
+Comment: "256-bit ED25519, converted by user@mylaptop from OpenSSH"
+AAAAC3NzaC1lZDI1NTE5AAAAIG+FlqJttIGCNqIewiBPCCTCN2EACKMs8uOCaTlPOY5q
+---- END SSH2 PUBLIC KEY ----`;
+    return (
+      <Modal backdrop="static" show={this.props.show} onHide={this.handleClose} className="sshkeymodal" size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Upload SSH Public key</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="instructions">
+            <p>This page provides instructions for generating a new SSH keypair for use with S3DF. Specifically, we present shell commands that you should paste into your local (eg laptop) terminal that will create a SSH private and public keypair. You will then be able to utilize this keypair to SSH into S3DF without having to always enter a username, password and 2factor (duo).</p>
+            <p>Our implementation also considers the use of time limited SSH keys, so the generated keypair that is only valid for a limited time period. This is currently set to a maximum of 7 days. For further security, you will also need to refresh' your keys at least every 25 hours for the keypair to be valid.</p>
+            <p>You may generate as may keypairs as you like and on as many computers as you like. However, you must register each public key with our service before you can use it to access S3DF.</p>
+            <p>To create a new private key, please use the enter commands on the computer terminal:</p>
+            <ListGroup className="codeinstructions">
+              <ListGroup.Item>
+                <div className="comment">Setup the local directories for the keypairs</div>
+                <code>mkdir -p ~/.ssh/s3df && chmod 700 ~/.ssh/s3df</code>
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <div className="comment">Generate a new keypair</div>
+                <code>ssh-keygen -t ed25519 -f ~/.ssh/s3df/temp-key -C "{this.props.username}"</code>
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <div className="comment">Determine the SHA256 fingerprint and move the key to the correct location</div>
+                <code>fingerprint=$(ssh-keygen -lf ~/.ssh/s3df/temp-key | cut -f2 -d' ' | sed 's|[/+]|.|g')</code>
+                <code>mv ~/.ssh/s3df/temp-key ~/.ssh/s3df/&#36;&#123;fingerprint&#125;</code>
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <div className="comment">Perhaps just delete this?</div>
+                <code>mv ~/.ssh/s3df/temp-key.pub ~/.ssh/s3df/&#36;&#123;fingerprint&#125;.pub</code>
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <div className="comment">Remove any old keypairs that are probably expired</div>
+                <code>find ~/.ssh/s3df -type f -name 'SHA256:*' ! -name '*.pub' -print0 -atime +14 # -delete</code>
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <div className="comment">Configure your local ssh configuration to include the s3df config</div>
+                <code>grep -q "Include ~/.ssh/s3df/s3df.conf" ~/.ssh/config || sed -i '1s@^@Include ~/.ssh/s3df/s3df.conf\n\n@' ~/.ssh/config</code>
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <div className="comment">Add s3df ssh dropin config to utilize the private key when ssh'ing into S3DF</div>
+                <code>cat &gt; ~/.ssh/s3df/s3df.conf &lt;&lt; EOF</code>
+                <code>Host sdfssh001 sdfssh001.slac.stanford.edu sdfssh001.sdf.slac.stanford.edu sdfssh002 sdfssh002.slac.stanford.edu sdfssh002.sdf.slac.stanford.edu s3dflogin-mfa.slac.stanford.edu
+&#36;(find ~/.ssh/s3df -type f -name 'SHA256:*' ! -name '*.pub' -print0 | xargs -0 -n1 echo '    IdentityFile ')</code>
+                <code>EOF</code>
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <div className="comment">Determine the public key for your newly minted keypair - this must be uploaded to our servers so that you can use this keypair to access S3DF</div>
+                <code>ssh-keygen -e -f ~/.ssh/s3df/&#36;&#123;fingerprint&#125;</code>
+              </ListGroup.Item>
+            </ListGroup>
+            <p>The output from the previous set of commands provides the ssh public key that we can use to identify you on our servers when you use the associated private key to ssh into our systems.</p>
+            <p>Please enter this public key into the following form so that it may be registered.</p>
+            <Form noValidate>
+              <Form.Group className="mb-3">
+                <Form.Label>Upload your SSH public key</Form.Label>
+                <Form.Control as="textarea" rows={5} placeholder={placeholder} isInvalid={this.state.isInvalid} onChange={(ev) => this.setState({isInvalid: false, validationMsg: "", pubkey: ev.target.value})}/>
+                <Form.Control.Feedback type="invalid">{this.state.validationMsg}</Form.Control.Feedback>
+              </Form.Group>
+            </Form>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="light" onClick={this.handleClose}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={this.uploadPublicKey}>
+            Upload
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    )
+  }
+}
+
 
 class ChangePreferredEmail extends Component {
   constructor(props) {
@@ -470,6 +668,18 @@ class UserDetails extends Component {
               </Row>
           </Col>
         </Row>
+        <Row>
+          <Col className="mx-2">
+              <Row>
+                <Card className="px-0">
+                  <Card.Header>SSH Public Keys</Card.Header>
+                  <Card.Body>
+                    <SSHKeysComponent username={this.props.userdetails.username}></SSHKeysComponent>
+                  </Card.Body>
+                </Card>
+              </Row>
+          </Col>
+        </Row>
       </Container>
       </>
     );
@@ -489,6 +699,8 @@ export default function MyProfile() {
   const [updtEppnShow, setUpdtEppnShow] = useState(false);
   const [updtPrefEmail, setUpdtPrefEmail] = useState(false);
   const [enblPublicHtml, setEnblPublicHtml] = useState(false);
+
+  console.log("Using the SSH MFA key service at " + SSHKeysService);
 
   const userChangeShell = (newshell) => {
     console.log("Requesting a change to user shell to " + newshell);
@@ -523,7 +735,7 @@ export default function MyProfile() {
   if (loading) return <p>Loading...</p>;
 //  if (error) return <p>Error :</p>;
 
-	  console.log(data);
+  console.log(data);
 
   return (
     <>

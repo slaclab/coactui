@@ -11080,5 +11080,48 @@ ol, ul {
   font-weight: bold;
   color: rgb(177, 4, 14);
 }
+#myprofile .sshkey.header {
+  font-weight: bold;
+  padding-bottom: 0.5rem;
+}
+#myprofile .sshkey:nth-child(even) {
+  background-color: rgb(244, 244, 244);
+}
+#myprofile .sshkey {
+  display: grid;
+  grid-template-columns: repeat(100, 1fr);
+  align-items: center;
+  padding: 0.25rem;
+}
+#myprofile .sshkey .fp {
+  grid-column: 1/span 29;
+}
+#myprofile .sshkey .ac {
+  grid-column: 30/span 4;
+}
+#myprofile .sshkey .ca {
+  grid-column: 40/span 14;
+}
+#myprofile .sshkey .vu {
+  grid-column: 55/span 14;
+}
+#myprofile .sshkey .ea {
+  grid-column: 70/span 14;
+}
+#myprofile .sshkey .actions {
+  grid-column: 85/span 14;
+}
+
+.sshkeymodal .codeinstructions .comment {
+  padding-bottom: 0.25rem;
+}
+.sshkeymodal .codeinstructions code {
+  padding-bottom: 0.25rem;
+  display: block;
+}
+.sshkeymodal textarea {
+  font-size: 0.8rem;
+  font-family: monospace;
+}
 
 /*# sourceMappingURL=index.css.map */

@@ -587,5 +587,54 @@ ol, ul {
     padding-right: 8px;
     font-weight: bold;
     color: $primary;
-  }  
+  }
+
+  .sshkey.header {
+    font-weight: bold;
+    padding-bottom: 0.5rem;
+  }
+  .sshkey:nth-child(even) {
+    background-color: $zebrabg;
+  }
+  .sshkey {
+    display: grid;
+    grid-template-columns: repeat(100, 1fr);
+    align-items: center;
+    padding: 0.25rem;
+
+    .fp {
+      grid-column: 1 / span 29;
+    }
+    .ac {
+      grid-column: 30 / span 4;
+    }
+    .ca {
+      grid-column: 40 / span 14;
+    }
+    .vu {
+      grid-column: 55 / span 14;
+    }
+    .ea {
+      grid-column: 70 / span 14;
+    }
+    .actions {
+      grid-column: 85 / span 14;
+    }
+  }
+}
+
+.sshkeymodal {
+  .codeinstructions {
+    .comment {
+      padding-bottom: 0.25rem;
+    }
+    code {
+      padding-bottom: 0.25rem;
+      display: block;
+    }
+  }
+  textarea {
+    font-size: 0.8rem;
+    font-family: monospace;
+  }
 }
