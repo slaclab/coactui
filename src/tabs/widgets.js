@@ -13,7 +13,7 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import SLACLogo from '../images/SLAC_primary_red_small.png';
 import StanfordDOELogo from '../images/Stanford_DOE_black.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faRocket, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faMehBlank, faRocket, faTrash, faXmark } from '@fortawesome/free-solid-svg-icons'
 
 export function TwoPrecFloat(props) {
   if(_.isNil(props.value)) return "N/A";
@@ -53,6 +53,12 @@ export function DateTimeDisp(props) {
   if(_.isNil(props.value)) return "N/A";
   return dayjs(props.value).format('MMM D YYYY HH:mm:ss');
 }
+
+export function YesNo(props) {
+  if(_.isNil(props.value)) return (<span><FontAwesomeIcon icon={faMehBlank}/></span>);
+  return props.value ?  (<span className="text-info"><FontAwesomeIcon icon={faCheck} size="lg"/></span>) : (<span className="text-danger"><FontAwesomeIcon icon={faXmark} size="lg"/></span>);
+}
+
 
 // props 1) getmatches Function with callback with a list of matches for passed in srchtext - ideal for useLazyQuery. 2) selected - those that are currently selected. 3) onSelDesel - function to process selection/deselection.
 export class SearchAndAdd extends React.Component {

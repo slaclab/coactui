@@ -15,7 +15,7 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark, faPlus, faRefresh, faUpload } from '@fortawesome/free-solid-svg-icons'
-import { DateTimeDisp, TwoPrecFloat } from './tabs/widgets'
+import { DateTimeDisp, TwoPrecFloat, YesNo } from './tabs/widgets'
 
 const HOMEDETAILS = gql`
 query {
@@ -168,7 +168,7 @@ function SSHKeysComponent(props) {
     </div>{_.map(data, (sk) => (
     <div key={sk["finger_print"]} className="sshkey">
       <span className="fp">{sk["finger_print"]}</span>
-      <span className="ac">{sk["is_active"]}</span>
+      <span className="ac"><YesNo value={sk["is_active"]}/></span>
       <span className="ca"><DateTimeDisp value={sk["created_at"]}/></span>
       <span className="vu"><DateTimeDisp value={sk["valid_until"]}/></span>
       <span className="ea"><DateTimeDisp value={sk["expires_at"]}/></span>
