@@ -1,6 +1,7 @@
 FROM node:alpine
 
-# RUN apk add --no-cache bash curl
+# Used to associate the image with a source repository outside GHA
+LABEL org.opencontainers.image.source=https://github.com/slaclab/coactui
 
 WORKDIR /app
 COPY . /app
