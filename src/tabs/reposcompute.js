@@ -314,7 +314,11 @@ class ReposRows extends Component {
     }
     let rows = cas.length;
     let trs = _.map(cas, (a) => {
-      const clustersPurchased = _.map(_.get(this.facilityData, "computepurchases", []), "clustername");
+      // Only include clusters where facility has actually purchased resources (purchased > 0)
+      const clustersPurchased = _.map(
+        _.filter(_.get(this.facilityData, "computepurchases", []), p => p.purchased > 0),
+        "clustername"
+      );
       const clustersAllocated  = _.map(_.get(this.props.repo, "currentComputeAllocations", []), "clustername");
       const unAllocatedClusters = _.difference(clustersPurchased, clustersAllocated);
       let facilityPurchased = _.get(_.find(this.facilityData.computepurchases, ["clustername", a.clustername]), "purchased", 0.0);
@@ -426,7 +430,8 @@ class ReposTable extends Component {
         ret.facility = repoObj.facility;
         ret.facilityPurchased = facilityPurchased;
         const purchases = _.get(_.keyBy(this.props.facilities, "name"), repoObj.facility + ".computepurchases");
-        ret.clustersunallocated = _.difference(_.map(_.filter(purchases, p => p.purchased >= 0), "clustername"), _.map(_.get(repoObj, "currentComputeAllocations"), "clustername", []));
+        // Only show clusters where facility has actually purchased resources (purchased > 0)
+        ret.clustersunallocated = _.difference(_.map(_.filter(purchases, p => p.purchased > 0), "clustername"), _.map(_.get(repoObj, "currentComputeAllocations"), "clustername", []));
         ret.allocationStartTime = (new Date()).toISOString();
         ret.showAddModal = true;
         return ret;
