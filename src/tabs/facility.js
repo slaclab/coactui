@@ -33,7 +33,7 @@ query Facility($facilityinput: FacilityInput, $facilityname: String!, $ytdrange:
     computepurchases {
       clustername
       purchased
-      burstPercent
+      burstNodes
       allocated
     }
     storagepurchases {
@@ -147,8 +147,8 @@ mutation requestNewSDFAccount($request: CoactRequestInput!){
 `;
 
 const ADDUPDT_COMPUTE_PURCHASE = gql`
-mutation facilityAddUpdateComputePurchase($facilityinput: FacilityInput!, $clusterinput: ClusterInput!, $purchase: Float!, $burstPercent: Float!) {
-  facilityAddUpdateComputePurchase(facility: $facilityinput, cluster: $clusterinput, purchase: $purchase, burstPercent: $burstPercent){
+mutation facilityAddUpdateComputePurchase($facilityinput: FacilityInput!, $clusterinput: ClusterInput!, $purchase: Float!, $burstNodes: Float!) {
+  facilityAddUpdateComputePurchase(facility: $facilityinput, cluster: $clusterinput, purchase: $purchase, burstNodes: $burstNodes){
     Id
   }
 }
@@ -202,9 +202,9 @@ mutation facilityUpdateDescription($facilityinput: FacilityInput!, $newdescripti
 class AddComputePurchase extends Component {
   constructor(props) {
     super(props);
-    this.state = { clustername: "", currentPurchase: props.currentpurchase, burstPercent: 0, clusterInvalid: false, isError: false, errorMessage: "" }
+    this.state = { clustername: "", currentPurchase: props.currentpurchase, burstNodes: 0, clusterInvalid: false, isError: false, errorMessage: "" }
     this.setPurchase = (event) => { this.setState({currentPurchase: event.target.value}) }
-    this.setBurst = (event) => { this.setState({burstPercent: event.target.value}) }
+    this.setBurst = (event) => { this.setState({burstNodes: event.target.value}) }
     this.setCluster = (event) => {
       let clustername = event.target.value;
       if (_.isEmpty(clustername)) {
@@ -218,7 +218,7 @@ class AddComputePurchase extends Component {
         this.setState({clusterInvalid: true})
         return
       }
-      this.props.applyNewPurchase(this.state.clustername, this.state.currentPurchase, this.state.burstPercent, (message) => { this.setState({isError: true, errorMessage: message}) });
+      this.props.applyNewPurchase(this.state.clustername, this.state.currentPurchase, this.state.burstNodes, (message) => { this.setState({isError: true, errorMessage: message}) });
     }
   }
 
@@ -243,7 +243,7 @@ class AddComputePurchase extends Component {
 
     return (
       <Modal backdrop="static" show={this.props.showModal} 
-        onShow={() => this.setState({clustername: "", currentPurchase: this.props.currentpurchase, burstPercent: 0, clusterInvalid: false, isError: false, errorMessage: ""})}
+        onShow={() => this.setState({clustername: "", currentPurchase: this.props.currentpurchase, burstNodes: 0, clusterInvalid: false, isError: false, errorMessage: ""})}
         onHide={() => {this.props.setShowModal(false)}}>
         <ModalHeader closeButton={true}>
           <ModalTitle>Add a new compute purchase for the facility <b className="em">{this.props.facility.name}</b></ModalTitle>
@@ -266,8 +266,8 @@ class AddComputePurchase extends Component {
               <Form.Control type="number" onBlur={this.setPurchase} defaultValue={this.props.currentpurchase}/>
             </InputGroup>
             <InputGroup>
-              <InputGroup.Text>Burst Percent:</InputGroup.Text>
-              <Form.Control type="number" onBlur={this.setBurst} defaultValue={this.props.burstPercent}/>
+              <InputGroup.Text>Burst Nodes:</InputGroup.Text>
+              <Form.Control type="number" onBlur={this.setBurst} defaultValue={this.props.burstNodes}/>
             </InputGroup>
           </Row>
         </ModalBody>
@@ -287,11 +287,11 @@ class AddComputePurchase extends Component {
 class UpdateComputePurchase extends Component {
   constructor(props) {
     super(props);
-    this.state = { currentPurchase: props.currentpurchase, burstPercent: props.burstPercent, isError: false, errorMessage: "" }
+    this.state = { currentPurchase: props.currentpurchase, burstNodes: props.burstNodes, isError: false, errorMessage: "" }
     this.setPurchase = (event) => { this.setState({currentPurchase: event.target.value}) }
-    this.setBurst = (event) => { this.setState({burstPercent: event.target.value}) }
+    this.setBurst = (event) => { this.setState({burstNodes: event.target.value}) }
     this.updatePurchase = (event) => {
-      this.props.applyNewPurchase(this.props.clustername, this.state.currentPurchase, this.state.burstPercent,
+      this.props.applyNewPurchase(this.props.clustername, this.state.currentPurchase, this.state.burstNodes,
         (message) => { this.setState({ isError: true, errorMessage: message }) }
       );
     }
@@ -303,7 +303,7 @@ class UpdateComputePurchase extends Component {
         show={this.props.showModal}
         onShow={() => {this.setState({
           currentPurchase: this.props.currentpurchase,
-          burstPercent: this.props.burstPercent,
+          burstNodes: this.props.burstNodes,
           isError: false, errorMessage: ""
         })}} 
         onHide={() => {this.props.setShowModal(false)}}>
@@ -317,8 +317,8 @@ class UpdateComputePurchase extends Component {
             <Form.Control type="number" onBlur={this.setPurchase} defaultValue={this.props.currentpurchase}/>
           </InputGroup>
           <InputGroup>
-            <InputGroup.Text>Burst Percent:</InputGroup.Text>
-            <Form.Control type="number" onBlur={this.setBurst} defaultValue={this.props.burstPercent}/>
+            <InputGroup.Text>Burst Nodes:</InputGroup.Text>
+            <Form.Control type="number" onBlur={this.setBurst} defaultValue={this.props.burstNodes}/>
           </InputGroup>
         </ModalBody>
         <ModalFooter>
@@ -351,8 +351,8 @@ class FacilityComputePurchases extends Component {
   constructor(props) {
     super(props);
     this.state = { showAddModal: false, showUpdateModal: false, updateModalClusterName: "", updateModalCurrentPurchase: 0};
-    this.applyNewPurchase = (clustername, newPurchase, burstPercent, errHandler) => {
-      this.props.addUpdateComputePurchase(clustername, newPurchase, burstPercent,
+    this.applyNewPurchase = (clustername, newPurchase, burstNodes, errHandler) => {
+      this.props.addUpdateComputePurchase(clustername, newPurchase, burstNodes,
         () => {this.setState({showAddModal: false, showUpdateModal: false})}, 
         errHandler
       )}
@@ -388,8 +388,8 @@ class FacilityComputePurchases extends Component {
                 return (
                 <div key={p.clustername} className="py-2 fcprnt fcrow">
                   <span className="cluster"><span><NavLink to={"/clusterusage/"+p.clustername} key={p.clustername}>{p.clustername}</NavLink></span></span>
-                  <span className="purchased"><span>{p.purchased} {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased amount" onClick={() => { this.setState({showUpdateModal: true, updateModalClusterName: p.clustername, updateModalCurrentPurchase: p.purchased, updateModalBurstPercent: p.burstPercent})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</span></span>
-                  <span className="burst"><span><TwoPrecFloat value={p.burstPercent}/></span></span>
+                  <span className="purchased"><span>{p.purchased} {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased amount" onClick={() => { this.setState({showUpdateModal: true, updateModalClusterName: p.clustername, updateModalCurrentPurchase: p.purchased, updateModalBurstNodes: p.burstNodes})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</span></span>
+                  <span className="burst"><span><TwoPrecFloat value={p.burstNodes}/></span></span>
                   <span className="allocated">{p.allocated}%</span>
                   <span className="hour"><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></span>
                   <span className="day"><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></span>
@@ -403,7 +403,7 @@ class FacilityComputePurchases extends Component {
           </Card.Body>
         </Card>
         <AddComputePurchase facility={this.props.facility} clusters={this.props.clusters} showModal={this.state.showAddModal} setShowModal={(val) => { this.setState({showAddModal: val})}} applyNewPurchase={this.applyNewPurchase} />
-        <UpdateComputePurchase facility={this.props.facility} showModal={this.state.showUpdateModal} setShowModal={(val) => { this.setState({showUpdateModal: val})}} clustername={this.state.updateModalClusterName} currentpurchase={this.state.updateModalCurrentPurchase} burstPercent={this.state.updateModalBurstPercent} applyNewPurchase={this.applyNewPurchase}/>
+        <UpdateComputePurchase facility={this.props.facility} showModal={this.state.showUpdateModal} setShowModal={(val) => { this.setState({showUpdateModal: val})}} clustername={this.state.updateModalClusterName} currentpurchase={this.state.updateModalCurrentPurchase} burstNodes={this.state.updateModalBurstNodes} applyNewPurchase={this.applyNewPurchase}/>
       </Col>
     )
   }
@@ -891,10 +891,10 @@ export default function Facility(props) {
     }).catch(err => { console.log(err); onError(err.message)});
   };
 
-  let addUpdateComputePurchase = function(clustername, newPurchase, burstPercent, callWhenDone, onError) {
-    console.log("Updating compute for " + clustername + " to " + newPurchase + " and burst to " + burstPercent);
+  let addUpdateComputePurchase = function(clustername, newPurchase, burstNodes, callWhenDone, onError) {
+    console.log("Updating compute for " + clustername + " to " + newPurchase + " and burst to " + burstNodes);
     addUpdtComputePurchase({ 
-      variables: { facilityinput: { name: props.facilityname }, clusterinput: { name: clustername }, purchase: _.toNumber(newPurchase), burstPercent: _.toNumber(burstPercent) }, 
+      variables: { facilityinput: { name: props.facilityname }, clusterinput: { name: clustername }, purchase: _.toNumber(newPurchase), burstNodes: _.toNumber(burstNodes) }, 
       refetchQueries: [ FACILITYDETAILS, 'Facility' ], 
       onCompleted: (data) => { callWhenDone(data)},
       onError: (error) => { console.log(error); onError(error.message) } })
