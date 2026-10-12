@@ -159,13 +159,17 @@ function SSHKeysComponent(props) {
     setref((ref) => ref + 1);    
   }
 
+  // the sshkey service stores non-expiring keys with expires_at at the unix epoch; hide the column like its own list page does
+  const neverExpires = (sk) => !sk["expires_at"] || Date.parse(sk["expires_at"]) <= 0;
+  const showExpiresAt = !_.every(data, neverExpires);
+
   return (<div>
     <div className="sshkey header">
       <span className="fp">Fingerprint</span>
       <span className="ac">Is Active</span>
       <span className="ca">Created At</span>
       <span className="vu">Valid Until</span>
-      <span className="ea">Expires At</span>
+      { showExpiresAt ? <span className="ea">Expires At</span> : null }
       <span className="actions">
         <Button variant="secondary" className="mx-1" onClick={showSSHKeyUploadModal} ><FontAwesomeIcon icon={faPlus} title="Upload a new SSH public key"/></Button>
       </span>
@@ -175,7 +179,7 @@ function SSHKeysComponent(props) {
       <span className="ac"><YesNo value={sk["is_active"]}/></span>
       <span className="ca"><DateTimeDisp value={sk["created_at"]}/></span>
       <span className="vu"><DateTimeDisp value={sk["valid_until"]}/></span>
-      <span className="ea"><DateTimeDisp value={sk["expires_at"]}/></span>
+      { showExpiresAt ? <span className="ea">{ neverExpires(sk) ? "Never" : <DateTimeDisp value={sk["expires_at"]}/> }</span> : null }
       <span className="actions">
         <Button variant="secondary" className="mx-1" onClick={() => refreshSSHKey(sk["finger_print"])} title="Renew the SSH public key for another 24 hours"><FontAwesomeIcon icon={faRefresh}/></Button>
         <Button variant="secondary" className="mx-1" onClick={() => inactivateSSHKey(sk["finger_print"])} title="Invalide this SSH public key"><FontAwesomeIcon icon={faXmark}/></Button>
