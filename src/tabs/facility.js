@@ -17,7 +17,6 @@ import Alert from 'react-bootstrap/Alert';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { SearchAndAdd } from "./widgets";
 import { TeraBytes } from './widgets';
-import { TwoPrecFloat } from './widgets';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faEdit } from '@fortawesome/free-solid-svg-icons'
 import dayjs, { Dayjs } from "dayjs";
@@ -389,7 +388,7 @@ class FacilityComputePurchases extends Component {
                 <div key={p.clustername} className="py-2 fcprnt fcrow">
                   <span className="cluster"><span><NavLink to={"/clusterusage/"+p.clustername} key={p.clustername}>{p.clustername}</NavLink></span></span>
                   <span className="purchased"><span>{p.purchased} {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased amount" onClick={() => { this.setState({showUpdateModal: true, updateModalClusterName: p.clustername, updateModalCurrentPurchase: p.purchased, updateModalBurstNodes: p.burstNodes})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</span></span>
-                  <span className="burst"><span><TwoPrecFloat value={p.burstNodes}/></span></span>
+                  <span className="burst"><span>{p.burstNodes}</span></span>
                   <span className="allocated">{p.allocated}%</span>
                   <span className="hour"><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></span>
                   <span className="day"><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></span>
