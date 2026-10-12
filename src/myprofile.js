@@ -673,7 +673,7 @@ class UserDetails extends Component {
               </Row>
           </Col>
         </Row>
-        <Row>
+        { SSHKeysService ? (<Row>
           <Col className="mx-2">
               <Row>
                 <Card className="px-0">
@@ -684,7 +684,7 @@ class UserDetails extends Component {
                 </Card>
               </Row>
           </Col>
-        </Row>
+        </Row>) : null }
       </Container>
       </>
     );
