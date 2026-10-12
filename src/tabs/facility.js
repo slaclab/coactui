@@ -22,6 +22,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faEdit } from '@fortawesome/free-solid-svg-icons'
 import dayjs, { Dayjs } from "dayjs";
 
+const DISABLE_BURST_NODE_VISIBILITY = true;
+
 const FACILITYDETAILS = gql`
 query Facility($facilityinput: FacilityInput, $facilityname: String!, $ytdrange: ReportRangeInput!, $lastyearrange: ReportRangeInput!, $monthrange: ReportRangeInput!){
   facility(filter:$facilityinput) {
@@ -265,10 +267,10 @@ class AddComputePurchase extends Component {
               <InputGroup.Text>Purchase (in servers):</InputGroup.Text>
               <Form.Control type="number" onBlur={this.setPurchase} defaultValue={this.props.currentpurchase}/>
             </InputGroup>
-            <InputGroup>
+            {!DISABLE_BURST_NODE_VISIBILITY ? (<InputGroup>
               <InputGroup.Text>Burst Nodes:</InputGroup.Text>
               <Form.Control type="number" onBlur={this.setBurst} defaultValue={this.props.burstNodes}/>
-            </InputGroup>
+            </InputGroup>) : null}
           </Row>
         </ModalBody>
         <ModalFooter>
@@ -316,10 +318,10 @@ class UpdateComputePurchase extends Component {
             <InputGroup.Text>Purchase (in servers):</InputGroup.Text>
             <Form.Control type="number" onBlur={this.setPurchase} defaultValue={this.props.currentpurchase}/>
           </InputGroup>
-          <InputGroup>
+          {!DISABLE_BURST_NODE_VISIBILITY ? (<InputGroup>
             <InputGroup.Text>Burst Nodes:</InputGroup.Text>
             <Form.Control type="number" onBlur={this.setBurst} defaultValue={this.props.burstNodes}/>
-          </InputGroup>
+          </InputGroup>) : null}
         </ModalBody>
         <ModalFooter>
           <Button variant="light" onClick={() => {this.props.setShowModal(false)}}>
@@ -372,7 +374,7 @@ class FacilityComputePurchases extends Component {
             <div className="py-2 fcprnt fcrow title">
               <span className="cluster">Cluster</span>
               <span className="purchased" title="Number of nodes">Purchased</span>
-              <span className="burst" title="A facility wide limit on the number of nodes to burst">Burst</span>
+              {!DISABLE_BURST_NODE_VISIBILITY && this.props.isAdmin ? (<span className="burst" title="A facility wide limit on the number of nodes to burst">Burst</span>) : null}
               <span className="allocated">Allocated</span>
               <span className="hour past">Past hour</span>
               <span className="day past">Past day</span>
@@ -389,7 +391,7 @@ class FacilityComputePurchases extends Component {
                 <div key={p.clustername} className="py-2 fcprnt fcrow">
                   <span className="cluster"><span><NavLink to={"/clusterusage/"+p.clustername} key={p.clustername}>{p.clustername}</NavLink></span></span>
                   <span className="purchased"><span>{p.purchased} {this.props.isAdmin ? (<span className="px-1 text-warning" title="Edit purchased amount" onClick={() => { this.setState({showUpdateModal: true, updateModalClusterName: p.clustername, updateModalCurrentPurchase: p.purchased, updateModalBurstNodes: p.burstNodes})}}><FontAwesomeIcon icon={faEdit}/></span>) : (<span></span>)}</span></span>
-                  <span className="burst"><span><TwoPrecFloat value={p.burstNodes}/></span></span>
+                  {!DISABLE_BURST_NODE_VISIBILITY && this.props.isAdmin ? (<span className="burst"><span><TwoPrecFloat value={p.burstNodes}/></span></span>) : null}
                   <span className="allocated">{p.allocated}%</span>
                   <span className="hour"><ComputeUsage periodname={"pastHour"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></span>
                   <span className="day"><ComputeUsage periodname={"pastDay"} recentusagebycluster={this.props.recentusagebycluster} facilityname={this.props.facility.name} clustername={p.clustername}/></span>
