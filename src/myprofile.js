@@ -105,12 +105,16 @@ function SSHKeysComponent(props) {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch(SSHKeysService + "/api/list/"+user);
+        const response = await fetch(SSHKeysService + "list/"+user, {credentials: "include"});
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
+        // a misrouted request gets an html page with a 200, so don't try to parse it
+        if (!_.includes(response.headers.get("content-type"), "application/json")) {
+          throw new Error(`Unexpected response from the SSH key service at ${response.url}`);
+        }
         const result = await response.json();
-        setData(result);
+        setData(result.message);
       } catch (error) {
         setError(error);
       }
@@ -126,7 +130,7 @@ function SSHKeysComponent(props) {
 
   const refreshSSHKey = async function(fingerprint) {
     console.log("Need to refresh fingerprint", fingerprint);
-    const response = await fetch(SSHKeysService + "refresh/"+user+"/"+fingerprint, {method: "PATCH"});
+    const response = await fetch(SSHKeysService + "refresh/"+user+"/"+fingerprint, {method: "PATCH", credentials: "include"});
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -137,7 +141,7 @@ function SSHKeysComponent(props) {
 
   const inactivateSSHKey = async function(fingerprint) {
     console.log("Inactivating fingerprint", fingerprint);
-    const response = await fetch(SSHKeysService + "inactivate/"+user+"/"+fingerprint, {method: "DELETE"});
+    const response = await fetch(SSHKeysService + "inactivate/"+user+"/"+fingerprint, {method: "DELETE", credentials: "include"});
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -202,6 +206,7 @@ class UploadSSHKeyModal extends Component {
       }
       fetch(SSHKeysService + "upload/"+this.props.username, {
         method: "POST", 
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: this.props.username, public_key: this.state.pubkey })
       })
