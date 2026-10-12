@@ -922,7 +922,7 @@ export default function Facility(props) {
 
 
   if (loading) return <p>Loading...</p>;
-//  if (error) return <p>Error :</p>;
+  if (error) return <p>Error</p>;
 
   console.log(data);
   let facility = data.facility;
