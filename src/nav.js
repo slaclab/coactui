@@ -35,7 +35,7 @@ function logged_in( props ) {
        <FontAwesomeIcon icon={props.isImpersonating ? faUserNinja : faUser} size="2x"/>
      </Nav.Item>
      <NavDropdown align="end" title={props.logged_in_user} id="nav-dropdown">
-       <NavDropdown.Item href="https://vouch.slac.stanford.edu/logout?returnTo=https://coact.slac.stanford.edu">Log out...</NavDropdown.Item>
+       <NavDropdown.Item href={process.env.REACT_APP_LOGOUT_URL || "https://vouch.slac.stanford.edu/logout?returnTo=https://coact.slac.stanford.edu"}>Log out...</NavDropdown.Item>
        <NavDropdown.Item className={props.isAdmin && !props.isImpersonating ? "" : "d-none"} onClick={props.impersonate}>Impersonate...</NavDropdown.Item>
        <NavDropdown.Item className={props.isImpersonating ? "" : "d-none"} onClick={props.stopImpersonation}>Stop impersonation</NavDropdown.Item>
        <NavDropdown.Item className={isCzarOrAdmin ? "" : "d-none"} onClick={props.toggleShowAllRepos}>{ props.showAllRepos ? ( <span><span className="pe-1">Show all repos </span><FontAwesomeIcon className="navtoggle" icon={faCheck}/></span> ) : (<span>Show all repos</span> )} </NavDropdown.Item>
