@@ -79,6 +79,10 @@ $nav-pills-link-active-bg: $contrastbg;
   src: local('Merriweather'), url(./fonts/Merriweather/Merriweather-Regular.ttf) format('truetype');
 }
 
+// Tailwind coexistence: Bootstrap utilities without !important, so Tailwind's
+// utilities layer (which sits above the bootstrap layer) wins on new pages.
+$enable-important-utilities: false;
+
 @import '../node_modules/bootstrap/scss/bootstrap';
 
 @mixin navbg {

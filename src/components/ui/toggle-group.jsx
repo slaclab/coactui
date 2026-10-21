@@ -1,0 +1,74 @@
+import * as React from "react"
+import { cn } from "@/lib/utils"
+import { ToggleGroup as ToggleGroupPrimitive } from "radix-ui"
+
+import { toggleVariants } from "@/components/ui/toggle"
+
+const ToggleGroupContext = React.createContext({
+  size: "default",
+  variant: "default",
+  spacing: 0,
+})
+
+function ToggleGroup({
+  className,
+  variant,
+  size,
+  spacing = 0,
+  children,
+  ...props
+}) {
+  return (
+    <ToggleGroupPrimitive.Root
+      data-slot="toggle-group"
+      data-variant={variant}
+      data-size={size}
+      data-spacing={spacing}
+      style={{
+        "--gap": spacing
+      }}
+      className={cn(
+        "tw:group/toggle-group tw:flex tw:w-fit tw:items-center tw:gap-[--spacing(var(--gap))] tw:rounded-md tw:data-[spacing=default]:data-[variant=outline]:shadow-xs",
+        className
+      )}
+      {...props}
+    >
+      <ToggleGroupContext.Provider value={{ variant, size, spacing }}>
+        {children}
+      </ToggleGroupContext.Provider>
+    </ToggleGroupPrimitive.Root>
+  );
+}
+
+function ToggleGroupItem({
+  className,
+  children,
+  variant,
+  size,
+  ...props
+}) {
+  const context = React.useContext(ToggleGroupContext)
+
+  return (
+    <ToggleGroupPrimitive.Item
+      data-slot="toggle-group-item"
+      data-variant={context.variant || variant}
+      data-size={context.size || size}
+      data-spacing={context.spacing}
+      className={cn(
+        toggleVariants({
+          variant: context.variant || variant,
+          size: context.size || size,
+        }),
+        "tw:w-auto tw:min-w-0 tw:shrink-0 tw:px-3 tw:focus:z-10 tw:focus-visible:z-10",
+        "tw:data-[spacing=0]:rounded-none tw:data-[spacing=0]:shadow-none tw:data-[spacing=0]:first:rounded-l-md tw:data-[spacing=0]:last:rounded-r-md tw:data-[spacing=0]:data-[variant=outline]:border-l-0 tw:data-[spacing=0]:data-[variant=outline]:first:border-l",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </ToggleGroupPrimitive.Item>
+  )
+}
+
+export { ToggleGroup, ToggleGroupItem }

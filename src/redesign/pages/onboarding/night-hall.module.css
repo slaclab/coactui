@@ -1,0 +1,37 @@
+/* Night data hall backdrop (design v2 "Register · night data hall").
+   A drawn blueprint stands in for the Paper image fill: a receding floor grid of rack rows.
+   Colours come only from tokens. */
+
+.blueprint {
+  position: absolute;
+  inset: auto -20% -10% -20%;
+  height: 78%;
+  transform: perspective(900px) rotateX(58deg);
+  transform-origin: 50% 100%;
+  background-image:
+    repeating-linear-gradient(90deg, color-mix(in oklab, var(--primary-foreground) 22%, transparent) 0 1px, transparent 1px 72px),
+    repeating-linear-gradient(0deg, color-mix(in oklab, var(--primary-foreground) 16%, transparent) 0 1px, transparent 1px 72px),
+    repeating-linear-gradient(90deg, transparent 0 18px, color-mix(in oklab, var(--primary-foreground) 8%, transparent) 18px 54px, transparent 54px 72px);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* Draw-in: a left-to-right mask wipe plus an opacity ramp, 1200 ms ease-out, once. */
+.draw {
+  mask-image: linear-gradient(90deg, black 0 45%, transparent 55% 100%);
+  mask-size: 240% 100%;
+  mask-repeat: no-repeat;
+  animation: hall-draw 1200ms ease-out both;
+}
+
+@keyframes hall-draw {
+  from { mask-position: 100% 0; opacity: 0; }
+  to { mask-position: 0 0; opacity: 0.9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draw { animation: none; mask-image: none; }
+}
+
+/* Before hydration we don't know yet whether the entrance plays: keep the decoration hidden. */
+.pending { opacity: 0; }

@@ -1,0 +1,210 @@
+/*
+ * Coexistence order (lowest → highest priority):
+ *   theme   Tailwind tokens
+ *   base    Tailwind preflight + shadcn base — shadowed by Bootstrap's reboot on old pages
+ *   bootstrap  compiled src/index.scss (Bootstrap 5 + Coact overrides), utilities without !important
+ *   components
+ *   utilities  Tailwind utilities — always win over Bootstrap
+ *
+ * Layers order the cascade but cannot separate class names: Bootstrap and shadcn both
+ * define p-3, mb-3, border, text-primary, bg-secondary… with different meanings, so
+ * Tailwind runs with prefix(tw) (classes are written tw:flex) until Bootstrap is gone.
+ * Then: drop prefix(tw), the bootstrap layer and the shims below, and run
+ * scripts/unprefix-tw.mjs.
+ */
+@layer theme, base, bootstrap, components, utilities;
+
+@import "../index.css" layer(bootstrap);
+@import "tailwindcss" prefix(tw) source(none);
+@import "tw-animate-css";
+
+/* Only new code is scanned. */
+@source "../components";
+@source "../redesign";
+@source "../app";
+@source "../lib";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Restore the UA defaults preflight removes that old Bootstrap markup relies on.
+   In the bootstrap layer: above preflight, below Tailwind utilities. */
+@layer bootstrap {
+  ul:not([class]), ol:not([class]) { list-style: revert; }
+  .navbar img, .card img, .modal img { display: inline-block; }
+}
+
+/* The reverse: Bootstrap's reboot (a red + underlined, h1-h6 sizes, p/ul margins) must not
+   leak into new markup. Scoped to new pages and to every shadcn element (data-slot), which
+   also covers Radix portals rendered outside .tw-page. Zero specificity, so utilities win. */
+@layer components {
+  :where(.tw-page, [data-slot]) :where(h1, h2, h3, h4, h5, h6, p, ul, ol, dl, figure, blockquote):not(:where(.bs-scope *)),
+  :where([data-slot]):where(h1, h2, h3, h4, h5, h6, p) {
+    margin: 0;
+  }
+  :where(.tw-page, [data-slot]) :where(h1, h2, h3, h4, h5, h6):not(:where(.bs-scope *)),
+  :where([data-slot]):where(h1, h2, h3, h4, h5, h6) {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+  :where(.tw-page, [data-slot]) :where(a):not(:where(.bs-scope *)),
+  :where([data-slot]):where(a) {
+    color: inherit;
+    text-decoration: inherit;
+  }
+  :where(.tw-page, [data-slot]) :where(ul, ol):not(:where(.bs-scope *)) {
+    list-style: none;
+    padding: 0;
+  }
+  :where(.tw-page, [data-slot]) :where(label):not(:where(.bs-scope *)) {
+    margin: 0;
+  }
+}
+
+/* Theme tokens. `:root` is the light default; ThemeProvider sets <html data-theme="…">.
+   A new theme = a `[data-theme="<name>"] { … }` block overriding these + an entry in
+   src/redesign/providers/theme.jsx (THEMES). Components never hard-code colours. */
+:root,
+[data-theme="light"] {
+  /* Design v2 · "data hall" (Paper: Coact UI Redesign — Draft, page "v2 · SLAC ethos").
+     Every colour comes from the building; status colours come from server LEDs. */
+  --radius: 0.625rem;
+  --ground: #eceef0;            /* Concrete · page ground */
+  --background: #f7f8f9;        /* Aluminium · cards, rack doors */
+  --foreground: #1a1f24;        /* Graphite · ink */
+  --card: #f7f8f9;
+  --card-foreground: #1a1f24;
+  --popover: #f7f8f9;
+  --popover-foreground: #1a1f24;
+  --primary: #b1040e;           /* SLAC red · every primary action and selection */
+  --primary-hover: #8e0a12;
+  --primary-text: #9a0a12;
+  --primary-foreground: #ffffff;
+  --brand: #b1040e;
+  --brand-bg: #f5dcdd;          /* selected-row tint (used at 45%) */
+  --secondary: #e6e9ec;
+  --secondary-foreground: #1a1f24;
+  --muted: #e6e9ec;
+  --muted-foreground: #59616a;  /* Slate */
+  --muted-strong: #3e454c;      /* labels, icons, table headers */
+  --neutral-bg: #e1e5e9;        /* chips */
+  --accent: #e6e9ec;
+  --accent-foreground: #1a1f24;
+  --border: #d5dadf;
+  --input: #d5dadf;
+  --control-border: #8a939c;    /* unchecked checkbox */
+  /* Focus stays graphite: a red ring would read as aria-invalid next to red selection. */
+  --ring: #1a1f24;
+  --night: #14181c;
+  --meter: #3e454c;
+
+  /* Status LEDs: tinted, labelled pills and meters only — never a red button. */
+  --ok: #12805c;     --ok-text: #0b6646;    --ok-bg: #ddefe6;
+  --warn: #b26b00;   --warn-text: #8f5600;  --warn-bg: #f6ead3;
+  --crit: #e0451f;   --crit-text: #a8320f;  --crit-bg: #fbe4dc;
+  --burst: #2d6bcf;  --burst-text: #1f55ae; --burst-bg: #dce6f7;
+  --destructive: #e0451f;
+
+  /* Top bar (Paper "Top Bar", v2 update): SLAC red with white-on-red overlays. */
+  --topbar: var(--primary);
+  --topbar-foreground: #ffffff;
+  --topbar-muted: rgb(255 255 255 / 0.85);   /* inactive nav items */
+  --topbar-subtle: rgb(255 255 255 / 0.75);  /* search text, icons, chevrons */
+  --topbar-faint: rgb(255 255 255 / 0.7);    /* "S3DF" */
+  --topbar-divider: rgb(255 255 255 / 0.25);
+  --topbar-divider-strong: rgb(255 255 255 / 0.35);
+  --topbar-control: rgb(255 255 255 / 0.12); /* search field fill */
+  --topbar-control-hover: rgb(255 255 255 / 0.18);
+  --topbar-control-border: rgb(255 255 255 / 0.2);
+  --topbar-kbd: rgb(255 255 255 / 0.15);
+  --topbar-border: rgb(0 0 0 / 0.15);
+
+  /* Charts are graphite: at most 2 named series plus "N others", then the capacity line. */
+  --chart-1: #27272a;
+  --chart-2: #71717a;
+  --chart-3: #d4d4d8;
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --color-ground: var(--ground);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-text: var(--primary-text);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-brand: var(--brand);
+  --color-brand-bg: var(--brand-bg);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted-strong: var(--muted-strong);
+  --color-neutral-bg: var(--neutral-bg);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-control-border: var(--control-border);
+  --color-ring: var(--ring);
+  --color-night: var(--night);
+  --color-meter: var(--meter);
+  --color-ok: var(--ok);
+  --color-ok-text: var(--ok-text);
+  --color-ok-bg: var(--ok-bg);
+  --color-warn: var(--warn);
+  --color-warn-text: var(--warn-text);
+  --color-warn-bg: var(--warn-bg);
+  --color-crit: var(--crit);
+  --color-crit-text: var(--crit-text);
+  --color-crit-bg: var(--crit-bg);
+  --color-burst: var(--burst);
+  --color-burst-text: var(--burst-text);
+  --color-burst-bg: var(--burst-bg);
+  --color-topbar: var(--topbar);
+  --color-topbar-foreground: var(--topbar-foreground);
+  --color-topbar-muted: var(--topbar-muted);
+  --color-topbar-subtle: var(--topbar-subtle);
+  --color-topbar-faint: var(--topbar-faint);
+  --color-topbar-divider: var(--topbar-divider);
+  --color-topbar-divider-strong: var(--topbar-divider-strong);
+  --color-topbar-control: var(--topbar-control);
+  --color-topbar-control-hover: var(--topbar-control-hover);
+  --color-topbar-control-border: var(--topbar-control-border);
+  --color-topbar-kbd: var(--topbar-kbd);
+  --color-topbar-border: var(--topbar-border);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+}
+
+@layer base {
+  * {
+    @apply tw:border-border tw:outline-ring/50;
+  }
+  /* New pages opt in to the shadcn body styles; old pages keep Bootstrap's. */
+  .tw-page {
+    @apply tw:bg-ground tw:text-foreground tw:font-sans tw:text-sm tw:antialiased;
+    font-feature-settings: "tnum";
+  }
+}
+
+/* v2 motion budget: "Big once. Small forever after." Menus and sheets fade with a 4 px
+   offset over 150 ms; meters fill once (600 ms). Everything is instant under reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .tw-page *, [data-slot] {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
