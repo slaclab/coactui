@@ -603,22 +603,22 @@ ol, ul {
     padding: 0.25rem;
 
     .fp {
-      grid-column: 1 / span 29;
+      grid-column: 1 / span 27;
     }
     .ac {
-      grid-column: 30 / span 4;
+      grid-column: 28 / span 7;
     }
     .ca {
-      grid-column: 40 / span 14;
+      grid-column: 36 / span 12;
     }
     .vu {
-      grid-column: 55 / span 14;
+      grid-column: 49 / span 12;
     }
     .ea {
-      grid-column: 70 / span 14;
+      grid-column: 62 / span 12;
     }
     .actions {
-      grid-column: 85 / span 14;
+      grid-column: 75 / span 26;
     }
   }
 }

@@ -14,8 +14,9 @@ import Alert from 'react-bootstrap/Alert';
 import InputGroup from 'react-bootstrap/InputGroup';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faXmark, faPlus, faRefresh, faUpload } from '@fortawesome/free-solid-svg-icons'
-import { DateTimeDisp, TwoPrecFloat, YesNo } from './tabs/widgets'
+import { faXmark, faPlus, faRefresh, faUpload, faPause, faBan } from '@fortawesome/free-solid-svg-icons'
+import dayjs from "dayjs";
+import { DateTimeDisp, TwoPrecFloat } from './tabs/widgets'
 
 const HOMEDETAILS = gql`
 query {
@@ -95,10 +96,37 @@ mutation requestUserQuota($request: CoactRequestInput!){
 
 const SSHKeysService = process.env.REACT_APP_SLAC_MFA_SSH_KEYS_SERVER;
 
+// FastAPI errors carry {"detail": "..."}; fall back to the status line
+async function sshKeyServiceError(response) {
+  let detail = "";
+  try {
+    const body = await response.json();
+    detail = _.isString(body.detail) ? body.detail : JSON.stringify(body.detail ?? body);
+  } catch (e) { /* not json */ }
+  return new Error(detail || `HTTP error! Status: ${response.status}`);
+}
+
+// revoked (permanently disabled) wins over everything; blacklisted keys can't be changed either
+function sshKeyStatus(sk) {
+  if (sk["is_disabled"]) return "revoked";
+  if (sk["is_blacklisted"]) return "blacklisted";
+  return String(sk["is_active"]) === "1" ? "active" : "inactive";
+}
+
+const SSH_KEY_STATUS = {
+  active: { label: "Active", className: "text-success", title: "This key can be used to log in" },
+  inactive: { label: "Inactive", className: "text-danger", title: "Suspended or expired; click Refresh to use it again" },
+  blacklisted: { label: "Blacklisted", className: "text-danger fw-bold", title: "This key's fingerprint is blacklisted and cannot be used" },
+  revoked: { label: "Revoked", className: "text-muted", title: "Permanently turned off; it can never be used or registered again" },
+};
+
 function SSHKeysComponent(props) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [upModal, setUpModal] = useState(false);
+  const [revokeTarget, setRevokeTarget] = useState(null);
+  const [showRevoked, setShowRevoked] = useState(false);
+  const [notice, setNotice] = useState(null); // {variant, text} for the result of the last action
   const [ref, setref] = useState(0); // Use this to force a refresh
   const user = props.username;
 
@@ -115,6 +143,7 @@ function SSHKeysComponent(props) {
         }
         const result = await response.json();
         setData(result.message);
+        setError(null);
       } catch (error) {
         setError(error);
       }
@@ -126,70 +155,143 @@ function SSHKeysComponent(props) {
   if (error) return <div>Error: {error.message}</div>;
   if (!data) return <div>Loading...</div>;
 
-  console.log(data);
+  const reload = () => setref((ref) => ref + 1);
 
-  const refreshSSHKey = async function(fingerprint) {
-    console.log("Need to refresh fingerprint", fingerprint);
-    const response = await fetch(SSHKeysService + "refresh/"+user+"/"+fingerprint, {method: "PATCH", credentials: "include"});
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+  // run one key operation against the service; report failures (e.g. 403 for a revoked key) in the card
+  const keyAction = async function(path, init, successText) {
+    setNotice(null);
+    try {
+      const response = await fetch(SSHKeysService + path, {credentials: "include", ...init});
+      if (!response.ok) throw await sshKeyServiceError(response);
+      if (successText) setNotice({variant: "success", text: successText});
+    } catch (err) {
+      setNotice({variant: "danger", text: err.message});
     }
-    const result = await response.json();
-    console.log(result);
-    setref((ref) => ref + 1);
+    reload();
   }
 
-  const inactivateSSHKey = async function(fingerprint) {
-    console.log("Inactivating fingerprint", fingerprint);
-    const response = await fetch(SSHKeysService + "inactivate/"+user+"/"+fingerprint, {method: "DELETE", credentials: "include"});
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const result = await response.text();
-    console.log(result);
-    setref((ref) => ref + 1);
+  const refreshSSHKey = (fingerprint) =>
+    keyAction("refresh/"+user+"/"+fingerprint, {method: "PATCH"}, null);
+
+  const suspendSSHKey = (fingerprint) =>
+    keyAction("inactivate/"+user+"/"+fingerprint, {method: "DELETE"}, null);
+
+  // permanent; throws so the modal can show the error and stay open
+  const revokeSSHKey = async function(fingerprint, reason) {
+    const response = await fetch(SSHKeysService + "disable/"+user+"/"+fingerprint, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason: reason }),
+    });
+    if (!response.ok) throw await sshKeyServiceError(response);
+    const result = await response.json();
+    const elsewhere = result.also_revoked || 0;
+    setNotice({variant: "warning", text: `SSH key ${fingerprint} has been revoked.` +
+      (elsewhere ? ` The same key was also revoked on ${elsewhere} other account${elsewhere === 1 ? "" : "s"}.` : "")});
+    setRevokeTarget(null);
+    reload();
   }
 
   const showSSHKeyUploadModal = function() {
     setUpModal(true);
   }
 
-  const closeSSHKeyModal = function() { 
+  const closeSSHKeyModal = function() {
     setUpModal(false);
-    setref((ref) => ref + 1);    
+    reload();
   }
 
   // the sshkey service stores non-expiring keys with expires_at at the unix epoch; hide the column like its own list page does
   const neverExpires = (sk) => !sk["expires_at"] || Date.parse(sk["expires_at"]) <= 0;
   const showExpiresAt = !_.every(data, neverExpires);
 
+  // revoked keys are kept by the service for audit; hide them unless asked, like its own list page does
+  const revokedCount = _.filter(data, (sk) => sk["is_disabled"]).length;
+  const keys = showRevoked ? data : _.reject(data, (sk) => sk["is_disabled"]);
+
+  const revokedTitle = (sk) => "Revoked" +
+    (sk["disabled_at"] ? " " + dayjs(sk["disabled_at"]).format('MMM D YYYY HH:mm') : "") +
+    (sk["disabled_by"] ? " by " + sk["disabled_by"] : "") +
+    (sk["disabled_reason"] ? ": " + sk["disabled_reason"] : "");
+
   return (<div>
+    { notice ? <Alert variant={notice.variant} dismissible onClose={() => setNotice(null)}>{notice.text}</Alert> : null }
     <div className="sshkey header">
       <span className="fp">Fingerprint</span>
-      <span className="ac">Is Active</span>
+      <span className="ac">Status</span>
       <span className="ca">Created At</span>
       <span className="vu">Valid Until</span>
       { showExpiresAt ? <span className="ea">Expires At</span> : null }
       <span className="actions">
         <Button variant="secondary" className="mx-1" onClick={showSSHKeyUploadModal} ><FontAwesomeIcon icon={faPlus} title="Upload a new SSH public key"/></Button>
       </span>
-    </div>{_.map(data, (sk) => (
+    </div>{_.map(keys, (sk) => {
+      const status = sshKeyStatus(sk);
+      const locked = status === "revoked" || status === "blacklisted";
+      return (
     <div key={sk["finger_print"]} className="sshkey">
       <span className="fp">{sk["finger_print"]}</span>
-      <span className="ac"><YesNo value={sk["is_active"]}/></span>
+      <span className={"ac " + SSH_KEY_STATUS[status].className} title={status === "revoked" ? revokedTitle(sk) : SSH_KEY_STATUS[status].title}>{SSH_KEY_STATUS[status].label}</span>
       <span className="ca"><DateTimeDisp value={sk["created_at"]}/></span>
-      <span className="vu"><DateTimeDisp value={sk["valid_until"]}/></span>
-      { showExpiresAt ? <span className="ea">{ neverExpires(sk) ? "Never" : <DateTimeDisp value={sk["expires_at"]}/> }</span> : null }
+      <span className="vu">{ locked ? "" : <DateTimeDisp value={sk["valid_until"]}/> }</span>
+      { showExpiresAt ? <span className="ea">{ locked ? "" : neverExpires(sk) ? "Never" : <DateTimeDisp value={sk["expires_at"]}/> }</span> : null }
       <span className="actions">
-        <Button variant="secondary" className="mx-1" onClick={() => refreshSSHKey(sk["finger_print"])} title="Renew the SSH public key for another 24 hours"><FontAwesomeIcon icon={faRefresh}/></Button>
-        <Button variant="secondary" className="mx-1" onClick={() => inactivateSSHKey(sk["finger_print"])} title="Invalide this SSH public key"><FontAwesomeIcon icon={faXmark}/></Button>
+        { status === "revoked" ? <span className="text-muted" title={revokedTitle(sk)}>Revoked keys cannot be changed</span> : <>
+        <Button variant="outline-secondary" size="sm" className="mx-1" disabled={locked} onClick={() => refreshSSHKey(sk["finger_print"])} title="Make this key active again for another validity period"><FontAwesomeIcon icon={faRefresh}/> Refresh</Button>
+        <Button variant="outline-secondary" size="sm" className="mx-1" disabled={locked || status !== "active"} onClick={() => suspendSSHKey(sk["finger_print"])} title="Temporarily stop this key. Click Refresh to resume it."><FontAwesomeIcon icon={faPause}/> Suspend</Button>
+        <Button variant="outline-danger" size="sm" className="mx-1" disabled={locked} onClick={() => setRevokeTarget(sk["finger_print"])} title="Permanently turn off this key, e.g. if it may be compromised or the device holding it is lost. This cannot be undone."><FontAwesomeIcon icon={faBan}/> Revoke</Button>
+        </> }
       </span>
     </div>
-    ))}
+    )})}
+    { revokedCount ? <Form.Check type="switch" className="mt-2" id="sshkeys-show-revoked" label={`Show revoked keys (${revokedCount})`} checked={showRevoked} onChange={(ev) => setShowRevoked(ev.target.checked)}/> : null }
     <UploadSSHKeyModal show={upModal} closeModal={closeSSHKeyModal} username={user}/>
+    <RevokeSSHKeyModal fingerprint={revokeTarget} onCancel={() => setRevokeTarget(null)} onRevoke={revokeSSHKey}/>
     </div>);
 }
 
+function RevokeSSHKeyModal(props) {
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+
+  // start clean each time the modal opens for a key
+  useEffect(() => { setReason(""); setBusy(false); setError(null); }, [props.fingerprint]);
+
+  const revoke = async function() {
+    setBusy(true);
+    setError(null);
+    try {
+      await props.onRevoke(props.fingerprint, reason.trim());
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Modal backdrop="static" show={!_.isNil(props.fingerprint)} onHide={props.onCancel}>
+      <Modal.Header closeButton>
+        <Modal.Title>Revoke SSH key?</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Alert variant="danger"><b>Revoking is permanent.</b> The key stops working immediately, cannot be refreshed, and can never be registered again by anyone. You will need to generate and upload a new keypair.</Alert>
+        <p>Key: <code>{props.fingerprint}</code></p>
+        <p>If you only want to stop using it for now, close this and use <b>Suspend</b> instead.</p>
+        <Form.Group>
+          <Form.Label>Reason (optional)</Form.Label>
+          <Form.Control as="textarea" rows={2} value={reason} placeholder="e.g. laptop lost, key may be compromised" onChange={(ev) => setReason(ev.target.value)}/>
+        </Form.Group>
+        { error ? <Alert variant="danger" className="mt-3 mb-0">{error}</Alert> : null }
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="light" onClick={props.onCancel} disabled={busy}>Cancel</Button>
+        <Button variant="danger" onClick={revoke} disabled={busy}>{busy ? "Revoking..." : "Revoke key"}</Button>
+      </Modal.Footer>
+    </Modal>
+  );
+}
 
 class UploadSSHKeyModal extends Component {
   constructor(props) {

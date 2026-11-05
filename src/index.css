@@ -11094,22 +11094,22 @@ ol, ul {
   padding: 0.25rem;
 }
 #myprofile .sshkey .fp {
-  grid-column: 1/span 29;
+  grid-column: 1/span 27;
 }
 #myprofile .sshkey .ac {
-  grid-column: 30/span 4;
+  grid-column: 28/span 7;
 }
 #myprofile .sshkey .ca {
-  grid-column: 40/span 14;
+  grid-column: 36/span 12;
 }
 #myprofile .sshkey .vu {
-  grid-column: 55/span 14;
+  grid-column: 49/span 12;
 }
 #myprofile .sshkey .ea {
-  grid-column: 70/span 14;
+  grid-column: 62/span 12;
 }
 #myprofile .sshkey .actions {
-  grid-column: 85/span 14;
+  grid-column: 75/span 26;
 }
 
 .sshkeymodal .codeinstructions .comment {
