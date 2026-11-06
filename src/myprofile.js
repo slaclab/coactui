@@ -238,8 +238,8 @@ function SSHKeysComponent(props) {
       { showExpiresAt ? <span className="ea">{ locked ? "" : neverExpires(sk) ? "Never" : <DateTimeDisp value={sk["expires_at"]}/> }</span> : null }
       <span className="actions">
         { status === "revoked" ? <span className="text-muted" title={revokedTitle(sk)}>Revoked keys cannot be changed</span> : <>
-        <Button variant="outline-secondary" size="sm" className="mx-1" disabled={locked} onClick={() => refreshSSHKey(sk["finger_print"])} title="Make this key active again for another validity period"><FontAwesomeIcon icon={faRefresh}/> Refresh</Button>
-        <Button variant="outline-secondary" size="sm" className="mx-1" disabled={locked || status !== "active"} onClick={() => suspendSSHKey(sk["finger_print"])} title="Temporarily stop this key. Click Refresh to resume it."><FontAwesomeIcon icon={faPause}/> Suspend</Button>
+        <Button variant="secondary" size="sm" className="mx-1" disabled={locked} onClick={() => refreshSSHKey(sk["finger_print"])} title="Make this key active again for another validity period"><FontAwesomeIcon icon={faRefresh}/> Refresh</Button>
+        <Button variant="secondary" size="sm" className="mx-1" disabled={locked || status !== "active"} onClick={() => suspendSSHKey(sk["finger_print"])} title="Temporarily stop this key. Click Refresh to resume it."><FontAwesomeIcon icon={faPause}/> Suspend</Button>
         <Button variant="outline-danger" size="sm" className="mx-1" disabled={locked} onClick={() => setRevokeTarget(sk["finger_print"])} title="Permanently turn off this key, e.g. if it may be compromised or the device holding it is lost. This cannot be undone."><FontAwesomeIcon icon={faBan}/> Revoke</Button>
         </> }
       </span>
